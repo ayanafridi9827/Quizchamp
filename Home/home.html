@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizChamp - All Contests</title>
+    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">QuizChamp</div>
+        <nav class="nav-menu">
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-links">
+                <li><a href="#" class="active">Home</a></li>
+                <li><a href="#">Wallet</a></li>
+                <li><a href="my-challenges.html">My Challenges</a></li>
+                <li><a href="#">Profile</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Loading State -->
+        <div class="loading-state">
+            <div class="loader"></div>
+            <p>Loading contests...</p>
+        </div>
+
+        <!-- Contest Grid Container -->
+        <div class="all-contests-grid">
+            <!-- Contest cards will be dynamically populated here -->
+        </div>
+
+        <!-- Error State -->
+~        <div class="error-state hidden">
+            <i class="fas fa-exclamation-circle"></i>
+            <p>Failed to load contests. Please try again later.</p>
+            <button class="retry-btn">Retry</button>
+        </div>
+
+        <!-- Sticky My Challenges Button -->
+        <a href="my-challenges.html" class="sticky-challenges-btn">
+            <i class="fas fa-trophy"></i>
+            <span>My Challenges</span>
+            <div class="btn-glow"></div>
+        </a>
+    </main>
+
+    <!-- Contest Card Template -->
+    <template id="contest-card-template">
+        <div class="contest-card">
+            <div class="card-glow"></div>
+            <div class="particles"></div>
+            
+            <div class="contest-header">
+                <div class="category-icon">
+                    <i class="fas"></i>
+                    <div class="icon-glow"></div>
+                </div>
+                <div class="contest-status">
+                    <span class="status-badge"></span>
+                </div>
+            </div>
+
+            <div class="contest-info">
+                <h3 class="contest-title"></h3>
+                
+                <div class="prize-section">
+                    <div class="prize-content">
+                        <i class="fas fa-trophy"></i>
+                        <span class="prize-text"></span>
+                    </div>
+                    <div class="prize-glow"></div>
+                    <div class="sparkles">
+                        <span>✨</span>
+                        <span>✨</span>
+                        <span>✨</span>
+                    </div>
+                </div>
+
+                <div class="contest-details">
+                    <div class="detail-item entry-fee">
+                        <i class="fas fa-coins"></i>
+                        <span class="entry-fee-text"></span>
+                    </div>
+                    <div class="detail-item spots">
+                        <i class="fas fa-users"></i>
+                        <span class="spots-filled"></span>
+                    </div>
+                </div>
+
+                <div class="progress-section">
+                    <div class="progress-info">
+                        <span class="progress-text"></span>
+                        <span class="progress-percentage"></span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                            <div class="progress-glow"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="join-btn">
+                <span class="join-text"></span>
+                <i class="fas fa-bolt"></i>
+                <div class="btn-glow"></div>
+            </button>
+        </div>
+    </template>
+
+    <!-- Load the main script as a module -->
+    <script type="module" src="home.js"></script>
+</body>
+</html>

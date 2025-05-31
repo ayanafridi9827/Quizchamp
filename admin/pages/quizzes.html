@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Management - QuizArena Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .quizzes-container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .quizzes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .quizzes-header h1 {
+            font-size: 2rem;
+            color: var(--text-primary);
+        }
+
+        .add-quiz-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .add-quiz-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .form-group select,
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .form-group select:focus,
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .quizzes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .quiz-card {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            pointer-events: none;
+        }
+
+        .quiz-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .quiz-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .quiz-subject {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+
+        .questions-list {
+            margin-top: 1rem;
+        }
+
+        .question-item {
+            background-color: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .question-text {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .options-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .option.correct {
+            color: var(--success-color);
+            font-weight: 500;
+        }
+
+        .question-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transform: translateY(100%);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--danger-color);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="../../assets/logo.png" alt="QuizArena Logo">
+            <h1>QuizArena</h1>
+        </div>
+        <ul class="nav-links">
+            <li class="nav-item" onclick="window.location.href='../index.html'">
+                <i class="fas fa-home"></i>
+                Dashboard
+            </li>
+            <li class="nav-item" onclick="window.location.href='users.html'">
+                <i class="fas fa-users"></i>
+                Users
+            </li>
+            <li class="nav-item" onclick="window.location.href='challenges.html'">
+                <i class="fas fa-trophy"></i>
+                Challenges
+            </li>
+            <li class="nav-item active">
+                <i class="fas fa-question-circle"></i>
+                Questions
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <button class="logout-btn" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="quizzes-container">
+            <div class="quizzes-header">
+                <h1>Quiz Management</h1>
+                <button class="add-quiz-btn" id="add-quiz-btn">
+                    <i class="fas fa-plus"></i>
+                    Add New Quiz
+                </button>
+            </div>
+
+            <div class="quizzes-grid" id="quizzes-grid">
+                <!-- Quiz cards will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Quiz Modal -->
+    <div class="modal" id="add-quiz-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Quiz Question</h2>
+                <button class="close-btn" id="close-modal">&times;</button>
+            </div>
+            <form id="add-quiz-form">
+                <div class="form-group">
+                    <label for="contest">Select Contest</label>
+                    <select id="contest" name="contest" required>
+                        <option value="">Select a contest...</option>
+                        <!-- Contest options will be populated here -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="question">Question</label>
+                    <textarea id="question" name="question" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Options</label>
+                    <div class="options-grid">
+                        <div class="form-group">
+                            <label for="optionA">Option A</label>
+                            <input type="text" id="optionA" name="optionA" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="optionB">Option B</label>
+                            <input type="text" id="optionB" name="optionB" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="optionC">Option C</label>
+                            <input type="text" id="optionC" name="optionC" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="optionD">Option D</label>
+                            <input type="text" id="optionD" name="optionD" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="correctOption">Correct Option</label>
+                    <select id="correctOption" name="correctOption" required>
+                        <option value="">Select correct option...</option>
+                        <option value="A">Option A</option>
+                        <option value="B">Option B</option>
+                        <option value="C">Option C</option>
+                        <option value="D">Option D</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="points">Points</label>
+                    <input type="number" id="points" name="points" min="1" value="10" required>
+                </div>
+                <button type="submit" class="primary-btn">
+                    <i class="fas fa-paper-plane"></i>
+                    Add Question
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i class="fas fa-info-circle"></i>
+        <span id="toast-message"></span>
+    </div>
+
+    <script type="module" src="../admin-session.js"></script>
+    <script type="module" src="../js/quizzes.js"></script>
+</body>
+</html> 

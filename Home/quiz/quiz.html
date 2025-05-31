@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - QuizArena</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="../home.html">
+                <img src="../../assets/logo.png" alt="QuizArena Logo">
+                <span>QuizArena</span>
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="../home.html" class="nav-link">Home</a>
+            <a href="../my-challenges.html" class="nav-link">My Challenges</a>
+            <a href="../leaderboard.html" class="nav-link">Leaderboard</a>
+            <a href="../profile.html" class="nav-link">Profile</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="quiz-container">
+            <!-- Quiz Header -->
+            <div class="quiz-header">
+                <h1 class="quiz-title">Loading Quiz...</h1>
+                <div class="quiz-info">
+                    <div class="timer">
+                        <i class="fas fa-clock"></i>
+                        <span id="time-remaining">00:00</span>
+                    </div>
+                    <div class="progress">
+                        <span id="current-question">0</span>/<span id="total-questions">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Content -->
+            <div class="quiz-content">
+                <div class="question-container">
+                    <h2 class="question-text">Loading question...</h2>
+                    <div class="options-container">
+                        <!-- Options will be dynamically added here -->
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="quiz-navigation">
+                    <button id="prev-btn" class="nav-btn" disabled>
+                        <i class="fas fa-arrow-left"></i>
+                        Previous
+                    </button>
+                    <button id="next-btn" class="nav-btn">
+                        Next
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quiz Footer -->
+            <div class="quiz-footer">
+                <button id="submit-quiz" class="submit-btn" disabled>
+                    Submit Quiz
+                </button>
+            </div>
+        </div>
+
+        <!-- Access Denied Message (Hidden by default) -->
+        <div class="access-denied hidden">
+            <i class="fas fa-lock"></i>
+            <h2>Access Denied</h2>
+            <p>Please join the challenge first to attempt the quiz.</p>
+            <a href="../home.html" class="continue-btn">
+                Browse Challenges
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script type="module" src="quiz.js"></script>
+</body>
+</html> 

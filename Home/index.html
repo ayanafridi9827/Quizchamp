@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Arena - Home</title>
+    <link rel="stylesheet" href="home.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+    <!-- Your Firebase configuration -->
+    <script>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "your-sender-id",
+            appId: "your-app-id"
+        };
+
+        // Initialize Firebase
+        function initializeFirebaseApp() {
+            if (typeof firebase === 'undefined') {
+                console.error('Firebase SDK not loaded');
+                return false;
+            }
+
+            try {
+                // Initialize Firebase only if it hasn't been initialized
+                if (!firebase.apps.length) {
+                    const app = firebase.initializeApp(firebaseConfig);
+                    // Initialize Firestore
+                    const db = firebase.firestore();
+                    console.log('Firebase initialized successfully');
+                    return true;
+                }
+                return true;
+            } catch (error) {
+                console.error('Error initializing Firebase:', error);
+                return false;
+            }
+        }
+
+        // Initialize Firebase when the page loads
+        window.addEventListener('load', () => {
+            if (!initializeFirebaseApp()) {
+                console.error('Failed to initialize Firebase. Please refresh the page.');
+            }
+        });
+    </script>
+
+    <!-- Your application scripts -->
+    <script src="home.js"></script>
+
+    <!-- Rest of your HTML content -->
+    <div id="app">
+        <!-- Your existing HTML content -->
+    </div>
+</body>
+</html> 

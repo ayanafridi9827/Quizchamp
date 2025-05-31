@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users Management - QuizArena Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .search-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 0.75rem 1rem;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .challenge-history {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .challenge-history::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .challenge-history::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+
+        .challenge-history::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .challenge-history::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color-dark);
+        }
+
+        .challenge-row {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .challenge-row:last-child {
+            border-bottom: none;
+        }
+
+        .challenge-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .challenge-status.completed {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .challenge-status.ongoing {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .challenge-status.cancelled {
+            background-color: var(--danger-color);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="../../assets/logo.png" alt="QuizArena Logo">
+            <h1>QuizArena</h1>
+        </div>
+        <ul class="nav-links">
+            <li class="nav-item" onclick="window.location.href='../index.html'">
+                <i class="fas fa-home"></i>
+                Dashboard
+            </li>
+            <li class="nav-item active">
+                <i class="fas fa-users"></i>
+                Users
+            </li>
+            <li class="nav-item" onclick="window.location.href='challenges.html'">
+                <i class="fas fa-trophy"></i>
+                Challenges
+            </li>
+            <li class="nav-item" onclick="window.location.href='questions.html'">
+                <i class="fas fa-question-circle"></i>
+                Questions
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <button class="logout-btn" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="search-container">
+            <input type="text" class="search-input" id="search-input" placeholder="Search users by name or email...">
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Wallet Balance</th>
+                        <th>Challenges Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    <!-- Users will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Challenge History Modal -->
+    <div class="modal" id="challenge-history-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Challenge History</h2>
+                <button class="close-btn" id="close-modal">&times;</button>
+            </div>
+            <div class="challenge-history" id="challenge-history">
+                <!-- Challenge history will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../admin-session.js"></script>
+    <script type="module" src="../js/users.js"></script>
+</body>
+</html> 

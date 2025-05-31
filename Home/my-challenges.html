@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Challenges - QuizArena</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="my-challenges.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="home.html">
+                <h1>QuizChamp <span class="fire">🔥</span></h1>
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="home.html" class="nav-link">Home</a>
+            <a href="my-challenges.html" class="nav-link active">My Challenges</a>
+            <a href="leaderboard.html" class="nav-link">Leaderboard</a>
+            <a href="profile.html" class="nav-link">Profile</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="challenges-container">
+            <!-- Active Challenges Section -->
+            <section class="challenges-section">
+                <h2 class="section-title">
+                    <i class="fas fa-trophy"></i>
+                    Active Challenges
+                </h2>
+                <div class="challenges-grid active-challenges">
+                    <div class="loading-state">
+                        <i class="fas fa-spinner"></i>
+                        <p>Loading your active challenges...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Past Challenges Section -->
+            <section class="challenges-section">
+                <h2 class="section-title">
+                    <i class="fas fa-history"></i>
+                    Past Challenges
+                </h2>
+                <div class="challenges-grid past-challenges">
+                    <div class="loading-state">
+                        <i class="fas fa-spinner"></i>
+                        <p>Loading your past challenges...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- No Challenges Message (Hidden by default) -->
+            <div class="no-challenges-message hidden">
+                <i class="fas fa-trophy"></i>
+                <h3>No Challenges Yet</h3>
+                <p>Join your first challenge and start winning!</p>
+                <a href="home.html" class="continue-btn">
+                    Browse Challenges
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Challenge Card Template -->
+    <template id="challenge-card-template">
+        <div class="challenge-card">
+            <div class="challenge-header">
+                <h3 class="challenge-title"></h3>
+                <span class="challenge-status"></span>
+            </div>
+            <div class="challenge-details">
+                <div class="detail-item">
+                    <i class="fas fa-coins"></i>
+                    <span class="prize-text"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-users"></i>
+                    <span class="participants-text"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-calendar"></i>
+                    <span class="date-text"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-trophy"></i>
+                    <span class="score-text"></span>
+                </div>
+            </div>
+            <div class="challenge-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <div class="progress-info">
+                    <span>Progress</span>
+                    <span class="progress-percentage"></span>
+                </div>
+            </div>
+            <div class="challenge-actions">
+                <a href="#" class="continue-btn" data-challenge-id="">
+                    Continue Challenge
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </template>
+
+    <!-- Scripts -->
+    <script type="module" src="my-challenges.js"></script>
+</body>
+</html> 

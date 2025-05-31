@@ -1,0 +1,136 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Admin helper function
+    function isAdmin() {
+      return isAuthenticated() && 
+        (
+          // Check if user exists in admins collection
+          exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin'
+        ) ||
+        // Allow specific email
+        request.auth.token.email == 'ayanafridi752@gmail.com';
+    }
+    
+    function isValidUserData() {
+      return request.resource.data.keys().hasAll(['uid', 'name', 'email', 'photoURL', 'lastLogin', 'role']) &&
+             request.resource.data.uid == request.auth.uid;
+    }
+
+    function isValidAdminData() {
+      return request.resource.data.keys().hasAll([
+        'uid', 'email', 'name', 'photoURL', 'role', 'lastLogin', 'createdAt',
+        'permissions', 'status'
+      ]) &&
+      request.resource.data.uid == request.auth.uid &&
+      request.resource.data.role == 'admin' &&
+      request.resource.data.permissions is map &&
+      request.resource.data.status in ['active', 'inactive'];
+    }
+
+    function isValidQuestion() {
+      return request.resource.data.keys().hasAll([
+        'question', 'options', 'correctOption', 'points', 'createdAt'
+      ]) &&
+      request.resource.data.options is list &&
+      request.resource.data.options.size() == 4 &&
+      request.resource.data.points is number &&
+      request.resource.data.points > 0;
+    }
+
+    function isValidQuizData() {
+      return request.resource.data.keys().hasAll(['contestId', 'questions', 'createdAt']) &&
+             request.resource.data.questions is list &&
+             request.resource.data.questions.size() > 0;
+    }
+
+    function hasJoinedChallenge(challengeId) {
+      return exists(/databases/$(database)/documents/userChallenges/$(request.auth.uid + '_' + challengeId));
+    }
+
+    // Users collection rules
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if (isAuthenticated() && 
+        request.auth.uid == userId &&
+        isValidUserData() &&
+        request.resource.data.keys().hasAll([
+          'uid', 'name', 'email', 'photoURL', 'lastLogin', 'createdAt',
+          'walletBalance', 'totalChallengesJoined', 'challengeHistory',
+          'currentLevel', 'preferences'
+        ])) || isAdmin();
+      allow update: if (isOwner(userId) && 
+        (
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'email', 'photoURL', 'lastLogin']) &&
+           isValidUserData()) ||
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['challengeHistory', 'lastUpdated']) &&
+           request.resource.data.challengeHistory.size() >= resource.data.challengeHistory.size()) ||
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['totalChallengesJoined', 'walletBalance', 'preferences'])
+        )) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Contests collection rules
+    match /contests/{contestId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+      allow update: if isAdmin() || (isAuthenticated() && 
+        (
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants', 'lastUpdated']) &&
+           request.resource.data.participants.size() >= resource.data.participants.size() &&
+           request.resource.data.participants.hasAll(resource.data.participants) &&
+           request.resource.data.participants.size() <= request.resource.data.maxSpots)
+        ));
+      allow delete: if isAdmin();
+    }
+
+    // Quiz collection rules
+    match /quiz/{quizId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // UserChallenges collection rules
+    match /userChallenges/{userChallengeId} {
+      allow read: if isAuthenticated() && 
+        (userChallengeId.matches(request.auth.uid + '_.*') || isAdmin());
+      allow create: if isAuthenticated() && 
+        (userChallengeId.matches(request.auth.uid + '_.*') || isAdmin());
+      allow update: if isAuthenticated() && 
+        (userChallengeId.matches(request.auth.uid + '_.*') || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Admin settings collection
+    match /adminSettings/{settingId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Admins collection rules
+    match /admins/{adminId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+        request.auth.uid == adminId &&
+        isValidAdminData();
+      allow update: if isOwner(adminId) && 
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['lastLogin', 'permissions', 'status']);
+      allow delete: if isAdmin();
+    }
+  }
+} 
