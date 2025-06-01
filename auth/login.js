@@ -79,14 +79,15 @@ async function createOrUpdateUserProfile(user, challengeId = null) {
 
         const userData = {
             uid: user.uid,
-            name: user.displayName,
+            name: user.displayName || "No Name",
             email: user.email,
-            photoURL: user.photoURL,
-            lastLogin: new Date().toISOString()
+            photoURL: user.photoURL || '',
+            lastLogin: new Date().toISOString(),
+            role: 'user'
         };
 
         if (!userSnap.exists()) {
-            // Create new user profile with initial values
+            // Create new user profile with all required fields
             const initialData = {
                 ...userData,
                 createdAt: new Date().toISOString(),
@@ -131,32 +132,11 @@ async function createOrUpdateUserProfile(user, challengeId = null) {
             }
 
             await setDoc(userRef, initialData);
-            console.log('New user profile created with challenge tracking structure');
+            console.log('New user profile created successfully with all required fields');
         } else {
-            // Update existing user profile
-            const updateData = { ...userData };
-
-            // If there's a challenge ID, check if it's already in history
-            if (challengeId) {
-                const userData = userSnap.data();
-                const existingChallenge = userData.challengeHistory?.find(
-                    challenge => challenge.challengeId === challengeId
-                );
-
-                if (!existingChallenge) {
-                    updateData.challengeHistory = arrayUnion({
-                        challengeId: challengeId,
-                        joinedAt: new Date().toISOString(),
-                        status: 'joined',
-                        score: 0,
-                        rewardEarned: 0
-                    });
-                    updateData.totalChallengesJoined = (userData.totalChallengesJoined || 0) + 1;
-                }
-            }
-
-            await setDoc(userRef, updateData, { merge: true });
-            console.log('Existing user profile updated');
+            // Update existing user profile with only the necessary fields
+            await setDoc(userRef, userData, { merge: true });
+            console.log('Existing user profile updated successfully');
         }
     } catch (error) {
         console.error('Error creating/updating user profile:', error);

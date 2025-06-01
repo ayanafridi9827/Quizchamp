@@ -156,11 +156,10 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <img src="../assets/logo.png" alt="QuizArena Logo">
-            <h1>QuizArena</h1>
-        </div>
+        <aside class="sidebar">
+            <div class="sidebar-header">
+            <h1>QuizChamp <span class="fire">🔥</span></h1>
+            </div>
         <ul class="nav-links">
             <li class="nav-item active" data-section="dashboard">
                 <i class="fas fa-chart-line"></i>
@@ -186,17 +185,17 @@
                 <i class="fas fa-cog"></i>
                 <span>Settings</span>
             </li>
-        </ul>
+            </ul>
         <div class="sidebar-footer">
             <button class="logout-btn" id="logout-btn">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </button>
         </div>
-    </aside>
+        </aside>
 
     <!-- Main Content -->
-    <main class="main-content">
+        <main class="main-content">
         <div class="dashboard-container">
             <div class="dashboard-header">
                 <h1>Dashboard</h1>
@@ -209,7 +208,7 @@
             </div>
 
             <div class="stats-grid">
-                <div class="stat-card">
+                    <div class="stat-card">
                     <div class="stat-header">
                         <div class="stat-icon">
                             <i class="fas fa-users"></i>
@@ -225,7 +224,7 @@
                     </div>
                 </div>
 
-                <div class="stat-card">
+                    <div class="stat-card">
                     <div class="stat-header">
                         <div class="stat-icon">
                             <i class="fas fa-trophy"></i>
@@ -236,7 +235,7 @@
                             <div class="stat-change positive">
                                 <i class="fas fa-arrow-up"></i>
                                 <span id="contests-growth">0%</span> from last month
-                            </div>
+                    </div>
                         </div>
                     </div>
                 </div>
@@ -252,9 +251,9 @@
                             <div class="stat-change positive">
                                 <i class="fas fa-arrow-up"></i>
                                 <span id="quizzes-growth">0%</span> from last month
-                            </div>
                         </div>
-                    </div>
+                        </div>
+                        </div>
                 </div>
 
                 <div class="stat-card">
@@ -281,7 +280,7 @@
                 </div>
             </div>
         </div>
-    </main>
+        </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -299,12 +298,12 @@
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyBgCHdqzcsiB9VBTsv4O1fU2R88GVoOOyA",
-            authDomain: "quizarena-c222d.firebaseapp.com",
-            projectId: "quizarena-c222d",
-            storageBucket: "quizarena-c222d.firebasestorage.app",
-            messagingSenderId: "892135666693",
-            appId: "1:892135666693:web:4f8bf849019603a937586c"
+          apiKey: "AIzaSyBgCHdqzcsiB9VBTsv4O1fU2R88GVoOOyA",
+          authDomain: "quizarena-c222d.firebaseapp.com",
+          projectId: "quizarena-c222d",
+          storageBucket: "quizarena-c222d.firebasestorage.app",
+          messagingSenderId: "892135666693",
+          appId: "1:892135666693:web:4f8bf849019603a937586c"
         };
 
         // Initialize Firebase
@@ -478,4 +477,4 @@
         });
     </script>
 </body>
-</html>
+</html> 

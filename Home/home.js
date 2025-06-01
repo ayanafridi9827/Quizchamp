@@ -34,8 +34,8 @@ async function loadAllContests() {
                 const contests = [];
                 snapshot.forEach(doc => {
                     contests.push({
-                        id: doc.id,
-                        ...doc.data()
+            id: doc.id,
+            ...doc.data()
                     });
                 });
 
@@ -84,7 +84,7 @@ async function loadAllContests() {
 
                     const upcomingGrid = upcomingSection.querySelector('.upcoming-contests');
                     upcomingContests.forEach(contest => {
-                        const card = createContestCard(contest);
+                const card = createContestCard(contest);
                         upcomingGrid.appendChild(card);
                     });
                 }
@@ -294,5 +294,5 @@ function getSubjectIcon(subject) {
 
 // Initialize when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    loadAllContests();
+            loadAllContests();
 });

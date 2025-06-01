@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet - QuizChamp</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+
+        /* Basic styling or overrides if needed */
+        body {
+            background-color: #f3f4f6; /* Light gray background */
+            font-family: sans-serif;
+            min-height: 100vh;
+            padding-top: 20px; /* Add some top padding */
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--card-shadow);
+            z-index: 1000;
+        }
+
+        .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.nav-menu {
+    display: flex;
+    align-items: center;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 500;
+    transition: color 0.3s ease;
+    position: relative;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--gradient);
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after,
+.nav-links a.active::after {
+    width: 100%;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: var(--primary-color);
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-color);
+}
+
+/* Main Content Styles */
+.main-content {
+    margin-top: 80px;
+    padding: 2rem 5%;
+}
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+        .history-item:last-child {
+            border-bottom: none;
+        }
+         .loading-state {
+             display: none;
+             text-align: center;
+             padding: 20px;
+             color: #6b7280;
+         }
+         .loading-state.active {
+             display: block;
+         }
+          .error-message {
+             display: none;
+             text-align: center;
+             padding: 20px;
+             color: #dc2626; /* Red color for errors */
+         }
+          .error-message.active {
+             display: block;
+         }
+          .no-history-message {
+             display: none;
+             text-align: center;
+             padding: 20px;
+             color: #6b7280; /* Gray color */
+             font-style: italic;
+         }
+         .no-history-message.active {
+             display: block;
+         }
+         .shadow-md{
+            margin-top:80px;
+         }
+    </style>
+</head>
+<body class="p-6">
+    <header class="header">
+        <h1>QuizChamp <span class="fire">🔥</span></h1>
+        <nav class="nav-menu">
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-links">
+                <li><a href="/home/home.html" class="active">Home</a></li>
+                <li><a href="wallets/wallet.html">Wallet</a></li>
+                <li><a href="my-challenges.html">My Challenges</a></li>
+                <li><a href="#">Profile</a></li>
+            </ul>
+        </nav>
+    </header>
+
+
+    <div class="container bg-white shadow-md rounded-2xl p-6">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">My Wallet</h1>
+
+        <!-- Wallet Balance Section -->
+        <div class="flex items-center justify-between bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded-md" role="alert">
+            <div class="flex items-center">
+                <i class="fas fa-wallet mr-3 text-blue-600"></i>
+                <p class="font-bold text-lg">Current Balance:</p>
+            </div>
+            <div class="flex items-center">
+                <span id="wallet-balance" class="text-blue-900 font-extrabold text-xl">₹0</span>
+                <!-- Withdraw Button (Design only) -->
+                <button class="ml-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full text-sm transition duration-200 ease-in-out">
+                    Withdraw
+                </button>
+            </div>
+        </div>
+
+         <!-- Loading State -->
+         <div class="loading-state active">
+             <i class="fas fa-spinner fa-spin text-2xl"></i>
+             <p class="mt-2">Loading wallet data...</p>
+         </div>
+
+         <!-- Error Message -->
+         <div class="error-message">
+             <i class="fas fa-exclamation-triangle text-2xl"></i>
+             <p class="mt-2"></p>
+         </div>
+
+        <!-- Earnings History Section -->
+        <div id="earnings-history-section" style="display: none;">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Earnings History</h2>
+
+             <!-- No History Message -->
+             <div class="no-history-message">
+                 <i class="fas fa-info-circle text-2xl"></i>
+                 <p class="mt-2">No earnings yet.</p>
+             </div>
+
+            <div id="earnings-history-list" class="bg-gray-50 p-4 rounded-md">
+                <!-- History items will be injected here -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Firebase configuration (Replace with your actual config)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgCHdqzcsiB9VBTsv4O1fU2R88GVoOOyA",
+            authDomain: "quizarena-c222d.firebaseapp.com",
+            projectId: "quizarena-c222d",
+            storageBucket: "quizarena-c222d.firebasestorage.app",
+            messagingSenderId: "892135666693",
+            appId: "1:892135666693:web:4f8bf849019603a937586c"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // DOM Elements
+        const walletBalanceElement = document.getElementById('wallet-balance');
+        const earningsHistoryList = document.getElementById('earnings-history-list');
+        const loadingState = document.querySelector('.loading-state');
+        const errorMessageElement = document.querySelector('.error-message');
+        const noHistoryMessage = document.querySelector('.no-history-message');
+        const earningsHistorySection = document.getElementById('earnings-history-section');
+
+        // Utility Functions
+        function showLoading() {
+            if (loadingState) loadingState.classList.add('active');
+            if (errorMessageElement) errorMessageElement.classList.remove('active');
+            if (noHistoryMessage) noHistoryMessage.classList.remove('active');
+            if (earningsHistorySection) earningsHistorySection.style.display = 'none';
+        }
+
+        function hideLoading() {
+            if (loadingState) loadingState.classList.remove('active');
+        }
+
+        function showErrorMessage(message = 'An unknown error occurred.') {
+            hideLoading();
+            if (errorMessageElement) {
+                errorMessageElement.querySelector('p').textContent = message;
+                errorMessageElement.classList.add('active');
+            }
+            if (noHistoryMessage) noHistoryMessage.classList.remove('active');
+             if (earningsHistorySection) earningsHistorySection.style.display = 'none';
+        }
+
+         function showNoHistoryMessage() {
+             hideLoading();
+             if (noHistoryMessage) noHistoryMessage.classList.add('active');
+             if (earningsHistorySection) earningsHistorySection.style.display = 'block';
+             if (earningsHistoryList) earningsHistoryList.innerHTML = ''; // Clear any previous list items
+             if (errorMessageElement) errorMessageElement.classList.remove('active');
+         }
+
+        function formatDate(timestamp) {
+            if (!timestamp || typeof timestamp.toDate !== 'function') {
+                return 'N/A';
+            }
+            const date = timestamp.toDate();
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        // Fetch and display wallet data
+        async function fetchAndDisplayWalletData(userId) {
+            showLoading();
+
+            try {
+                const userRef = doc(db, 'users', userId);
+                const userDocSnap = await getDoc(userRef);
+
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+
+                    // Display balance
+                    const balance = userData.walletBalance || 0;
+                    if (walletBalanceElement) {
+                        walletBalanceElement.textContent = `₹${balance}`;
+                    }
+
+                    // Display earnings history
+                    const challengeHistory = Array.isArray(userData.challengeHistory) ? userData.challengeHistory : [];
+
+                    if (earningsHistoryList) {
+                        earningsHistoryList.innerHTML = ''; // Clear previous history
+
+                        if (challengeHistory.length > 0) {
+                             // Sort history by completedAt date descending
+                            challengeHistory.sort((a, b) => {
+                                const dateA = a.completedAt instanceof Timestamp ? a.completedAt.toMillis() : 0;
+                                const dateB = b.completedAt instanceof Timestamp ? b.completedAt.toMillis() : 0;
+                                return dateB - dateA; // Descending order
+                            });
+
+                            challengeHistory.forEach(entry => {
+                                // Assuming 'score' in challengeHistory represents earnings for simplicity
+                                const earnedAmount = entry.score || 0;
+                                const contestId = entry.contestId || 'N/A';
+                                const earnDate = formatDate(entry.completedAt);
+
+                                const historyItem = `
+                                    <div class="history-item border-b border-gray-200 py-3 flex justify-between items-center">
+                                        <div>
+                                            <p class="font-semibold text-gray-700">Contest ID: ${contestId}</p>
+                                            <p class="text-sm text-gray-500">Date: ${earnDate}</p>
+                                        </div>
+                                        <span class="font-bold text-green-600">+ ₹${earnedAmount}</span>
+                                    </div>
+                                `;
+                                earningsHistoryList.innerHTML += historyItem;
+                            });
+                             earningsHistorySection.style.display = 'block';
+                             noHistoryMessage.classList.remove('active');
+                        } else {
+                            showNoHistoryMessage();
+                        }
+                    }
+
+                    hideLoading();
+
+                } else {
+                    console.error('User document not found for wallet data.');
+                    showErrorMessage('User data not found.');
+                     // Display default values or empty state if user doc doesn't exist
+                     if (walletBalanceElement) walletBalanceElement.textContent = '₹0';
+                     showNoHistoryMessage();
+                }
+
+            } catch (error) {
+                console.error('Error fetching wallet data:', error);
+                showErrorMessage('Failed to load wallet data.');
+                 // Display default values or empty state on error
+                 if (walletBalanceElement) walletBalanceElement.textContent = '₹0';
+                 showNoHistoryMessage();
+            }
+        }
+
+        // Check for authenticated user and fetch wallet data
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is logged in, fetch wallet data
+                fetchAndDisplayWalletData(user.uid);
+            } else {
+                // User is not logged in, redirect to login page
+                console.log('No user logged in. Redirecting to login.');
+                // Redirect to login page (adjust the path as needed)
+                window.location.href = '../auth/login.html';
+            }
+        });
+
+    </script>
+
+</body>
+</html>
