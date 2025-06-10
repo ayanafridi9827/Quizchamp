@@ -13,6 +13,7 @@ import {
 const allContestsGrid = document.querySelector('.all-contests-grid');
 const loadingState = document.querySelector('.loading-state');
 const errorState = document.querySelector('.error-state');
+const retryBtn = document.querySelector('.retry-btn');
 
 // Load All Contests from Firebase
 async function loadAllContests() {
@@ -25,7 +26,7 @@ async function loadAllContests() {
         // Create query for both active and upcoming contests
         const contestsQuery = query(
             collection(db, 'contests'),
-            where('status', 'in', ['active', 'upcoming'])
+            where('status', 'in', ['Active', 'Upcoming'])
         );
 
         // Set up real-time listener
@@ -34,8 +35,8 @@ async function loadAllContests() {
                 const contests = [];
                 snapshot.forEach(doc => {
                     contests.push({
-            id: doc.id,
-            ...doc.data()
+                        id: doc.id,
+                        ...doc.data()
                     });
                 });
 
@@ -43,8 +44,8 @@ async function loadAllContests() {
                 contests.sort((a, b) => a.startTime - b.startTime);
 
                 // Separate contests into active and upcoming
-                const activeContests = contests.filter(contest => contest.status === 'active');
-                const upcomingContests = contests.filter(contest => contest.status === 'upcoming');
+                const activeContests = contests.filter(contest => contest.status === 'Active');
+                const upcomingContests = contests.filter(contest => contest.status === 'Upcoming');
 
                 // Clear the grid
                 allContestsGrid.innerHTML = '';
@@ -84,7 +85,7 @@ async function loadAllContests() {
 
                     const upcomingGrid = upcomingSection.querySelector('.upcoming-contests');
                     upcomingContests.forEach(contest => {
-                const card = createContestCard(contest);
+                        const card = createContestCard(contest);
                         upcomingGrid.appendChild(card);
                     });
                 }
@@ -292,7 +293,8 @@ function getSubjectIcon(subject) {
     return iconMap[subject] || 'fa-trophy';
 }
 
-// Initialize when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-            loadAllContests();
-});
+// Retry loading contests
+retryBtn.addEventListener('click', loadAllContests);
+
+// Initial load
+loadAllContests();

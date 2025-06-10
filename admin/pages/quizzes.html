@@ -7,463 +7,849 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../style.css">
     <style>
+        /* Add any basic custom styles or overrides here */
+        :root {
+            --primary-color: #6366F1;
+            --primary-color-dark: #4F46E5;
+            --bg-primary: #0F172A;
+            --bg-secondary: #1E293B;
+            --bg-tertiary: #334155;
+            --text-primary: #F8FAFC;
+            --text-secondary: #CBD5E1;
+            --border-color: #475569;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --danger-color: #EF4444;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+        }
+
+        .fire {
+            color: #FF4500; /* OrangeRed */
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 0;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-secondary);
+        }
+
+        .nav-item:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item i {
+            margin-right: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(239, 68, 68, 0.2); /* Red with transparency */
+        }
+
+        .logout-btn i {
+            margin-right: 0.5rem;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
         .quiz-management {
             padding: 2rem;
-            max-width: 1200px;
+            max-width: 1600px;
             margin: 0 auto;
+            min-height: calc(100vh - 2rem);
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
+            padding: 0 1rem;
         }
 
         .header h1 {
-            font-size: 2rem;
-            color: var(--text-primary);
-        }
-
-        .contest-selector {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        .form-group select {
-            width: 100%;
-            padding: 0.75rem;
-            background-color: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-primary);
-            transition: var(--transition);
-        }
-
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .questions-container {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 1.5rem;
-        }
-
-        .questions-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .questions-header h2 {
-            font-size: 1.25rem;
-            color: var(--text-primary);
-        }
-
-        .questions-list {
-            display: grid;
-            gap: 1.5rem;
-        }
-
-        .question-card {
-            background: var(--bg-tertiary);
-            border-radius: 8px;
-            padding: 1.5rem;
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-
-        .question-card.editing {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px var(--primary-color-light);
-        }
-
-        .question-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .question-number {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .question-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .action-btn {
-            padding: 0.5rem;
-            border-radius: 6px;
-            color: var(--text-secondary);
-            transition: all 0.3s ease;
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-
-        .action-btn:hover {
-            background: var(--bg-hover);
-            color: var(--text-primary);
-        }
-
-        .action-btn.edit:hover {
-            color: var(--primary-color);
-        }
-
-        .action-btn.delete:hover {
-            color: var(--danger-color);
-        }
-
-        .question-content {
-            display: grid;
-            gap: 1rem;
-        }
-
-        .options-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem;
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-primary);
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .add-question-btn {
-            width: 100%;
-            padding: 1rem;
-            background: var(--bg-tertiary);
-            border: 2px dashed var(--border-color);
-            border-radius: 12px;
-            color: var(--text-secondary);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 1.5rem;
-        }
-
-        .add-question-btn:hover {
-            background: var(--bg-hover);
-            border-color: var(--primary-color);
-            color: var(--primary-color);
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-primary), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
         }
 
         .save-quiz-btn {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, var(--success-color), #059669);
             color: white;
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 500;
+            padding: 1rem 1.75rem;
+            border-radius: 12px;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
             cursor: pointer;
             transition: all 0.3s ease;
-        }
-
-        .save-quiz-btn:hover {
-            background: var(--primary-color-dark);
-            transform: translateY(-2px);
-        }
-
-        .loading-spinner {
-            display: none;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-        }
-
-        .loading-spinner.active {
-            display: flex;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--border-color);
-            border-top-color: var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transform: translateY(100%);
-            opacity: 0;
-            transition: all 0.3s ease;
-            z-index: 1001;
-        }
-
-        .toast.success {
-            background-color: var(--success-color);
-        }
-
-        .toast.error {
-            background-color: var(--danger-color);
-        }
-
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .contest-selector label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        .contest-selector label i {
-            color: var(--primary-color);
-        }
-
-        .contest-selector select {
-            width: 100%;
-            padding: 0.75rem;
-            background-color: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-primary);
-            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
             font-size: 1rem;
         }
 
-        .contest-selector select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .contest-selector .form-text {
-            display: block;
-            margin-top: 0.5rem;
-            color: var(--text-secondary);
-            font-size: 0.75rem;
+        .save-quiz-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
         }
 
         .content-wrapper {
             display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 2rem;
+            grid-template-columns: 320px 1fr;
+            gap: 2.5rem;
             margin-top: 2rem;
         }
 
         .contest-sidebar {
-            background: var(--bg-secondary);
-            border-radius: 12px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
             overflow: hidden;
-            height: calc(100vh - 200px);
+            height: calc(100vh - 120px); /* Adjust height based on header/footer */
             display: flex;
             flex-direction: column;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--glass-shadow);
+            position: sticky;
+            top: 2rem; /* Stick to top with some margin */
         }
 
         .contest-header {
             padding: 1.5rem;
             border-bottom: 1px solid var(--border-color);
             background: var(--bg-tertiary);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
         }
 
         .contest-header h2 {
-            font-size: 1.25rem;
+            font-size: 1.5rem;
             color: var(--text-primary);
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
             margin: 0;
-        }
-
-        .contest-header h2 i {
-            color: var(--primary-color);
+            background: linear-gradient(135deg, #fff, rgba(255, 255, 255, 0.8));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .contest-list {
             flex: 1;
             overflow-y: auto;
-            padding: 1rem;
+            padding: 1.5rem;
         }
 
         .contest-item {
-            padding: 1rem;
-            border-radius: 8px;
+            padding: 1.25rem;
+            border-radius: 16px;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-bottom: 0.5rem;
-            border: 1px solid var(--border-color);
-            background: var(--bg-tertiary);
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contest-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                rgba(99, 102, 241, 0.05),
+                rgba(99, 102, 241, 0.02));
+            pointer-events: none;
+            z-index: 1;
         }
 
         .contest-item:hover {
-            background: var(--bg-hover);
-            transform: translateX(4px);
-            border-color: var(--primary-color);
+            transform: translateX(4px) translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            border-color: rgba(99, 102, 241, 0.3);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .contest-item.active {
-            background: var(--primary-color-light);
-            border-color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            transform: scale(1.02);
+            z-index: 2;
+        }
+
+        .contest-item.active .contest-item-title,
+        .contest-item.active .contest-item-dates,
+        .contest-item.active .contest-item-status {
+            color: white;
         }
 
         .contest-item-title {
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 1.1rem;
             color: var(--text-primary);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.35rem;
         }
 
         .contest-item-dates {
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.35rem;
         }
 
         .contest-item-status {
             display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
             font-size: 0.75rem;
-            font-weight: 500;
-            text-transform: capitalize;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .contest-item-status.active {
-            background: var(--success-color-light);
-            color: var(--success-color);
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
         .contest-item-status.draft {
-            background: var(--warning-color-light);
-            color: var(--warning-color);
+            background: rgba(245, 158, 11, 0.2);
+            color: #F59E0B;
+            border: 1px solid rgba(245, 158, 11, 0.3);
         }
 
         .contest-item-status.ended {
-            background: var(--danger-color-light);
-            color: var(--danger-color);
+            background: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
         .questions-section {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: var(--glass-shadow);
         }
 
         .questions-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
             border-bottom: 1px solid var(--border-color);
         }
 
         .selected-contest-info h2 {
-            font-size: 1.5rem;
+            font-size: 2rem;
             color: var(--text-primary);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, rgba(255, 255, 255, 0.8));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .contest-dates {
             color: var(--text-secondary);
-            font-size: 0.875rem;
+            font-size: 1rem;
         }
 
-        .loading-spinner {
+        .add-question-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+            color: white;
+            border: none;
+            padding: 1rem 1.75rem;
+            border-radius: 12px;
+            font-weight: 600;
             display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            font-size: 1rem;
+        }
+
+        .add-question-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .questions-list {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .question-card {
+            background: var(--bg-tertiary);
+            border-radius: 20px;
+            padding: 1.75rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.03),
+                rgba(255, 255, 255, 0.01));
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .question-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .question-card.editing {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .question-number {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, #fff, rgba(255, 255, 255, 0.8));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .question-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-secondary);
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            backdrop-filter: blur(4px);
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-btn.edit:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .action-btn.delete:hover {
+            color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+
+        .question-content p {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .option-item.correct {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10B981;
+        }
+
+        .option-item.correct i {
+            color: #10B981;
+        }
+
+        .option-item i {
+            color: var(--text-secondary);
+        }
+
+        .question-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .question-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .question-meta i {
+            color: var(--primary-color);
+            font-size: 1rem;
+        }
+
+        /* Modal for Add/Edit Question */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
             justify-content: center;
             align-items: center;
-            padding: 2rem;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            visibility: hidden;
         }
 
-        .spinner {
-            width: 24px;
-            height: 24px;
-            border: 2px solid var(--border-color);
-            border-top-color: var(--primary-color);
+        .modal.active {
+            display: flex;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            width: 95%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--glass-shadow);
+            position: relative;
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            z-index: 1;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-header h2 {
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, #fff, rgba(255, 255, 255, 0.8));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        #add-edit-question-form {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-group textarea,
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group textarea:focus,
+        .form-group input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .options-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-form-group {
+            position: relative;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+        }
+
+        .option-form-group.correct-option {
+            border-color: var(--success-color);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        }
+
+        .option-form-group input[type="radio"] {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary-color);
+        }
+
+        .primary-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .primary-btn i {
+            font-size: 1.1rem;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 1200px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .contest-sidebar {
+                position: static;
+                height: auto;
+                margin-bottom: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .quiz-management {
+                padding: 1rem;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .save-quiz-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .questions-section {
+                padding: 1.5rem;
+            }
+
+            .questions-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .selected-contest-info h2 {
+                font-size: 1.5rem;
+            }
+
+            .add-question-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .question-card {
+                padding: 1.25rem;
+            }
+
+            .question-number {
+                font-size: 1.1rem;
+            }
+
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                width: 100%;
+                height: 100%;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+
+            .modal-header {
+                padding: 1rem;
+            }
+
+            .modal-header h2 {
+                font-size: 1.5rem;
+            }
+
+            #add-edit-question-form {
+                padding: 1rem;
+            }
+
+            .options-form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 0.5rem;
+            }
+
+            .quiz-management {
+                padding: 0.5rem;
+            }
+
+            .contest-item {
+                padding: 1rem;
+            }
+
+            .question-card {
+                padding: 1rem;
+            }
+
+            .question-content p {
+                font-size: 1rem;
+            }
+
+            .option-item {
+                padding: 0.8rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        .toast.error {
+            background: rgba(239, 68, 68, 0.9);
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner.active {
+            display: flex;
+        }
+
+        .loading-spinner .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .no-contests {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-secondary);
-        }
-
-        .no-contests i {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: var(--border-color);
-        }
-
-        .no-questions {
-            text-align: center;
-            padding: 3rem;
-            color: var(--text-secondary);
-        }
-
-        .no-questions i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: var(--border-color);
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
@@ -502,7 +888,7 @@
         <div class="quiz-management">
             <div class="header">
                 <h1>Quiz Management</h1>
-                <button class="save-quiz-btn" id="save-quiz-btn">
+                <button class="save-quiz-btn" id="save-quiz-btn" disabled>
                     <i class="fas fa-save"></i>
                     Save All Questions
                 </button>
@@ -518,7 +904,7 @@
                         </h2>
                     </div>
                     <div class="contest-list" id="contest-list">
-                        <div class="loading-spinner">
+                        <div class="loading-spinner active">
                             <div class="spinner"></div>
                         </div>
                     </div>
@@ -528,32 +914,78 @@
                 <div class="questions-section">
                     <div class="questions-header">
                         <div class="selected-contest-info">
-                            <h2 id="selected-contest-title">Select a Contest</h2>
+                            <h2 id="selected-contest-title">Select a Contest to Manage Questions</h2>
                             <p id="selected-contest-dates" class="contest-dates"></p>
                         </div>
-                        <button class="add-question-btn" id="add-question-btn">
+                        <button class="add-question-btn" id="add-question-btn" disabled>
                             <i class="fas fa-plus"></i>
                             Add New Question
                         </button>
                     </div>
 
                     <div id="questions-list" class="questions-list">
-                        <!-- Questions will be dynamically added here -->
+                        <div class="no-questions" id="no-questions-message">
+                            <i class="fas fa-file-alt"></i>
+                            <p>No questions to display. Select a contest or add a new question.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Loading Spinner -->
-    <div class="loading-spinner" id="loading-spinner">
-        <div class="spinner"></div>
+    <!-- Add/Edit Question Modal -->
+    <div class="modal" id="add-edit-question-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title"><i class="fas fa-question-circle"></i> Add New Question</h2>
+                <button class="close-btn" id="close-question-modal">&times;</button>
+            </div>
+            <form id="add-edit-question-form">
+                <input type="hidden" id="question-id">
+                <div class="form-group">
+                    <label for="question-text">Question Text</label>
+                    <textarea id="question-text" rows="4" required></textarea>
+                </div>
+                <div class="options-form-grid">
+                    <div class="option-form-group">
+                        <label for="option1">Option 1</label>
+                        <input type="text" id="option1" required>
+                        <input type="radio" name="correct-option" value="0" required>
+                    </div>
+                    <div class="option-form-group">
+                        <label for="option2">Option 2</label>
+                        <input type="text" id="option2" required>
+                        <input type="radio" name="correct-option" value="1">
+                    </div>
+                    <div class="option-form-group">
+                        <label for="option3">Option 3</label>
+                        <input type="text" id="option3" required>
+                        <input type="radio" name="correct-option" value="2">
+                    </div>
+                    <div class="option-form-group">
+                        <label for="option4">Option 4</label>
+                        <input type="text" id="option4" required>
+                        <input type="radio" name="correct-option" value="3">
+                    </div>
+                </div>
+                <button type="submit" class="primary-btn">
+                    <i class="fas fa-save"></i>
+                    Save Question
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- Toast Notification -->
     <div id="toast" class="toast">
         <i class="fas fa-info-circle"></i>
         <span id="toast-message"></span>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="loading-spinner">
+        <div class="spinner"></div>
     </div>
 
     <!-- Load Firebase config first -->

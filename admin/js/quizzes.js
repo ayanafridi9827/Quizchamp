@@ -32,6 +32,17 @@ let saveQuizBtn;
 let addQuestionBtn;
 let logoutBtn;
 
+// New Question Modal Elements
+let addEditQuestionModal;
+let modalTitle;
+let closeQuestionModal;
+let addEditQuestionForm;
+let questionIdInput;
+let questionTextInput;
+let optionInputs = []; // Array to hold option input elements
+let correctOptionRadios = []; // Array to hold correct option radio buttons
+let timeLimitInput;
+
 // State management
 let currentContestId = null;
 let currentQuiz = null;
@@ -40,23 +51,78 @@ let allQuizzes = [];
 
 // Initialize DOM elements
 function initializeElements() {
-    contestList = document.getElementById('contest-list');
-    selectedContestTitle = document.getElementById('selected-contest-title');
-    selectedContestDates = document.getElementById('selected-contest-dates');
-    questionsList = document.getElementById('questions-list');
-    loadingSpinner = document.getElementById('loading-spinner');
-    toast = document.getElementById('toast');
-    toastMessage = document.getElementById('toast-message');
-    saveQuizBtn = document.getElementById('save-quiz-btn');
-    addQuestionBtn = document.getElementById('add-question-btn');
-    logoutBtn = document.getElementById('logout-btn');
+    try {
+        // Initialize main elements
+        contestList = document.getElementById('contest-list');
+        selectedContestTitle = document.getElementById('selected-contest-title');
+        selectedContestDates = document.getElementById('selected-contest-dates');
+        questionsList = document.getElementById('questions-list');
+        loadingSpinner = document.getElementById('loading-spinner');
+        toast = document.getElementById('toast');
+        toastMessage = document.getElementById('toast-message');
+        saveQuizBtn = document.getElementById('save-quiz-btn');
+        addQuestionBtn = document.getElementById('add-question-btn');
+        logoutBtn = document.getElementById('logout-btn');
 
-    if (!contestList || !selectedContestTitle || !selectedContestDates || !questionsList || 
-        !loadingSpinner || !toast || !toastMessage || !saveQuizBtn || !addQuestionBtn || !logoutBtn) {
-        console.error('Required DOM elements not found');
+        // Initialize modal elements
+        addEditQuestionModal = document.getElementById('add-edit-question-modal');
+        modalTitle = document.getElementById('modal-title');
+        closeQuestionModal = document.getElementById('close-question-modal');
+        addEditQuestionForm = document.getElementById('add-edit-question-form');
+        questionIdInput = document.getElementById('question-id');
+        questionTextInput = document.getElementById('question-text');
+
+        // Initialize option inputs and radio buttons
+        optionInputs = [
+            document.getElementById('option1'),
+            document.getElementById('option2'),
+            document.getElementById('option3'),
+            document.getElementById('option4')
+        ];
+
+        correctOptionRadios = Array.from(document.querySelectorAll('input[name="correct-option"]'));
+
+        // Validate all elements are found
+        const elements = {
+            contestList,
+            selectedContestTitle,
+            selectedContestDates,
+            questionsList,
+            loadingSpinner,
+            toast,
+            toastMessage,
+            saveQuizBtn,
+            addQuestionBtn,
+            logoutBtn,
+            addEditQuestionModal,
+            modalTitle,
+            closeQuestionModal,
+            addEditQuestionForm,
+            questionIdInput,
+            questionTextInput
+        };
+
+        const missingElements = Object.entries(elements)
+            .filter(([_, element]) => !element)
+            .map(([name]) => name);
+
+        if (missingElements.length > 0) {
+            throw new Error(`Missing DOM elements: ${missingElements.join(', ')}`);
+        }
+
+        if (optionInputs.some(input => !input)) {
+            throw new Error('One or more option input elements not found');
+        }
+
+        if (correctOptionRadios.length !== 4) {
+            throw new Error('Expected 4 correct option radio buttons, found ' + correctOptionRadios.length);
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error initializing elements:', error);
         return false;
     }
-    return true;
 }
 
 // Initialize event listeners
@@ -65,7 +131,26 @@ function initializeEventListeners() {
     saveQuizBtn.addEventListener('click', saveQuestions);
 
     // Add question button
-    addQuestionBtn.addEventListener('click', addNewQuestion);
+    addQuestionBtn.addEventListener('click', () => {
+        if (!currentContestId) {
+            showToast('Please select a contest first to add a question.', 'error');
+            return;
+        }
+        openQuestionModal();
+    });
+
+    // Close question modal button
+    closeQuestionModal.addEventListener('click', closeQuestionModalHandler);
+
+    // Close modal when clicking outside
+    addEditQuestionModal.addEventListener('click', (e) => {
+        if (e.target === addEditQuestionModal) {
+            closeQuestionModalHandler();
+        }
+    });
+
+    // Save question form submission
+    addEditQuestionForm.addEventListener('submit', saveQuestionFromModal);
 
     // Logout button
     logoutBtn.addEventListener('click', async () => {
@@ -122,16 +207,23 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-// Show loading spinner
+// Show global loading spinner and disable buttons
 function showLoading() {
     loadingSpinner.classList.add('active');
-    contestList.style.display = 'none';
+    // Display a spinner inside the questions list as well
+    questionsList.innerHTML = '<div class="loading-spinner active"><div class="spinner"></div></div>';
+    saveQuizBtn.disabled = true;
+    addQuestionBtn.disabled = true;
 }
 
-// Hide loading spinner
+// Hide global loading spinner and enable buttons
 function hideLoading() {
     loadingSpinner.classList.remove('active');
-    contestList.style.display = 'grid';
+    // Only enable if a contest is selected
+    if (currentContestId) {
+        saveQuizBtn.disabled = false;
+        addQuestionBtn.disabled = false;
+    }
 }
 
 // Format date
@@ -148,7 +240,8 @@ function formatDate(dateString) {
 // Fetch contests and populate list
 async function fetchContests() {
     try {
-        showLoading();
+        // The loading spinner inside contest-list is handled by HTML initial state.
+        // We clear it here after data is loaded.
         console.log('Fetching contests...');
         
         const contestsQuery = query(
@@ -159,8 +252,7 @@ async function fetchContests() {
         const snapshot = await getDocs(contestsQuery);
         console.log('Contests fetched:', snapshot.size);
         
-        // Clear existing content
-        contestList.innerHTML = '';
+        contestList.innerHTML = ''; // Clear initial loading spinner
         
         if (snapshot.empty) {
             console.log('No contests found');
@@ -169,6 +261,15 @@ async function fetchContests() {
                     <i class="fas fa-trophy"></i>
                     <p>No contests found</p>
                     <small>Create a contest to add quiz questions</small>
+                </div>
+            `;
+            // Disable question-related buttons if no contests
+            saveQuizBtn.disabled = true;
+            addQuestionBtn.disabled = true;
+            questionsList.innerHTML = `
+                <div class="no-questions" id="no-questions-message">
+                    <i class="fas fa-file-alt"></i>
+                    <p>No questions to display. Select a contest or add a new question.</p>
                 </div>
             `;
             return;
@@ -183,17 +284,17 @@ async function fetchContests() {
             contestElement.className = 'contest-item';
             contestElement.dataset.contestId = contest.id;
             
-            // Format dates
-            const startDate = contest.startDate ? new Date(contest.startDate.toDate()).toLocaleDateString() : 'Not set';
-            const endDate = contest.endDate ? new Date(contest.endDate.toDate()).toLocaleDateString() : 'Not set';
+            // Format dates (using startTime/endTime from challenges.js context)
+            const startDate = contest.startTime ? new Date(contest.startTime.toDate()).toLocaleDateString() : 'Not set';
+            const endDate = contest.endTime ? new Date(contest.endTime.toDate()).toLocaleDateString() : 'Not set';
             
             // Set contest status
             let status = 'draft';
             const now = new Date();
-            if (contest.startDate && contest.endDate) {
-                if (now < contest.startDate.toDate()) {
+            if (contest.startTime && contest.endTime) {
+                if (now < contest.startTime.toDate()) {
                     status = 'upcoming';
-                } else if (now > contest.endDate.toDate()) {
+                } else if (now > contest.endTime.toDate()) {
                     status = 'ended';
                 } else {
                     status = 'active';
@@ -222,6 +323,10 @@ async function fetchContests() {
                 selectedContestTitle.textContent = contest.title || 'Untitled Contest';
                 selectedContestDates.textContent = `${startDate} - ${endDate}`;
                 
+                // Enable buttons related to questions
+                saveQuizBtn.disabled = false;
+                addQuestionBtn.disabled = false;
+
                 // Set current contest and fetch its quiz
                 currentContestId = contest.id;
                 fetchQuizForContest(contest.id);
@@ -241,14 +346,15 @@ async function fetchContests() {
             </div>
         `;
     } finally {
-        hideLoading();
+        // The loading state for the contest list is handled by replacing innerHTML
+        // The global loading spinner is not used here for initial contest fetch.
     }
 }
 
 // Fetch quiz for selected contest
 async function fetchQuizForContest(contestId) {
     try {
-        showLoading();
+        showLoading(); // Show global loading spinner and questionsList spinner
         console.log('Fetching quiz for contest:', contestId);
         
         const quizQuery = query(
@@ -267,38 +373,53 @@ async function fetchQuizForContest(contestId) {
         } else {
             console.log('No quiz found for contest');
             currentQuiz = null;
-            displayQuestions([]);
+            displayQuestions([]); // Show no questions message
         }
     } catch (error) {
         console.error('Error fetching quiz:', error);
         showToast('Error loading quiz. Please try again.', 'error');
+        questionsList.innerHTML = `
+            <div class="no-questions">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Error loading questions</p>
+                <small>Please try again later</small>
+            </div>
+        `;
     } finally {
-        hideLoading();
+        hideLoading(); // Hide global loading spinner
     }
 }
 
 // Display questions in the list
 function displayQuestions(questions) {
-    questionsList.innerHTML = '';
+    questionsList.innerHTML = ''; // Clear previous questions
     
     if (!questions || questions.length === 0) {
-        questionsList.innerHTML = `
-            <div class="no-questions">
-                <i class="fas fa-question-circle"></i>
-                <p>No questions yet</p>
-                <small>Click "Add New Question" to create your first question</small>
-            </div>
-        `;
+        const noQuestionsMessage = document.getElementById('no-questions-message');
+        if (noQuestionsMessage) {
+            questionsList.appendChild(noQuestionsMessage); // Append the pre-existing message
+        } else {
+            // Fallback if the element is not found for some reason (shouldn't happen with proper HTML)
+            questionsList.innerHTML = `
+                <div class="no-questions">
+                    <i class="fas fa-file-alt"></i>
+                    <p>No questions to display. Click "Add New Question" to create your first question.</p>
+                </div>
+            `;
+        }
+        saveQuizBtn.disabled = true; // Disable save button if no questions
         return;
     }
     
+    saveQuizBtn.disabled = false; // Enable save button if questions are present
+
     questions.forEach((question, index) => {
         const questionElement = createQuestionElement(question, index);
         questionsList.appendChild(questionElement);
     });
 }
 
-// Create question element
+// Create question element (display-only for main list)
 function createQuestionElement(question, index) {
     const div = document.createElement('div');
     div.className = 'question-card';
@@ -317,36 +438,17 @@ function createQuestionElement(question, index) {
             </div>
         </div>
         <div class="question-content">
-            <div class="form-group">
-                <label>Question Text</label>
-                <textarea class="form-control question-text" rows="2">${question.question}</textarea>
-            </div>
+            <p>${question.question}</p>
             <div class="options-grid">
                 ${question.options.map((option, optIndex) => `
-                    <div class="form-group">
-                        <label>Option ${String.fromCharCode(65 + optIndex)}</label>
-                        <input type="text" class="form-control option-input" value="${option}">
+                    <div class="option-item ${optIndex === (question.correctOption || 0) ? 'correct' : ''}">
+                        <i class="fas ${optIndex === (question.correctOption || 0) ? 'fa-check-circle' : 'fa-circle'}"></i>
+                        <span>${String.fromCharCode(65 + optIndex)}. ${option}</span>
                     </div>
                 `).join('')}
             </div>
-            <div class="form-group">
-                <label>Correct Option</label>
-                <select class="form-control correct-option">
-                    ${question.options.map((_, optIndex) => `
-                        <option value="${String.fromCharCode(65 + optIndex)}" 
-                                ${question.correctOption === String.fromCharCode(65 + optIndex) ? 'selected' : ''}>
-                            Option ${String.fromCharCode(65 + optIndex)}
-                        </option>
-                    `).join('')}
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Points</label>
-                <input type="number" class="form-control points-input" value="${question.points || 10}" min="1">
-            </div>
-            <div class="form-group">
-                <label>Explanation (Optional)</label>
-                <textarea class="form-control explanation-input" rows="2">${question.explanation || ''}</textarea>
+            <div class="question-meta">
+                <span><i class="fas fa-coins"></i> ${question.points || 10} points</span>
             </div>
         </div>
     `;
@@ -354,78 +456,135 @@ function createQuestionElement(question, index) {
     return div;
 }
 
-// Add new question
-function addNewQuestion() {
-    const newQuestion = {
-        question: '',
-        options: ['', '', '', ''],
-        correctOption: 'A',
-        points: 10,
-        explanation: ''
-    };
-    
-    const questionElement = createQuestionElement(newQuestion, questionsList.children.length);
-    questionsList.insertBefore(questionElement, questionsList.lastChild);
-}
-
-// Edit question
-function editQuestion(index) {
-    const questionElement = document.querySelector(`.question-card[data-index="${index}"]`);
-    questionElement.classList.toggle('editing');
-}
-
-// Delete question
-async function deleteQuestion(index) {
-    if (!currentQuiz || !currentQuiz.id) {
-        showToast('No quiz selected', 'error');
+// Open Add/Edit Question Modal
+function openQuestionModal(question = null, index = -1) {
+    if (!currentContestId) {
+        showToast('Please select a contest first to add a question.', 'error');
         return;
     }
 
-    if (!confirm('Are you sure you want to delete this question?')) return;
+    // Reset form and modal state
+    addEditQuestionForm.reset();
+    questionIdInput.value = '';
+    modalTitle.innerHTML = '<i class="fas fa-question-circle"></i> Add New Question';
+    
+    // Reset correct option radio buttons
+    correctOptionRadios.forEach(radio => radio.checked = false);
+    
+    // Set default correct option for new questions
+    if (correctOptionRadios[0]) {
+        correctOptionRadios[0].checked = true;
+        correctOptionRadios[0].required = true;
+    }
+
+    if (question) {
+        // Editing existing question
+        modalTitle.innerHTML = '<i class="fas fa-edit"></i> Edit Question';
+        questionIdInput.value = index;
+        questionTextInput.value = question.question;
+        
+        // Set option values
+        optionInputs.forEach((input, i) => {
+            input.value = question.options[i] || '';
+        });
+        
+        // Set correct option
+        if (correctOptionRadios[question.correctOption]) {
+            correctOptionRadios[question.correctOption].checked = true;
+        }
+    }
+
+    // Show modal with animation
+    addEditQuestionModal.style.display = 'flex';
+    // Force a reflow
+    addEditQuestionModal.offsetHeight;
+    addEditQuestionModal.classList.add('active');
+}
+
+// Close Add/Edit Question Modal
+function closeQuestionModalHandler() {
+    addEditQuestionModal.classList.remove('active');
+    // Wait for animation to complete before hiding
+    setTimeout(() => {
+        addEditQuestionModal.style.display = 'none';
+        addEditQuestionForm.reset();
+        questionIdInput.value = '';
+    }, 300);
+}
+
+// Save Question from Modal
+async function saveQuestionFromModal(event) {
+    event.preventDefault();
+
+    if (!currentContestId) {
+        showToast('Error: No contest selected.', 'error');
+        return;
+    }
     
     try {
         showLoading();
         
-        // Get the quiz document reference
-        const quizRef = doc(db, 'quiz', currentQuiz.id);
-        
-        // Get the current questions array
-        const questions = [...currentQuiz.questions];
-        
-        // Remove the question at the specified index
-        questions.splice(index, 1);
-        
-        // Update the quiz document in Firebase
-        await updateDoc(quizRef, {
-            questions: questions,
-            lastUpdated: serverTimestamp(),
-            totalQuestions: questions.length
-        });
-        
-        // Update local state
-        currentQuiz.questions = questions;
-        
-        // Update UI
-        const questionElement = document.querySelector(`.question-card[data-index="${index}"]`);
-        if (questionElement) {
-            questionElement.remove();
+        const questionText = questionTextInput.value.trim();
+        const options = optionInputs.map(input => input.value.trim());
+        const selectedCorrectOptionRadio = correctOptionRadios.find(radio => radio.checked);
+        const correctOptionIndex = selectedCorrectOptionRadio ? parseInt(selectedCorrectOptionRadio.value) : -1;
+
+        // Basic validation
+        if (!questionText || options.some(opt => !opt) || correctOptionIndex === -1) {
+            showToast('Please fill in all question fields and select a correct option.', 'error');
+            hideLoading();
+            return;
         }
-        
-        // Update indices for remaining questions
-        document.querySelectorAll('.question-card').forEach((el, i) => {
-            el.dataset.index = i;
-        });
-        
-        showToast('Question deleted successfully');
-        
-        // If no questions left, show the no questions message
-        if (questions.length === 0) {
-            displayQuestions([]);
+
+        const newQuestion = {
+            question: questionText,
+            options: options,
+            correctOption: correctOptionIndex, // Store as index (0, 1, 2, 3)
+            points: 10, // Default points, can be made configurable later
+            type: 'MCQ', // Assuming MCQ for now
+            createdAt: serverTimestamp()
+        };
+
+        if (currentQuiz) {
+            // Quiz document already exists for this contest, update it.
+            const questions = [...currentQuiz.questions]; // Create a mutable copy
+            const questionIndex = questionIdInput.value;
+
+            if (questionIndex !== '') {
+                // Editing existing question
+                questions[questionIndex] = { ...questions[questionIndex], ...newQuestion, updatedAt: serverTimestamp() };
+                showToast('Question updated successfully!', 'success');
+            } else {
+                // Adding new question
+                questions.push(newQuestion);
+                showToast('Question added successfully!', 'success');
+            }
+            currentQuiz.questions = questions; // Update local state
+        } else {
+            // No quiz document for this contest yet, create a new one.
+            currentQuiz = {
+                contestId: currentContestId,
+                questions: [newQuestion],
+                createdAt: serverTimestamp(),
+                lastUpdated: serverTimestamp(),
+                totalQuestions: 1
+            };
+            showToast('New quiz created and question added successfully!', 'success');
+        }
+
+        // Save/Update the quiz document in Firestore
+        const result = await manageQuizDocument(currentContestId, currentQuiz.questions);
+
+        if (result.success) {
+            displayQuestions(currentQuiz.questions); // Refresh display with updated local state
+            closeQuestionModalHandler(); // Close the modal
+        } else {
+            showToast(result.message, 'error');
         }
         
     } catch (error) {
-        console.error('Error deleting question:', error);
-        showToast('Error deleting question. Please try again.', 'error');
+        console.error('Error saving question from modal:', error);
+        showToast('An error occurred while saving the question.', 'error');
     } finally {
         hideLoading();
     }
@@ -441,36 +600,20 @@ async function saveQuestions() {
     try {
         showLoading();
         
-        // Collect all questions
-        const questions = [];
-        document.querySelectorAll('.question-card').forEach((element) => {
-            const question = {
-                question: element.querySelector('.question-text').value,
-                options: Array.from(element.querySelectorAll('.option-input')).map(input => input.value),
-                correctOption: element.querySelector('.correct-option').value,
-                points: parseInt(element.querySelector('.points-input').value) || 10,
-                explanation: element.querySelector('.explanation-input').value,
-                type: 'MCQ'
-            };
-            
-            // Validate question
-            if (!question.question || question.options.some(opt => !opt)) {
-                throw new Error('Please fill in all required fields for each question');
-            }
-            
-            questions.push(question);
-        });
+        // Use currentQuiz.questions directly as it's updated by modal saves
+        const questionsToSave = currentQuiz ? currentQuiz.questions : [];
         
-        if (questions.length === 0) {
+        if (questionsToSave.length === 0) {
             throw new Error('Please add at least one question');
         }
         
         // Save to Firestore
-        const result = await manageQuizDocument(currentContestId, questions);
+        const result = await manageQuizDocument(currentContestId, questionsToSave);
         
         if (result.success) {
             showToast(result.message);
-            await fetchQuizForContest(currentContestId);
+            // Refresh display from currentQuiz.questions, no need to refetch from Firestore unless data integrity is crucial.
+            displayQuestions(currentQuiz.questions);
         } else {
             showToast(result.message, 'error');
         }
@@ -495,30 +638,17 @@ async function manageQuizDocument(contestId, questions) {
 
     try {
         // Create a document reference with the contestId as the document ID
-        const quizRef = doc(db, "quiz", contestId);
+        const quizRef = doc(db, 'quiz', contestId);
 
         const quizData = {
             contestId: contestId, // Store contestId as a field as well
             questions: questions,
             lastUpdated: serverTimestamp(),
             totalQuestions: questions.length,
-            // Include createdAt only if it's a new document, or handle merge carefully
-            // With merge: true, createdAt will be updated unless it's excluded.
-            // If you want to keep the original createdAt on merge, fetch the doc first.
-            // For simplicity, we'll update lastUpdated and keep createdAt implicitly if merging.
-            // If this is the first time saving, serverTimestamp() will be set for createdAt.
-            // If you need explicit createdAt setting only on creation, a get then set/update is needed.
-            // Let's keep it simple and update lastUpdated every time.
         };
 
-        // Use setDoc with { merge: true }.
-        // If a document with this contestId exists, it will update the fields provided.
-        // If no document with this contestId exists, it will create a new document with contestId as its ID.
         await setDoc(quizRef, quizData, { merge: true });
 
-        // Check if it was an update or create for the message
-        // This requires fetching the document BEFORE the setDoc if you need to know for sure.
-        // For a simpler approach, we'll assume success and provide a generic message.
         console.log(`Quiz successfully saved/updated for contest ID: ${contestId}`);
         
         return {
@@ -535,6 +665,49 @@ async function manageQuizDocument(contestId, questions) {
     }
 }
 
+// Delete question
+async function deleteQuestion(index) {
+    if (!currentQuiz || !currentQuiz.id) {
+        showToast('No quiz selected or quiz ID missing', 'error');
+        return;
+    }
+
+    if (!confirm('Are you sure you want to delete this question?')) return;
+    
+    try {
+        showLoading();
+        
+        // Get the current questions array from local state
+        const questions = [...currentQuiz.questions];
+        
+        // Remove the question at the specified index
+        questions.splice(index, 1);
+        
+        // Update local state
+        currentQuiz.questions = questions; // Update currentQuiz with the modified array
+        currentQuiz.totalQuestions = questions.length; // Update totalQuestions
+        
+        // Update the quiz document in Firebase using the local state
+        const quizRef = doc(db, 'quiz', currentQuiz.id);
+        await updateDoc(quizRef, {
+            questions: currentQuiz.questions,
+            lastUpdated: serverTimestamp(),
+            totalQuestions: currentQuiz.totalQuestions
+        });
+        
+        // Update UI
+        displayQuestions(currentQuiz.questions); // Re-render questions based on updated local state
+        
+        showToast('Question deleted successfully', 'success');
+        
+    } catch (error) {
+        console.error('Error deleting question:', error);
+        showToast(error.message || 'Error deleting question. Please try again.', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
 // Initialize the application when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, initializing application...');
@@ -542,7 +715,21 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Make functions available globally
-window.editQuestion = editQuestion;
-window.deleteQuestion = deleteQuestion;
-window.addNewQuestion = addNewQuestion;
-window.saveQuestions = saveQuestions; 
+window.editQuestion = (index) => {
+    if (!currentQuiz || !currentQuiz.questions || !currentQuiz.questions[index]) {
+        showToast('Question not found for editing.', 'error');
+        return;
+    }
+    openQuestionModal(currentQuiz.questions[index], index);
+};
+
+window.addNewQuestion = () => {
+    if (!currentContestId) {
+        showToast('Please select a contest first to add a question.', 'error');
+        return;
+    }
+    openQuestionModal();
+};
+
+window.saveQuestions = saveQuestions;
+window.deleteQuestion = deleteQuestion; 

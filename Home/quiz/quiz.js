@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, doc, getDoc, updateDoc, arrayUnion, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, arrayUnion, Timestamp, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 // Firebase configuration
@@ -54,23 +54,42 @@ const wrongSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2004/2
 
 // Utility Functions
 function showLoading() {
-    loadingSpinner.classList.remove('hidden');
-    quizContent.classList.add('hidden');
-    resultsContainer.style.display = 'none';
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const quizContent = document.querySelector('.quiz-content');
+    
+    if (loadingSpinner) {
+        loadingSpinner.classList.remove('hidden');
+    }
+    
+    if (quizContent) {
+        quizContent.classList.add('hidden');
+    }
 }
 
 function hideLoading() {
-    loadingSpinner.classList.add('hidden');
-    quizContent.classList.remove('hidden');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const quizContent = document.querySelector('.quiz-content');
+    
+    if (loadingSpinner) {
+        loadingSpinner.classList.add('hidden');
+    }
+    
+    if (quizContent) {
+        quizContent.classList.remove('hidden');
+    }
 }
 
 function showError(message) {
-    feedbackMessage.textContent = message;
-    feedbackMessage.classList.add('wrong');
-    feedbackMessage.style.display = 'block';
+    const feedbackMessage = document.getElementById('feedback-message');
+    if (feedbackMessage) {
+        feedbackMessage.textContent = message;
+        feedbackMessage.classList.add('wrong');
+        feedbackMessage.style.display = 'block';
+    }
 }
 
 function formatTime(seconds) {
+    if (!seconds || isNaN(seconds)) return '0 mins 0 sec';
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes} mins ${remainingSeconds} sec`;
@@ -255,20 +274,39 @@ async function finishQuiz() {
     // Calculate results
     const results = calculateResults();
     
-    // Show results
-    showResults(results);
-    
     // Save results to Firebase
     if (currentUser) {
         const contestId = getContestIdFromUrl();
         if (contestId) {
             await saveResults(currentUser.uid, contestId, results);
+            // Remove quiz container and show results
+            removeQuizContainer();
+            showResults(results);
         } else {
             console.error('Contest ID not found in URL.');
             showError('Could not save results: Contest ID missing.');
         }
     } else {
         console.warn('User not logged in. Results not saved.');
+    }
+}
+
+function removeQuizContainer() {
+    // Remove the entire quiz container
+    const quizContainer = document.querySelector('.quiz-container');
+    if (quizContainer) {
+        quizContainer.remove();
+    }
+    
+    // Also remove any remaining quiz-related elements
+    const quizContent = document.querySelector('.quiz-content');
+    if (quizContent) {
+        quizContent.remove();
+    }
+    
+    const loadingSpinner = document.getElementById('loading-spinner');
+    if (loadingSpinner) {
+        loadingSpinner.remove();
     }
 }
 
@@ -300,20 +338,141 @@ function calculateResults() {
 }
 
 function showResults(results) {
-    hideLoading();
+    // Create new results container
+    const mainContent = document.querySelector('.main-content');
     
-    // Populate results container
-    totalScoreElement.textContent = results.score;
-    correctAnswersElement.textContent = results.correct;
-    wrongAnswersElement.textContent = results.wrong;
-    timeTakenElement.textContent = formatTime(results.timeTaken);
-
-    quizContent.style.display = 'none';
-    resultsContainer.style.display = 'block';
-
-    backToContestsButton.addEventListener('click', () => {
+    // Clear any existing results container
+    const existingResults = document.getElementById('results-container');
+    if (existingResults) {
+        existingResults.remove();
+    }
+    
+    const resultsContainer = document.createElement('div');
+    resultsContainer.id = 'results-container';
+    resultsContainer.className = 'results-container';
+    
+    // Add winner status section first
+    const winnerSection = document.createElement('div');
+    winnerSection.id = 'winner-announcement';
+    winnerSection.className = 'winner-announcement';
+    resultsContainer.appendChild(winnerSection);
+    
+    // Add results stats
+    const statsSection = document.createElement('div');
+    statsSection.className = 'results-stats';
+    statsSection.innerHTML = `
+        <div class="stat-card">
+            <h3>Total Score</h3>
+            <p id="total-score">${results.score}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Correct Answers</h3>
+            <p id="correct-answers">${results.correct}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Wrong Answers</h3>
+            <p id="wrong-answers">${results.wrong}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Time Taken</h3>
+            <p id="time-taken">${formatTime(results.timeTaken)}</p>
+        </div>
+    `;
+    resultsContainer.appendChild(statsSection);
+    
+    // Add back button
+    const backButton = document.createElement('button');
+    backButton.id = 'back-to-contests';
+    backButton.className = 'nav-btn';
+    backButton.innerHTML = `
+        <i class="fas fa-arrow-left"></i>
+        Back to Contests
+    `;
+    backButton.addEventListener('click', () => {
         window.location.href = '../my-challenges.html';
     });
+    resultsContainer.appendChild(backButton);
+    
+    // Add results container to main content
+    mainContent.appendChild(resultsContainer);
+    
+    // Check winner status
+    checkWinnerStatus();
+}
+
+async function checkWinnerStatus() {
+    const contestId = getContestIdFromUrl();
+    if (!contestId) return;
+
+    try {
+        const contestRef = doc(db, 'contests', contestId);
+        const contestDoc = await getDoc(contestRef);
+
+        if (contestDoc.exists()) {
+            const contestData = contestDoc.data();
+            const winnerSection = document.getElementById('winner-announcement');
+            
+            if (contestData.winner) {
+                // Winner has been announced
+                const isWinner = contestData.winner === currentUser.uid;
+                winnerSection.innerHTML = `
+                    <h3 class="text-3xl font-bold mb-4">${isWinner ? '🎉 Congratulations! 🎉' : 'Winner Announcement'}</h3>
+                    <div class="bg-green-100">
+                        <p>
+                            ${isWinner ? 
+                                '<i class="fas fa-trophy"></i> You are the winner of this contest!' : 
+                                '<i class="fas fa-trophy"></i> The winner has been announced'}
+                        </p>
+                        ${!isWinner ? `
+                            <p class="mt-4 text-lg">
+                                Better luck next time! Keep participating to win more contests.
+                            </p>
+                        ` : ''}
+                    </div>
+                `;
+            } else {
+                // Winner pending
+                const completionTime = new Date(contestData.completionTime?.toDate() || Date.now());
+                const announcementTime = new Date(completionTime.getTime() + 24 * 60 * 60 * 1000);
+                const timeUntilAnnouncement = announcementTime - Date.now();
+
+                if (timeUntilAnnouncement > 0) {
+                    // Still waiting for announcement
+                    const hours = Math.floor(timeUntilAnnouncement / (60 * 60 * 1000));
+                    const minutes = Math.floor((timeUntilAnnouncement % (60 * 60 * 1000)) / (60 * 1000));
+                    
+                    winnerSection.innerHTML = `
+                        <h3 class="text-3xl font-bold mb-4">Winner Status</h3>
+                        <div class="bg-yellow-100">
+                            <p>
+                                <i class="fas fa-clock"></i>
+                                Winner will be announced in ${hours}h ${minutes}m
+                            </p>
+                            <p class="mt-4 text-lg">
+                                Stay tuned! The winner will be announced soon.
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    // Announcement time has passed but no winner yet
+                    winnerSection.innerHTML = `
+                        <h3 class="text-3xl font-bold mb-4">Winner Status</h3>
+                        <div class="bg-yellow-100">
+                            <p>
+                                <i class="fas fa-clock"></i>
+                                Winner announcement is pending
+                            </p>
+                            <p class="mt-4 text-lg">
+                                The winner will be announced shortly. Please check back later.
+                            </p>
+                        </div>
+                    `;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error checking winner status:', error);
+    }
 }
 
 async function saveResults(userId, contestId, results) {
@@ -329,54 +488,68 @@ async function saveResults(userId, contestId, results) {
 
         if (userDocSnap.exists()) {
             const userData = userDocSnap.data();
-            const challengeHistory = Array.isArray(userData.challengeHistory) ? userData.challengeHistory : [];
+            // Ensure challengeHistory is an array, default to empty array if null/undefined
+            let challengeHistory = Array.isArray(userData.challengeHistory) ? userData.challengeHistory : [];
 
+            // Find existing entry for this contest
             const existingEntryIndex = challengeHistory.findIndex(entry => entry.contestId === contestId);
+            
+            // Create the history entry with results
+            const historyEntryWithResults = {
+                contestId: contestId,
+                joinedAt: existingEntryIndex !== -1 ? challengeHistory[existingEntryIndex].joinedAt : Timestamp.now(),
+                status: 'completed', // Set status to completed
+                score: results.score || 0,
+                correct: results.correct || 0,
+                wrong: results.wrong || 0,
+                timeTaken: results.timeTaken || 0,
+                completedAt: Timestamp.now(),
+                winnerStatus: 'pending' // Default winner status
+            };
 
-            if (existingEntryIndex === -1) {
-                const newHistoryEntry = {
-                    contestId: contestId,
-                    score: results.score,
-                    correct: results.correct,
-                    wrong: results.wrong,
-                    timeTaken: formatTime(results.timeTaken),
-                    completedAt: Timestamp.now()
-                };
-
-                await updateDoc(userRef, {
-                    challengeHistory: arrayUnion(newHistoryEntry)
-                });
-                console.log('Quiz results saved successfully!');
-                quizCompleted = true;
+            // Update or add the entry
+            if (existingEntryIndex !== -1) {
+                challengeHistory[existingEntryIndex] = historyEntryWithResults;
             } else {
-                console.log('Quiz results for this contest already saved.');
-                quizCompleted = true;
+                challengeHistory.push(historyEntryWithResults);
             }
 
+            // Update the user document
+            await updateDoc(userRef, {
+                challengeHistory: challengeHistory,
+                lastUpdated: serverTimestamp()
+            });
+
+            console.log(`Saved quiz results for contest ${contestId} for user ${userId}`);
+
+            // Update contest document to add user to participants if not already there
             const contestRef = doc(db, 'contests', contestId);
             const contestDocSnap = await getDoc(contestRef);
-
+            
             if (contestDocSnap.exists()) {
                 const contestData = contestDocSnap.data();
-                const participants = Array.isArray(contestData.participants) ? contestData.participants : [];
-
-                if (!participants.includes(userId)) {
+                if (!contestData.participants?.includes(userId)) {
                     await updateDoc(contestRef, {
-                        participants: arrayUnion(userId)
+                        participants: arrayUnion(userId),
+                        lastUpdated: serverTimestamp()
                     });
-                    console.log('User added to contest participants.');
                 }
-            } else {
-                console.warn('Contest document not found for ID:', contestId, '. Could not update participants.');
             }
 
+            // Set quiz as completed
+            quizCompleted = true;
+
+            // Show results
+            removeQuizContainer();
+            showResults(results);
+
         } else {
-            console.error('User document not found.');
+            console.error('User document not found for saving results.');
             showError('Failed to save quiz results: User document missing.');
         }
     } catch (error) {
         console.error('Error saving quiz results:', error);
-        showError('Failed to save quiz results.');
+        showError('Failed to save quiz results. Please try again.');
     }
 }
 
@@ -407,7 +580,6 @@ onAuthStateChanged(auth, (user) => {
 });
 
 async function fetchQuizData(contestId) {
-    showLoading();
     try {
         const quizDocRef = doc(db, 'quiz', contestId);
         const quizDocSnap = await getDoc(quizDocRef);
@@ -423,15 +595,59 @@ async function fetchQuizData(contestId) {
                 const challengeHistory = Array.isArray(userData.challengeHistory) ? userData.challengeHistory : [];
                 const existingEntry = challengeHistory.find(entry => entry.contestId === contestId);
 
-                if (existingEntry) {
+                // Check if we're viewing results from my-challenges page
+                const isViewingResults = window.location.pathname.includes('results.html');
+                
+                if (isViewingResults) {
+                    if (existingEntry && existingEntry.status === 'completed') {
+                        // Convert timeTaken string back to seconds if it's stored as a string
+                        let timeTaken = existingEntry.timeTaken;
+                        if (typeof timeTaken === 'string') {
+                            const timeParts = timeTaken.match(/(\d+)\s*mins\s*(\d+)\s*sec/);
+                            if (timeParts) {
+                                timeTaken = (parseInt(timeParts[1]) * 60) + parseInt(timeParts[2]);
+                            }
+                        }
+                        const results = {
+                            score: existingEntry.score,
+                            correct: existingEntry.correct,
+                            wrong: existingEntry.wrong,
+                            timeTaken: timeTaken
+                        };
+                        removeQuizContainer();
+                        showResults(results);
+                        quizCompleted = true;
+                        return;
+                    } else {
+                        showError('Quiz not completed yet. Please complete the quiz first.');
+                        return;
+                    }
+                }
+
+                // If we're taking the quiz and it's already completed
+                if (existingEntry && existingEntry.status === 'completed') {
                     console.log('User has already completed this quiz.');
-                    showResults(existingEntry);
+                    let timeTaken = existingEntry.timeTaken;
+                    if (typeof timeTaken === 'string') {
+                        const timeParts = timeTaken.match(/(\d+)\s*mins\s*(\d+)\s*sec/);
+                        if (timeParts) {
+                            timeTaken = (parseInt(timeParts[1]) * 60) + parseInt(timeParts[2]);
+                        }
+                    }
+                    const results = {
+                        score: existingEntry.score,
+                        correct: existingEntry.correct,
+                        wrong: existingEntry.wrong,
+                        timeTaken: timeTaken
+                    };
+                    removeQuizContainer();
+                    showResults(results);
                     quizCompleted = true;
-                    stopTimer();
                     return;
                 }
             }
 
+            // If quiz data exists and it's not completed, proceed to load questions
             if (quizData.questions && quizData.questions.length > 0) {
                 startTimer();
                 renderQuestion();

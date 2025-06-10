@@ -1,3 +1,800 @@
 .xyz{
     margin-top: 1.5em;
+    color: white;
+    text-align: center;
+}
+
+/* Add styles for the new result button */
+.continue-btn.result-btn {
+    background-color: #10b981; /* Green background */
+    border: none;
+}
+
+.continue-btn.result-btn:hover {
+    background-color: #059669; /* Darker green on hover */
+}
+
+/* General body styling */
+body {
+    background-color: #1a1a2e; /* Dark background */
+    color: #e0e0e0; /* Light text */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 80px 20px 20px 20px; /* Add padding to account for fixed header */
+    min-height: 100vh;
+}
+
+/* Header styling */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #1a1a2e; /* Match body background */
+    padding: 1rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Darker shadow */
+    z-index: 1000;
+}
+
+.header h1 {
+     color: #00aaff; /* Accent color */
+     font-size: 1.8rem;
+}
+
+.header .fire {
+    color: #ff4500; /* Orange red for fire icon */
+}
+
+.nav-menu .nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-menu .nav-links a {
+    text-decoration: none;
+    color: #e0e0e0; /* Light text */
+    font-weight: 500;
+    transition: color 0.3s ease;
+    position: relative;
+}
+
+.nav-menu .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #00aaff; /* Accent color for underline */
+    transition: width 0.3s ease;
+}
+
+.nav-menu .nav-links a:hover::after,
+.nav-menu .nav-links a.active::after {
+    width: 100%;
+}
+
+.nav-menu .nav-links a:hover,
+.nav-menu .nav-links a.active {
+    color: #00aaff; /* Accent color on hover/active */
+}
+
+/* Main Content Styles */
+.main-content {
+    padding: 1rem 5%;
+    max-width: 1200px; /* Limit content width */
+    margin: 0 auto; /* Center content */
+}
+
+.main-content h1 {
+    color: #00aaff; /* Accent color for page title */
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+/* Loading, No Challenges, Error Message Styles */
+.loading-state, .no-challenges-message, .error-message {
+    text-align: center;
+    padding: 20px;
+    color: #b0b0b0; /* Gray text */
+}
+
+.loading-state.active, .no-challenges-message.active, .error-message.active {
+    display: block;
+}
+
+.loading-state i,
+.no-challenges-message i,
+.error-message i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.loading-state i {
+    color: #00aaff; /* Accent color */
+}
+
+.error-message i {
+    color: #ff4500; /* Orange red for error icon */
+}
+
+/* Challenge Grid */
+#myChallengesContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive grid */
+    gap: 2rem; /* Space between cards */
+    padding: 1rem 0;
+}
+
+/* Challenge Card Styling */
+.challenge-card {
+    background: #2a2a40; /* Slightly lighter dark background */
+    border-radius: 15px; /* More rounded corners */
+    padding: 2rem; /* Increased padding */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); /* Stronger shadow */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden; /* Hide pseudo-element overflow */
+}
+
+.challenge-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px; /* Top border thickness */
+    background: linear-gradient(90deg, #00aaff, #ff4500); /* Gradient border */
+    z-index: 1;
+}
+
+.challenge-card:hover {
+    transform: translateY(-10px); /* Lift card on hover */
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6); /* Even stronger shadow */
+}
+
+/* Card Header */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem; /* Space below header */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Subtle separator */
+    padding-bottom: 1rem;
+}
+
+.card-header .challenge-title {
+    font-size: 1.6rem; /* Larger title */
+    font-weight: 700; /* Bold title */
+    color: #e0e0e0; /* Light text */
+    margin: 0;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.4rem 1rem; /* Increased padding */
+    border-radius: 20px; /* Pill shape */
+    font-size: 0.8rem; /* Smaller font for badge */
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-active {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+.status-completed {
+    background-color: #2196F3; /* Blue */
+    color: white;
+}
+
+.status-eliminated {
+    background-color: #ff4500; /* Orange red */
+    color: white;
+}
+
+.status-unavailable {
+    background-color: #616161; /* Gray */
+    color: white;
+}
+
+/* Card Details */
+.card-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Responsive details grid */
+    gap: 1rem; /* Space between detail items */
+    margin-bottom: 1.5rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* Space between icon and text */
+    font-size: 1rem;
+    color: #b0b0b0; /* Gray text */
+}
+
+.detail-item i {
+    color: #00aaff; /* Accent color for icons */
+    font-size: 1.1rem;
+}
+
+/* Status Messages Container */
+.status-messages {
+    margin-top: auto; /* Push messages to the bottom */
+    padding-top: 1.5rem; /* Space above messages */
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Subtle separator */
+    margin-bottom: 1.5rem; /* Space below messages */
+}
+
+.status-messages .pending-winner-status, 
+.status-messages .winner-status, 
+.status-messages .loser-status {
+    padding: 0.8rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.status-messages .pending-winner-status {
+    background-color: rgba(255, 165, 0, 0.2); /* Orange with transparency */
+    color: #ffb347; /* Lighter orange */
+}
+
+.status-messages .winner-status {
+     background-color: rgba(76, 175, 80, 0.2); /* Green with transparency */
+     color: #81c784; /* Lighter green */
+}
+
+.status-messages .loser-status {
+    background-color: rgba(244, 67, 54, 0.2); /* Red with transparency */
+    color: #e57373; /* Lighter red */
+}
+
+.status-messages i {
+    font-size: 1.2rem;
+}
+
+/* Continue/Result Button */
+.continue-btn {
+    display: block; /* Make button full width */
+    width: 100%;
+    padding: 1rem; /* Increased padding */
+    border: none;
+    border-radius: 10px; /* Slightly more rounded */
+    text-align: center;
+    font-size: 1.1rem; /* Larger font */
+    font-weight: 600; /* Bolder text */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    text-decoration: none; /* Remove underline */
+}
+
+.continue-btn:hover {
+    transform: translateY(-2px); /* Lift on hover */
+}
+
+.continue-btn:disabled {
+    opacity: 0.6; /* Dim disabled button */
+    cursor: not-allowed;
+}
+
+/* Default button style (Continue Challenge) */
+.continue-btn:not(.result-btn) {
+    background: linear-gradient(90deg, #00aaff, #0077cc); /* Blue gradient */
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 120, 204, 0.3); /* Blue shadow */
+}
+
+.continue-btn:not(.result-btn):hover {
+     box-shadow: 0 6px 20px rgba(0, 120, 204, 0.4); /* Stronger blue shadow */
+}
+
+/* Result button style (Green) */
+.continue-btn.result-btn {
+     background: linear-gradient(90deg, #4CAF50, #388e3c); /* Green gradient */
+     color: white;
+     box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3); /* Green shadow */
+ }
+ 
+.continue-btn.result-btn:hover {
+      box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4); /* Stronger green shadow */
+ }
+ 
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    body {
+        padding-top: 70px; /* Adjust padding for smaller header */
+    }
+
+    .header {
+        padding: 0.8rem 1rem;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .nav-menu .nav-links {
+        gap: 1rem;
+    }
+
+    .nav-menu .nav-links a {
+        font-size: 0.9rem;
+    }
+
+    .main-content {
+        padding: 1rem;
+    }
+
+    #myChallengesContainer {
+        grid-template-columns: 1fr; /* Stack cards on small screens */
+        gap: 1.5rem;
+    }
+
+    .challenge-card {
+        padding: 1.5rem;
+    }
+
+    .card-header .challenge-title {
+        font-size: 1.4rem;
+    }
+
+    .status-badge {
+        padding: 0.3rem 0.8rem;
+        font-size: 0.7rem;
+    }
+
+    .card-details {
+        grid-template-columns: 1fr; /* Stack details on small screens */
+    }
+
+    .detail-item {
+        font-size: 0.9rem;
+    }
+
+    .status-messages .pending-winner-status,
+    .status-messages .winner-status,
+    .status-messages .loser-status {
+        font-size: 0.9rem;
+        padding: 0.6rem;
+    }
+
+    .status-messages i {
+        font-size: 1rem;
+    }
+
+    .continue-btn {
+        padding: 0.8rem;
+        font-size: 1rem;
+    }
+}
+
+/* New Styles for Cool & Advanced Card Design */
+
+:root {
+    --purple-gradient: linear-gradient(135deg, #7F56D9 0%, #F472B6 100%);
+    --blue-gradient: linear-gradient(135deg, #38BDF8 0%, #0E7490 100%);
+    --yellow-color: #FACC15;
+    --dark-bg: #1f2937; /* Dark background */
+    --dark-card-bg: #374151; /* Slightly lighter dark for cards */
+    --text-light: #f3f4f6; /* Light text */
+    --text-secondary-dark: #d1d5db; /* Secondary light text */
+    --border-color-dark: #4b5563; /* Dark border */
+    --shadow-dark: 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+body {
+    font-family: 'Inter', sans-serif; /* Using Inter font */
+    background: var(--dark-bg);
+    color: var(--text-light);
+    padding: 80px 20px 20px 20px; /* Adjust for fixed header */
+}
+
+.header {
+    background: var(--dark-bg); /* Match body background */
+    box-shadow: var(--shadow-dark);
+}
+
+.header h1 {
+    color: var(--text-light); /* Light text for header title */
+}
+
+.header .fire {
+     color: var(--yellow-color); /* Yellow fire icon */
+}
+
+.nav-menu .nav-links a {
+    color: var(--text-secondary-dark); /* Secondary light text for links */
+}
+
+.nav-menu .nav-links a::after {
+     background: var(--purple-gradient); /* Purple gradient underline */
+}
+
+.nav-menu .nav-links a:hover,
+.nav-menu .nav-links a.active {
+    color: var(--text-light); /* Light text on hover/active */
+}
+
+.main-content h1 {
+    color: var(--text-light); /* Light text for main title */
+}
+
+.loading-state, .no-challenges-message, .error-message {
+    color: var(--text-secondary-dark); /* Secondary light text */
+}
+
+.loading-state i {
+     color: var(--blue-gradient); /* Blue gradient for loading icon */
+}
+
+.error-message i {
+     color: var(--yellow-color); /* Yellow for error icon */
+}
+
+/* Challenge Card */
+.challenge-card {
+    background: var(--dark-card-bg); /* Card background */
+    border-radius: 15px; /* Rounded corners */
+    padding: 2rem; /* Padding */
+    box-shadow: var(--shadow-dark);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border-color-dark); /* Subtle border */
+    backdrop-filter: blur(5px); /* Glassmorphism effect */
+    -webkit-backdrop-filter: blur(5px); /* Safari support */
+}
+
+.challenge-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px; /* Thicker top border */
+    background: var(--purple-gradient); /* Purple gradient top border */
+    z-index: 1;
+}
+
+.challenge-card:hover {
+    transform: translateY(-8px); /* Lift slightly less on hover */
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.7); /* Stronger shadow on hover */
+}
+
+/* Card Header */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08); /* Lighter separator */
+    padding-bottom: 1rem;
+}
+
+.card-header .challenge-title {
+    font-size: 1.7rem; /* Slightly larger title */
+    font-weight: 700;
+    color: var(--text-light); /* Light text */
+    margin: 0;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.5rem 1.2rem; /* More padding */
+    border-radius: 25px; /* More pill-like */
+    font-size: 0.85rem; /* Slightly larger font */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px; /* Add letter spacing */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Subtle shadow on badge */
+}
+
+.status-active {
+    background: linear-gradient(135deg, #38BDF8, #0E7490); /* Blue gradient */
+    color: white;
+}
+
+.status-completed {
+    background: linear-gradient(135deg, #10B981, #047857); /* Green gradient */
+    color: white;
+}
+
+.status-eliminated {
+    background: linear-gradient(135deg, #F472B6, #EC4899); /* Pink gradient */
+    color: white;
+}
+
+.status-unavailable {
+    background: linear-gradient(135deg, #9ca3af, #6b7280); /* Gray gradient */
+    color: white;
+}
+
+/* Card Details */
+.card-details {
+    display: flex; /* Use flex for details */
+    flex-direction: column; /* Stack details */
+    gap: 1rem; /* Space between detail items */
+    margin-bottom: 2rem; /* Space below details */
+}
+
+.card-details .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem; /* Increased space */
+    font-size: 1rem;
+    color: var(--text-secondary-dark); /* Secondary light text */
+}
+
+.card-details .detail-item i {
+     color: var(--blue-gradient); /* Blue gradient for detail icons */
+     font-size: 1.2rem; /* Slightly larger icon */
+}
+
+/* Status Messages Container (already styled, adjusting colors) */
+.status-messages .pending-winner-status {
+    background-color: rgba(250, 204, 21, 0.15); /* Yellow with transparency */
+    color: #facc15; /* Yellow color */
+}
+
+.status-messages .winner-status {
+     background-color: rgba(16, 185, 129, 0.15); /* Green with transparency */
+     color: #10b981; /* Green color */
+}
+
+.status-messages .loser-status {
+    background-color: rgba(244, 114, 182, 0.15); /* Pink with transparency */
+    color: #f472b6; /* Pink color */
+}
+
+/* Continue/Result Button (already styled, adjusting colors) */
+.continue-btn:not(.result-btn) {
+     background: var(--blue-gradient); /* Blue gradient */
+     color: white;
+     box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); /* Blue shadow */
+ }
+ 
+.continue-btn:not(.result-btn):hover {
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4); /* Stronger blue shadow */
+ }
+ 
+.continue-btn.result-btn {
+      background: var(--purple-gradient); /* Purple gradient */
+      color: white;
+      box-shadow: 0 4px 15px rgba(127, 86, 217, 0.3); /* Purple shadow */
+  }
+  
+.continue-btn.result-btn:hover {
+       box-shadow: 0 6px 20px rgba(127, 86, 217, 0.4); /* Stronger purple shadow */
+  }
+
+/* Responsive adjustments (already started, adding refinements) */
+@media (max-width: 768px) {
+    body {
+        padding-top: 60px; /* Adjust for smaller header on smaller screens */
+    }
+
+    .header {
+         padding: 0.6rem 0.8rem;
+    }
+
+    .header h1 {
+        font-size: 1.4rem;
+    }
+
+    .nav-menu .nav-links {
+        gap: 0.8rem;
+    }
+
+    .nav-menu .nav-links a {
+        font-size: 0.85rem;
+    }
+
+    .main-content {
+        padding: 0.8rem;
+    }
+
+    #myChallengesContainer {
+        grid-template-columns: 1fr; /* Stack cards on small screens */
+        gap: 1rem;
+    }
+
+    .challenge-card {
+        padding: 1.2rem;
+    }
+
+    .card-header .challenge-title {
+        font-size: 1.3rem;
+    }
+
+    .status-badge {
+        padding: 0.2rem 0.6rem;
+        font-size: 0.65rem;
+    }
+
+    .card-details {
+        grid-template-columns: 1fr; /* Stack details on small screens */
+    }
+
+    .detail-item {
+        font-size: 0.85rem;
+        gap: 0.8rem;
+    }
+
+    .detail-item i {
+        font-size: 1.1rem;
+    }
+
+    .status-messages {
+        padding-top: 1rem;
+        margin-bottom: 1rem;
+    }
+
+     .status-messages .pending-winner-status,
+     .status-messages .winner-status,
+     .status-messages .loser-status {
+         font-size: 0.85rem;
+         padding: 0.5rem;
+     }
+
+     .status-messages i {
+         font-size: 1.1rem;
+     }
+
+    .continue-btn {
+        padding: 0.9rem;
+        font-size: 1rem;
+    }
+}
+
+/* Rank Display Styles */
+.rank-display {
+    margin: 1rem 0;
+    padding: 0.8rem;
+    border-radius: 8px;
+    background: rgba(255, 215, 0, 0.1); /* Subtle gold background */
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.rank-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.rank-info i {
+    font-size: 1.2rem;
+    color: #FFD700; /* Gold color for medal icon */
+}
+
+.rank-text {
+    font-weight: 600;
+    color: #FFD700; /* Gold color for rank text */
+}
+
+/* Add these styles to your existing CSS */
+
+.status-messages {
+    margin: 1rem 0;
+    padding: 1rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.winner-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #FFD700;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.winner-message i {
+    font-size: 1.2rem;
+}
+
+.prize-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.prize-amount {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #10B981;
+    background: linear-gradient(135deg, #10B981, #059669);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.rank-badge {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rank-badge::before {
+    content: '#';
+    font-weight: 700;
+}
+
+.completed-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #10B981;
+    font-weight: 600;
+}
+
+.completed-message i {
+    font-size: 1.2rem;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.completed {
+    background: rgba(99, 102, 241, 0.2);
+    color: #6366F1;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.status-badge.winner {
+    background: rgba(255, 215, 0, 0.2);
+    color: #FFD700;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.continue-btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #6366F1, #4F46E5);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.continue-btn:hover:not(.disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.continue-btn.disabled {
+    background: #4B5563;
+    cursor: not-allowed;
+    opacity: 0.7;
 }

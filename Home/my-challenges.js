@@ -85,7 +85,7 @@ function createChallengeCardElement(challenge) {
 
     const entryPrizeElement = card.querySelector('.entry-prize-text');
     if (entryPrizeElement) {
-        entryPrizeElement.textContent = `Entry: ${challenge.entryFee || 0} | Prize: ${challenge.prize || 0}`;
+        entryPrizeElement.textContent = `Entry: ${challenge.entryFee || 0} | Prize: ₹${challenge.prize || 0}`;
     }
 
     const participantsElement = card.querySelector('.participants-text');
@@ -99,21 +99,91 @@ function createChallengeCardElement(challenge) {
         statusBadgeElement.classList.add(`status-${status}`);
     }
 
+    // Add winner/pending status message based on challenge status
+    const statusMessagesContainer = card.querySelector('.status-messages');
+    if (statusMessagesContainer) {
+        statusMessagesContainer.innerHTML = ''; // Clear any default content
+
+        if (challenge.status === 'completed') {
+            statusMessagesContainer.innerHTML = `
+                <div class="pending-winner-status text-sm mb-4">
+                    <div class="flex items-center text-yellow-700">
+                        <i class="fas fa-clock mr-2"></i>
+                        <span class="pending-text">Winner pending. Will be decided within 24 hours.</span>
+                    </div>
+                </div>
+            `;
+        } else if (challenge.status === 'winner') {
+             statusMessagesContainer.innerHTML = `
+                <div class="winner-status text-sm mb-4">
+                     <div class="flex items-center text-green-700">
+                         <i class="fas fa-trophy mr-2"></i>
+                         <span class="winner-text">Winner! Prize: ₹${challenge.prizeAmount || challenge.prize}</span>
+                     </div>
+                 </div>
+             `;
+
+             // Display rank for winners
+             const rankDisplay = card.querySelector('.rank-display');
+             if (rankDisplay && challenge.rank) {
+                 rankDisplay.innerHTML = `
+                     <div class="rank-info text-sm mb-4">
+                         <div class="flex items-center text-yellow-500">
+                             <i class="fas fa-medal mr-2"></i>
+                             <span class="rank-text">Rank: ${challenge.rank}</span>
+                         </div>
+                     </div>
+                 `;
+             } else if (rankDisplay) {
+                 rankDisplay.innerHTML = ''; // Clear rank display if no rank available
+             }
+         } else if (challenge.status === 'loser') {
+              statusMessagesContainer.innerHTML = `
+                 <div class="loser-status text-sm mb-4">
+                     <div class="flex items-center text-red-700">
+                         <i class="fas fa-times-circle mr-2"></i>
+                         <span class="loser-text">Not a winner</span>
+                     </div>
+                 </div>
+             `;
+         }
+    }
+
     const continueButton = card.querySelector('.continue-btn');
     if (continueButton) {
         // Set the href and data attribute for the button
-        continueButton.href = `quiz/quiz.html?contestId=${challenge.challengeId}`;
+        if (challenge.status === 'completed' || challenge.status === 'winner') {
+            continueButton.href = `quiz/results.html?contestId=${challenge.challengeId}`;
+        } else {
+            continueButton.href = `quiz/quiz.html?contestId=${challenge.challengeId}`;
+        }
         continueButton.dataset.challengeId = challenge.challengeId;
 
-        // Disable button based on status
-        if (challenge.status === 'completed' || challenge.status === 'eliminated' || challenge.status === 'unavailable') {
+        // Update button text and style based on status
+        if (challenge.status === 'completed') {
+            continueButton.textContent = 'View Result';
+            continueButton.classList.add('result-btn');
+            continueButton.disabled = false; // Allow clicking to view results
+            continueButton.classList.remove('opacity-50', 'cursor-not-allowed'); // Ensure not styled as disabled
+        } else if (challenge.status === 'winner') {
+            continueButton.textContent = 'View Result';
+            continueButton.classList.add('result-btn');
+            continueButton.disabled = false; // Enable button for winners to view results
+            continueButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else if (challenge.status === 'eliminated') {
+            continueButton.textContent = 'Eliminated';
             continueButton.disabled = true;
-            continueButton.classList.add('opacity-50', 'cursor-not-allowed'); // Add disabled styling
-            continueButton.textContent = challenge.status === 'completed' ? 'Completed' : challenge.status === 'eliminated' ? 'Eliminated' : 'View Details';
-        } else {
-             continueButton.disabled = false;
-             continueButton.classList.remove('opacity-50', 'cursor-not-allowed');
-              continueButton.textContent = 'Continue Challenge';
+            continueButton.classList.add('opacity-50', 'cursor-not-allowed');
+            continueButton.classList.remove('result-btn'); // Ensure no result style
+        } else if (challenge.status === 'unavailable') {
+            continueButton.textContent = 'View Details';
+            continueButton.disabled = true;
+            continueButton.classList.add('opacity-50', 'cursor-not-allowed');
+            continueButton.classList.remove('result-btn'); // Ensure no result style
+        } else { // Status is 'joined' or 'active'
+            continueButton.textContent = 'Continue Challenge';
+            continueButton.disabled = false;
+            continueButton.classList.remove('opacity-50', 'cursor-not-allowed', 'result-btn'); // Ensure default style
         }
     }
 
@@ -134,106 +204,59 @@ async function fetchAndDisplayUserChallenges(userId) {
         );
         
         const contestsSnapshot = await getDocs(q);
-        const contestIds = contestsSnapshot.docs.map(doc => doc.id);
         
-        if (contestIds.length === 0) {
+        if (contestsSnapshot.empty) {
             console.log('No contests found for user');
             showNoChallenges();
             return;
         }
 
-        // Then, get the user's challenge history
-        const userRef = doc(db, 'users', userId);
-        const userDocSnap = await getDoc(userRef);
+        const challengesToDisplay = [];
 
-        if (!userDocSnap.exists()) {
-            console.log('User document not found.');
-            showNoChallenges();
-            return;
-        }
+        // Process each contest the user is participating in
+        for (const contestDoc of contestsSnapshot.docs) {
+            const contestData = contestDoc.data();
+            const challengeId = contestDoc.id;
 
-        const userData = userDocSnap.data();
-        const challengeHistory = Array.isArray(userData.challengeHistory) ? userData.challengeHistory : [];
+            // Get user's challenge history for this specific contest
+            const userRef = doc(db, 'users', userId);
+            const userDocSnap = await getDoc(userRef);
+            const userData = userDocSnap.data();
+            const challengeHistory = Array.isArray(userData.challengeHistory) ? userData.challengeHistory : [];
+            const historyEntry = challengeHistory.find(entry => entry.contestId === challengeId);
 
-        // Filter challenge history to only include contests the user is participating in
-        const filteredHistory = challengeHistory.filter(history => 
-            contestIds.includes(history.challengeId)
-        );
+            // Check if user is a winner in this contest
+            let winnerData = null;
+            if (contestData.winners && Array.isArray(contestData.winners)) {
+                winnerData = contestData.winners.find(winner => winner.userId === userId);
+            }
 
-        if (filteredHistory.length === 0) {
-            console.log('No challenge history found for user');
-            showNoChallenges();
-        return;
-    }
-    
-        // Helper function to safely get timestamp value
-        function getTimestampValue(timestamp) {
-            if (!timestamp) return 0;
-            
-            // If it's a Firestore Timestamp
-            if (typeof timestamp.toMillis === 'function') {
-                return timestamp.toMillis();
-            }
-            
-            // If it's a regular Date object
-            if (timestamp instanceof Date) {
-                return timestamp.getTime();
-            }
-            
-            // If it's a number (milliseconds)
-            if (typeof timestamp === 'number') {
-                return timestamp;
-            }
-            
-            // If it's a string that can be converted to a date
-            if (typeof timestamp === 'string') {
-                const date = new Date(timestamp);
-                return isNaN(date.getTime()) ? 0 : date.getTime();
-            }
-            
-            return 0;
+            // Create challenge object with contest data and history
+            const challenge = {
+                challengeId: challengeId,
+                title: contestData.title || 'Untitled Contest',
+                participants: contestData.participants?.length || 0,
+                maxParticipants: contestData.maxSpots || 0,
+                status: winnerData ? 'winner' : (historyEntry?.status || 'active'),
+                joinedAt: historyEntry?.joinedAt || contestData.createdAt || new Date(),
+                entryFee: contestData.entryFee || 0,
+                prize: contestData.prize || 0,
+                subject: contestData.subject || 'General',
+                rank: winnerData?.rank || null,
+                prizeAmount: winnerData?.prize || null
+            };
+
+            challengesToDisplay.push(challenge);
         }
 
         // Sort challenges by joinedAt date descending
-        filteredHistory.sort((a, b) => {
-            const dateA = getTimestampValue(a.joinedAt);
-            const dateB = getTimestampValue(b.joinedAt);
-            return dateB - dateA; // Descending order
+        challengesToDisplay.sort((a, b) => {
+            const dateA = a.joinedAt instanceof Date ? a.joinedAt.getTime() : 
+                         (a.joinedAt?.toMillis?.() || 0);
+            const dateB = b.joinedAt instanceof Date ? b.joinedAt.getTime() : 
+                         (b.joinedAt?.toMillis?.() || 0);
+            return dateB - dateA;
         });
-
-        const challengesToDisplay = [];
-
-        // Fetch details for each challenge from the contests collection
-        for (const historyEntry of filteredHistory) {
-            if (!historyEntry.challengeId) {
-                console.warn('Skipping history entry with missing challengeId:', historyEntry);
-                continue;
-            }
-
-            try {
-                const contestRef = doc(db, 'contests', historyEntry.challengeId);
-                const contestDocSnap = await getDoc(contestRef);
-
-                if (contestDocSnap.exists()) {
-                    const contestData = contestDocSnap.data();
-                    
-                    // Only add if the user is still a participant
-                    if (contestData.participants && contestData.participants.includes(userId)) {
-                        challengesToDisplay.push({
-                            ...historyEntry,
-                            title: contestData.title || 'Untitled Contest',
-                            participants: contestData.participants?.length || 0,
-                            maxParticipants: contestData.maxSpots || 0,
-                            status: historyEntry.status || 'active'
-                        });
-                    }
-                } else {
-                    console.warn('Contest document not found for ID:', historyEntry.challengeId);
-                }
-            } catch (error) {
-                console.error('Error fetching contest document for ID:', historyEntry.challengeId, error);
-            }
-        }
 
         // Clear container before displaying
         if (myChallengesContainer) myChallengesContainer.innerHTML = '';
@@ -283,3 +306,106 @@ document.addEventListener('click', function(event) {
         // Navigation is handled by the <a> tag's href
     }
 });
+
+// Load user's challenges
+async function loadMyChallenges() {
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (!userDoc.exists()) {
+            showError('User data not found');
+            return;
+        }
+
+        const userData = userDoc.data();
+        const challengeHistory = userData.challengeHistory || [];
+
+        if (challengeHistory.length === 0) {
+            showNoChallenges();
+            return;
+        }
+
+        // Get all contests
+        const contestsSnapshot = await getDocs(collection(db, 'contests'));
+        const contests = {};
+        contestsSnapshot.forEach(doc => {
+            contests[doc.id] = { id: doc.id, ...doc.data() };
+        });
+
+        // Sort challenges by joined date (newest first)
+        challengeHistory.sort((a, b) => b.joinedAt - a.joinedAt);
+
+        const container = document.getElementById('myChallengesContainer');
+        container.innerHTML = '';
+
+        challengeHistory.forEach(challenge => {
+            const contest = contests[challenge.contestId];
+            if (!contest) return;
+
+            const card = document.createElement('div');
+            card.className = 'bg-white shadow-md rounded-2xl p-4 flex flex-col justify-between h-full';
+            
+            const status = getChallengeStatus(contest);
+            const statusClass = getStatusClass(status);
+            
+            card.innerHTML = `
+                <div>
+                    <h3 class="challenge-title text-xl font-semibold text-gray-900 mb-2">${contest.title}</h3>
+                    <div class="flex items-center text-sm text-gray-600 mb-2">
+                        <i class="fas fa-calendar-alt mr-1"></i>
+                        <span class="date-text">${formatDate(challenge.joinedAt)}</span>
+                        <span class="status-badge ${statusClass}">${status}</span>
+                    </div>
+                    <div class="flex items-center text-sm text-gray-600 mb-2">
+                        <i class="fas fa-coins mr-1"></i>
+                        <span class="entry-prize-text">Entry: ₹${contest.entryFee} | Prize: ₹${contest.prize}</span>
+                    </div>
+                    <div class="flex items-center text-sm text-gray-600 mb-4">
+                        <i class="fas fa-users mr-1"></i>
+                        <span class="participants-text">${contest.participants?.length || 0} Participants</span>
+                    </div>
+                    ${challenge.status === 'winner' ? `
+                        <div class="winner-status text-sm mb-4">
+                            <div class="flex items-center text-yellow-600">
+                                <i class="fas fa-trophy mr-2"></i>
+                                <span class="winner-text">Winner! Prize: ₹${challenge.prizeAmount || contest.prize}</span>
+                            </div>
+                        </div>
+                    ` : challenge.status === 'loser' ? `
+                        <div class="loser-status text-sm mb-4">
+                            <div class="flex items-center text-red-600">
+                                <i class="fas fa-times-circle mr-2"></i>
+                                <span class="loser-text">Not a winner</span>
+                            </div>
+                        </div>
+                    ` : ''}
+                    ${challenge.status === 'pending' ? `
+                        <div class="pending-status text-sm mb-4">
+                            <div class="flex items-center text-yellow-600">
+                                <i class="fas fa-clock mr-2"></i>
+                                <span class="pending-text">Results pending</span>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+                ${status === 'Ongoing' ? `
+                    <a href="quiz/quiz.html?contestId=${contest.id}" class="continue-btn bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 text-center transition duration-200 ease-in-out">
+                        Continue Challenge
+                    </a>
+                ` : ''}
+            `;
+            
+            container.appendChild(card);
+        });
+
+        hideLoading();
+    } catch (error) {
+        console.error('Error loading challenges:', error);
+        showError('Failed to load challenges. Please try again.');
+    }
+}

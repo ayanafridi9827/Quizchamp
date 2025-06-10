@@ -151,53 +151,34 @@
                     return;
                 }
 
-                // Check if user exists in users collection
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                // Check if user exists in admins collection
                 const adminDoc = await getDoc(doc(db, 'admins', user.uid));
 
-                if (!userDoc.exists()) {
-                    // Create new user document
-                    await setDoc(doc(db, 'users', user.uid), {
+                if (!adminDoc.exists()) {
+                    // Create new admin document
+                    await setDoc(doc(db, 'admins', user.uid), {
                         uid: user.uid,
-                        name: user.displayName,
                         email: user.email,
+                        name: user.displayName,
                         photoURL: user.photoURL,
                         role: 'admin',
                         lastLogin: new Date().toISOString(),
                         createdAt: new Date().toISOString(),
-                        walletBalance: 0,
-                        totalChallengesJoined: 0,
-                        challengeHistory: [],
-                        currentLevel: 1,
-                        preferences: {
-                            notifications: true,
-                            theme: 'dark'
-                        }
+                        permissions: {
+                            canManageUsers: true,
+                            canManageQuizzes: true,
+                            canManageContests: true,
+                            canManageSettings: true
+                        },
+                        status: 'active'
                     });
                 } else {
                     // Update last login
-                    await setDoc(doc(db, 'users', user.uid), {
-                        lastLogin: new Date().toISOString()
+                    await setDoc(doc(db, 'admins', user.uid), {
+                        lastLogin: new Date().toISOString(),
+                        status: 'active'
                     }, { merge: true });
                 }
-
-                // Create or update admin document
-                await setDoc(doc(db, 'admins', user.uid), {
-                    uid: user.uid,
-                    email: user.email,
-                    name: user.displayName,
-                    photoURL: user.photoURL,
-                    role: 'admin',
-                    lastLogin: new Date().toISOString(),
-                    createdAt: adminDoc.exists() ? adminDoc.data().createdAt : new Date().toISOString(),
-                    permissions: {
-                        canManageUsers: true,
-                        canManageQuizzes: true,
-                        canManageContests: true,
-                        canManageSettings: true
-                    },
-                    status: 'active'
-                });
 
                 // Show success message
                 errorMessage.textContent = 'Login successful! Redirecting...';

@@ -5,162 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Challenges</title>
     <!-- Tailwind CSS via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="my-challenges.css">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        /* Add any basic custom styles or overrides here */
-        body {
-            background-color: #f3f4f6; /* Light gray background */
-            font-family: sans-serif;
-            padding: 4.5em;
-        }
-        .loading-state {
-             display: none;
-             text-align: center;
-             padding: 20px;
-             color: #6b7280;
-        }
-        .loading-state.active {
-             display: block;
-        }
-         .no-challenges-message {
-             display: none;
-             text-align: center;
-             padding: 20px;
-             color: #6b7280;
-         }
-         .no-challenges-message.active {
-             display: block;
-         }
-         .error-message {
-             display: none;
-             text-align: center;
-             padding: 20px;
-             color: #dc2626; /* Red color for errors */
-         }
-          .error-message.active {
-             display: block;
-         }
-        .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px; /* full rounded */
-            font-size: 0.75rem; /* text-xs */
-            font-weight: 600; /* font-semibold */
-            text-transform: capitalize;
-            margin-left: 0.5rem;
-        }
-        .status-active {
-            background-color: #d1fae5; /* green-100 */
-            color: #065f46; /* green-900 */
-        }
-        .status-completed {
-            background-color: #bfdbfe; /* blue-100 */
-            color: #1e40af; /* blue-900 */
-        }
-        .status-eliminated {
-            background-color: #fee2e2; /* red-100 */
-            color: #991b1b; /* red-900 */
-        }
-         .status-unavailable {
-             background-color: #e5e7eb; /* gray-200 */
-             color: #4b5563; /* gray-700 */
-         }
-         .header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    padding: 1rem 5%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: var(--card-shadow);
-    z-index: 1000;
-}
-
-.logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.nav-menu {
-    display: flex;
-    align-items: center;
-}
-
-.nav-links {
-    display: flex;
-    list-style: none;
-    gap: 2rem;
-}
-
-.nav-links a {
-    text-decoration: none;
-    color: var(--text-color);
-    font-weight: 500;
-    transition: color 0.3s ease;
-    position: relative;
-}
-
-.nav-links a::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: var(--gradient);
-    transition: width 0.3s ease;
-}
-
-.nav-links a:hover::after,
-.nav-links a.active::after {
-    width: 100%;
-}
-
-.nav-links a:hover,
-.nav-links a.active {
-    color: var(--primary-color);
-}
-
-.mobile-menu-btn {
-    display: none;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: var(--text-color);
-}
-
-/* Main Content Styles */
-.main-content {
-    margin-top: 80px;
-    padding: 2rem 5%;
-}
-
-.p-6{
-    padding: 4.5em;
-}
-    </style>
 </head>
 <body>
 
     <header class="header">
         <h1>QuizChamp <span class="fire">🔥</span></h1>
         <nav class="nav-menu">
-            <button class="mobile-menu-btn">
-                <i class="fas fa-bars"></i>
-            </button>
             <ul class="nav-links">
-                <li><a href="#" class="active">Home</a></li>
+                <li><a href="home.html" class="active">Home</a></li>
                 <li><a href="/wallets/wallet.html">Wallet</a></li>
                 <li><a href="my-challenges.html">My Challenges</a></li>
                 <li><a href="#">Profile</a></li>
@@ -169,49 +25,43 @@
     </header>
 
     <h1 class="xyz text-3xl font-bold text-gray-800 mb-6 text-center">My Challenges</h1>
-
-    <div class="loading-state active">
-        <i class="fas fa-spinner fa-spin text-2xl"></i>
-        <p class="mt-2">Loading challenges...</p>
-    </div>
-
-     <div class="no-challenges-message">
-         <i class="fas fa-info-circle text-2xl"></i>
-         <p class="mt-2">You haven't joined any challenges yet!</p>
-     </div>
-
-     <div class="error-message">
-        <i class="fas fa-exclamation-triangle text-2xl"></i>
-        <p class="mt-2"></p>
-     </div>
-
     <div id="myChallengesContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Challenge Cards will be injected here -->
     </div>
 
     <!-- Template for Challenge Card -->
     <template id="challenge-card-template">
-        <div class="bg-white shadow-md rounded-2xl p-4 flex flex-col justify-between h-full">
-            <div>
-                <h3 class="challenge-title text-xl font-semibold text-gray-900 mb-2">Contest Title</h3>
-                <div class="flex items-center text-sm text-gray-600 mb-2">
-                    <i class="fas fa-calendar-alt mr-1"></i>
+        <div class="challenge-card">
+            <div class="card-header">
+                <h3 class="challenge-title">Contest Title</h3>
+                <span class="status-badge">Status</span>
+            </div>
+
+            <div class="card-details">
+                <div class="detail-item">
+                    <i class="fas fa-calendar-alt"></i>
                     <span class="date-text">Joined Date</span>
-                     <span class="status-badge status-active">Status</span>
                 </div>
-                <div class="flex items-center text-sm text-gray-600 mb-2">
-                    <i class="fas fa-coins mr-1"></i>
+                <div class="detail-item">
+                    <i class="fas fa-coins"></i>
                     <span class="entry-prize-text">Entry Fee & Prize</span>
                 </div>
-                <div class="flex items-center text-sm text-gray-600 mb-4">
-                     <i class="fas fa-users mr-1"></i>
-                     <span class="participants-text">Participants</span>
-                 </div>
-                <!-- Add score/progress here if needed -->
+                <div class="detail-item">
+                    <i class="fas fa-users"></i>
+                    <span class="participants-text">Participants</span>
+                </div>
             </div>
-            <a href="#" class="continue-btn bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 text-center transition duration-200 ease-in-out">
-                Continue Challenge
-            </a>
+
+            <!-- Container for status messages (Winner, Loser, Pending) -->
+             <div class="status-messages">
+                 <!-- Messages will be injected here by JavaScript -->
+             </div>
+
+            <div class="rank-display">
+                <!-- Rank will be injected here by JavaScript -->
+            </div>
+
+            <a href="#" class="continue-btn">Continue Challenge</a>
         </div>
     </template>
 

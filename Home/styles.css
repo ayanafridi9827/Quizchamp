@@ -253,4 +253,14 @@ body {
     .card {
         padding: 1.25rem;
     }
+}
+
+/* Add styles for the new result button */
+.continue-btn.result-btn {
+    background-color: #10b981; /* Green background */
+    border: none;
+}
+
+.continue-btn.result-btn:hover {
+    background-color: #059669; /* Darker green on hover */
 } 
