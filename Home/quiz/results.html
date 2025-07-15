@@ -3,183 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Results - QuizArena</title>
+    <title>Quiz Results</title>
+    <link rel="stylesheet" href="quiz.css"> <!-- Reusing quiz.css for a consistent look -->
+    <link rel="stylesheet" href="results.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="../styles.css">
-    <style>
-        /* Results Container */
-        .results-container {
-            text-align: center;
-            padding: 3rem;
-            max-width: 800px;
-            margin: 2rem auto;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .results-container h2 {
-            font-size: 2.5rem;
-            color: #1a1a1a;
-            margin-bottom: 2rem;
-            font-weight: 700;
-        }
-
-        /* Results Stats */
-        .results-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-            padding: 2rem;
-            background: #f8fafc;
-            border-radius: 12px;
-        }
-
-        .stat-card {
-            padding: 1.5rem;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-card h3 {
-            font-size: 1.2rem;
-            color: #4b5563;
-            margin-bottom: 0.75rem;
-            font-weight: 600;
-        }
-
-        .stat-card p {
-            font-size: 2.5rem;
-            color: #1a1a1a;
-            margin: 0;
-            font-weight: 700;
-        }
-
-        /* Winner Announcement */
-        .winner-announcement {
-            margin: 3rem 0;
-            padding: 2rem;
-            border-radius: 16px;
-            background: #fff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .winner-announcement h3 {
-            font-size: 2rem;
-            color: #1a1a1a;
-            margin-bottom: 1.5rem;
-            font-weight: 700;
-        }
-
-        .winner-card {
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-            padding: 2rem;
-            border-radius: 12px;
-            border: 2px solid #10b981;
-            margin-bottom: 1rem;
-        }
-
-        .winner-card h4 {
-            font-size: 1.5rem;
-            color: #065f46;
-            margin-bottom: 1rem;
-        }
-
-        .winner-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            color: #065f46;
-        }
-
-        .winner-info i {
-            font-size: 1.5rem;
-        }
-
-        .winner-info p {
-            font-size: 1.2rem;
-            margin: 0;
-        }
-
-        /* Back Button */
-        #back-to-contests {
-            margin-top: 2rem;
-            padding: 1rem 2rem;
-            font-size: 1.2rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        #back-to-contests:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Loading State */
-        .loading-spinner {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            padding: 2rem;
-            color: #666;
-        }
-
-        .loading-spinner.hidden {
-            display: none;
-        }
-    </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="nav-brand">
-            <a href="../home.html">
-                <img src="../assets/logo.png" alt="QuizArena Logo">
-                <span>QuizArena</span>
-            </a>
-        </div>
-        <div class="nav-links">
-            <a href="../home.html" class="nav-link">Home</a>
-            <a href="../my-challenges.html" class="nav-link">My Contests</a>
-            <a href="../leaderboard.html" class="nav-link">Leaderboard</a>
-            <a href="../profile.html" class="nav-link">Profile</a>
-        </div>
-    </nav>
+    <div class="results-container">
+        <header class="quiz-header">
+            <h1 id="results-title">Quiz Completed!</h1>
+        </header>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Loading Spinner -->
-        <div id="loading-spinner" class="loading-spinner">
-            <i class="fas fa-spinner fa-spin fa-2x"></i>
-            <p>Loading results...</p>
-        </div>
+        <main class="results-body">
+            <div id="loading-state" class="loading-state">
+                <div class="loader"></div>
+                <p>Calculating your results...</p>
+            </div>
 
-        <!-- Results Container -->
-        <div id="results-container" class="results-container" style="display: none;">
-            <!-- Results will be dynamically added here -->
-        </div>
-    </main>
+            <div id="results-content" class="hidden">
+                <div class="summary-grid">
+                    <div class="summary-card score">
+                        <h3>Your Score</h3>
+                        <p id="final-score">0</p>
+                    </div>
+                    <div class="summary-card correct">
+                        <h3><i class="fas fa-check-circle"></i> Correct</h3>
+                        <p id="correct-answers">0</p>
+                    </div>
+                    <div class="summary-card incorrect">
+                        <h3><i class="fas fa-times-circle"></i> Wrong</h3>
+                        <p id="wrong-answers">0</p>
+                    </div>
+                    <div class="summary-card time">
+                        <h3><i class="fas fa-clock"></i> Time Taken</h3>
+                        <p id="time-taken">0s</p>
+                    </div>
+                </div>
+
+                <div class="winner-info-box">
+                    Winners will be announced within 24 hours.
+                </div>
+
+                <div class="answers-breakdown">
+                    <h2>Question Breakdown</h2>
+                    <div id="answers-container"></div>
+                </div>
+
+                <div class="results-footer">
+                    <button id="home-btn">
+                        <i class="fas fa-home"></i>
+                        <span>Go to Home</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <!-- Firebase SDKs -->
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    <!-- Your script -->
-    <script type="module" src="results.js"></script>
+    <!-- Results Logic -->
+    <script src="results.js"></script>
 </body>
-</html> 
+</html>

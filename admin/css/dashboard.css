@@ -1,9 +1,22 @@
 /* General Styles */
+:root {
+    --primary-color: #E53935; /* Red - for primary actions, highlights */
+    --secondary-color: #1A1A2E; /* Deep Blue-Black - main background for some elements */
+    --accent-color: #00BFFF; /* Deep Sky Blue - for vibrant highlights, icons */
+    --text-color: #E0E0E0; /* Light Gray - main text */
+    --light-text: #B0B0B0; /* Lighter Gray - secondary text, descriptions */
+    --background: #0A0A0A; /* Very deep black for overall body */
+    --light-bg: #1E1E1E; /* Dark Gray - for cards, sections */
+    --border-radius: 8px;
+    --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    --transition: all 0.3s ease;
+}
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Poppins', sans-serif;
     margin: 0;
-    background-color: #101827;
-    color: #e0e0e0;
+    background-color: var(--background);
+    color: var(--text-color);
     display: flex;
 }
 
@@ -15,19 +28,20 @@ a {
 /* Sidebar */
 .sidebar {
     width: 250px;
-    background-color: #1B2A41;
-    color: #e0e0e0;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
     height: 100vh;
-    padding: 20px;
+    padding: 10px;
     position: fixed;
-    border-right: 1px solid #324A5F;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: var(--box-shadow);
 }
 
 .sidebar h2 {
     text-align: center;
     margin-bottom: 30px;
     font-size: 1.8em;
-    color: #ffffff;
+    color: var(--primary-color);
 }
 
 .sidebar ul {
@@ -38,9 +52,9 @@ a {
 .sidebar ul li a {
     display: block;
     padding: 15px 20px;
-    border-radius: 5px;
+    border-radius: var(--border-radius);
     margin-bottom: 10px;
-    transition: background-color 0.3s, color 0.3s;
+    transition: var(--transition);
 }
 
 .sidebar ul li a i {
@@ -49,12 +63,27 @@ a {
 
 .sidebar ul li a:hover,
 .sidebar ul li a.active {
-    background-color: #3498db;
-    color: #ffffff;
+    background-color: var(--primary-color);
+    color: white;
 }
 
 #logout-btn {
     cursor: pointer;
+    display: block;
+    width: 100%;
+    padding: 15px 20px;
+    border-radius: var(--border-radius);
+    background-color: var(--light-bg);
+    color: var(--text-color);
+    border: none;
+    text-align: left;
+    transition: var(--transition);
+    font-size: 1em;
+}
+
+#logout-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
 }
 
 /* Main Content */
@@ -67,8 +96,8 @@ a {
 header h1 {
     margin: 0;
     font-size: 2.2em;
-    color: #ffffff;
-    border-bottom: 2px solid #324A5F;
+    color: var(--primary-color);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.05);
     padding-bottom: 10px;
 }
 
@@ -83,36 +112,37 @@ main {
 }
 
 .card {
-    background-color: #1B2A41;
+    background-color: var(--light-bg);
     padding: 25px;
-    border-radius: 10px;
-    border: 1px solid #324A5F;
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     align-items: center;
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: var(--transition);
+    box-shadow: var(--box-shadow);
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
 }
 
 .card-icon {
     font-size: 2.5em;
     margin-right: 20px;
-    color: #3498db;
+    color: var(--accent-color);
 }
 
 .card-info p {
     margin: 0;
     font-size: 1em;
-    color: #a0aec0;
+    color: var(--light-text);
 }
 
 .card-info h3 {
     margin: 5px 0 0;
     font-size: 1.8em;
-    color: #ffffff;
+    color: var(--text-color);
 }
 
 /* Card Specific Colors */
@@ -128,7 +158,7 @@ main {
         height: auto;
         position: relative;
         border-right: none;
-        border-bottom: 1px solid #324A5F;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .main-content {
@@ -156,9 +186,5 @@ main {
 @media (max-width: 480px) {
     .sidebar ul {
         flex-direction: column;
-    }
-
-    .card-container {
-        grid-template-columns: 1fr;
     }
 }

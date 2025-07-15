@@ -1,0 +1,485 @@
+/* General Styles */
+:root {
+    --primary-color: #ff3b3b;
+    --secondary-color: #1a1a1a;
+    --text-color: #333;
+    --light-text: #fff;
+    --gradient: linear-gradient(135deg, #ff3b3b 0%, #ff6b6b 100%);
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --hover-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    --card-bg: linear-gradient(145deg, #ffffff, #f5f5f5);
+    --scrollbar-thumb: #ff3b3b;
+    --scrollbar-track: #f1f1f1;
+    --yellow-color: #FFD700;
+    --yellow-gradient: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+}
+
+body {
+    background-color: #f5f5f5;
+    color: var(--text-color);
+    line-height: 1.6;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header Styles (Copied from home.css for consistency) */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 1rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--card-shadow);
+    z-index: 1000;
+}
+
+.header h1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.header h1 .fire {
+    color: orange;
+}
+
+.nav-menu {
+    display: flex;
+    align-items: center;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 500;
+    transition: color 0.3s ease;
+    position: relative;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--gradient);
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after,
+.nav-links a.active::after {
+    width: 100%;
+}
+
+.nav-links a:hover,
+.nav-menu .nav-links a.active {
+    color: var(--primary-color);
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-color);
+}
+
+/* Notification Styles (Copied from home.css) */
+.notification {
+    position: fixed;
+    top: -100px; /* Start hidden */
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 25px;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 500;
+    z-index: 2000;
+    transition: top 0.5s ease-in-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.notification.show {
+    top: 20px;
+}
+
+.notification.success {
+    background-color: #28a745;
+}
+
+.notification.error {
+    background-color: #e43f5a;
+}
+
+/* Main Content */
+.referral-main-content {
+    margin-top: 80px; /* Adjust based on header height */
+    padding: 2rem 5%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: calc(100vh - 80px);
+}
+
+.referral-container {
+    background: #ffffff; /* Clean white background */
+    border-radius: 30px; /* Even more rounded corners */
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18); /* Deeper, softer shadow */
+    padding: 4rem; /* Increased padding */
+    max-width: 950px; /* Slightly wider */
+    width: 100%;
+    text-align: center;
+    border: 1px solid #e8e8e8; /* Very subtle border */
+    overflow: hidden; /* Ensures no overflow from inner elements */
+    transition: all 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.referral-container:hover {
+    transform: translateY(-8px); /* Lift effect on hover */
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25); /* Enhanced shadow on hover */
+}
+
+.referral-title {
+    font-size: 3.2rem; /* Even larger title */
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-weight: 900; /* Extra bold */
+    letter-spacing: -1px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.referral-description {
+    font-size: 1.3rem; /* Larger description */
+    color: #666; /* Slightly darker text for better contrast */
+    margin-bottom: 3.5rem;
+    line-height: 1.6;
+}
+
+/* General Referral Card Styles */
+.referral-card {
+    background: #f9f9f9; /* Lighter background for inner cards */
+    border-radius: 20px; /* More rounded */
+    padding: 2.5rem; /* Increased padding */
+    margin-bottom: 3rem; /* Increased margin */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); /* Softer, larger shadow */
+    border: none; /* Remove default border */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    opacity: 1; /* Ensure visibility */
+    visibility: visible; /* Ensure visibility */
+}
+
+.referral-card:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.referral-card h3 {
+    font-size: 1.8rem; /* Larger heading */
+    color: var(--secondary-color);
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+/* Specific styles for the "Enter Friend's Code" card */
+.referral-card.enter-friend-code-card {
+    background: transparent; /* Transparent background */
+    color: var(--text-color); /* Default text color for transparency */
+    padding: 1.5rem; /* Reduced padding for compactness */
+    margin-bottom: 2rem; /* Adjusted margin */
+    border-radius: 15px; /* Slightly less rounded for a sharper look */
+    box-shadow: none; /* No shadow for transparent background */
+    border: 2px solid rgba(0, 0, 0, 0.1); /* Subtle border */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.referral-card.enter-friend-code-card .referral-title,
+.referral-card.enter-friend-code-card .referral-description {
+    color: var(--secondary-color); /* Ensure text is visible on transparent background */
+}
+
+.referral-card.enter-friend-code-card .referral-input-group {
+    width: 100%; /* Ensure input group takes full width */
+    max-width: 300px; /* Even smaller width for better aesthetics */
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Space between input and button */
+}
+
+.referral-card.enter-friend-code-card .referral-input-group input {
+    background: rgba(255, 255, 255, 0.8); /* Slightly transparent white background */
+    border: 1px solid rgba(0, 0, 0, 0.2); /* Subtle border */
+    color: var(--text-color);
+    padding: 0.8rem 1rem; /* Adjusted padding */
+    border-radius: 8px;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.referral-card.enter-friend-code-card .referral-input-group button {
+    background: var(--primary-color);
+    color: var(--light-text);
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    width: 100%;
+}
+
+.referral-card.enter-friend-code-card .referral-input-group button:hover {
+    background: #e43f5a;
+    transform: translateY(-2px);
+}
+
+.referral-card.enter-friend-code-card .error-message {
+    color: var(--primary-color); /* Use primary color for error on light background */
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.referral-code-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    background: #eef; /* Very light blue background */
+    border: 2px solid var(--primary-color); /* Solid border */
+    border-radius: 15px; /* More rounded */
+    padding: 1.5rem 2rem;
+    font-size: 2.2rem; /* Even larger font size */
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#referral-code {
+    flex-grow: 1;
+    text-align: center;
+    user-select: all;
+    letter-spacing: 2px; /* More letter spacing */
+}
+
+.copy-btn {
+    background: var(--primary-color);
+    color: var(--light-text);
+    border: none;
+    border-radius: 12px; /* More rounded */
+    padding: 1.2rem 1.8rem; /* Increased padding */
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.copy-btn:hover {
+    background: #e43f5a;
+    transform: translateY(-4px); /* More pronounced lift */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.copy-btn i {
+    font-size: 1.3rem;
+}
+
+.referral-tip {
+    font-size: 1rem; /* Slightly larger tip */
+    color: #777;
+    margin-top: -1rem; /* Adjust spacing */
+    margin-bottom: 2rem;
+}
+
+.referral-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Larger min-width */
+    gap: 2rem; /* Increased gap */
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    border-radius: 18px; /* Consistent rounding */
+    padding: 2rem; /* Increased padding */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08); /* Softer shadow */
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card i {
+    font-size: 3rem; /* Larger icon */
+    color: var(--yellow-color);
+    margin-bottom: 1rem;
+}
+
+.stat-card h4 {
+    font-size: 1.3rem; /* Larger heading */
+    color: var(--secondary-color);
+    margin-bottom: 0.8rem;
+    font-weight: 600;
+}
+
+.stat-card p {
+    font-size: 2rem; /* Larger number */
+    font-weight: 800;
+    color: var(--primary-color);
+}
+
+.referral-share-options h3 {
+    font-size: 1.8rem; /* Larger heading */
+    color: var(--secondary-color);
+    margin-bottom: 1.8rem;
+}
+
+.share-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem; /* Increased gap */
+}
+
+.share-btn {
+    background: #eee;
+    color: var(--text-color);
+    border: none;
+    border-radius: 10px; /* More rounded */
+    padding: 1rem 2rem; /* Increased padding */
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.share-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.share-btn.whatsapp {
+    background: #25D366;
+    color: white;
+}
+.share-btn.telegram {
+    background: #0088cc;
+    color: white;
+}
+.share-btn.twitter {
+    background: #1DA1F2;
+    color: white;
+}
+.share-btn.facebook {
+    background: #1877F2;
+    color: white;
+}
+
+.referral-how-it-works {
+    text-align: left;
+    margin-top: 3.5rem; /* Increased margin */
+    padding: 2.5rem; /* Increased padding */
+    background: #f0f8ff; /* Light blue background */
+    border-radius: 20px; /* More rounded */
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+}
+
+.referral-how-it-works h3 {
+    font-size: 1.8rem; /* Larger heading */
+    color: var(--secondary-color);
+    margin-bottom: 1.5rem;
+}
+
+.referral-how-it-works ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.referral-how-it-works ul li {
+    margin-bottom: 1rem; /* Increased margin */
+    font-size: 1.1rem; /* Larger font size */
+    color: #555;
+    position: relative;
+    padding-left: 30px; /* Increased padding */
+}
+
+.referral-how-it-works ul li::before {
+    content: counter(list-item) ". ";
+    counter-increment: list-item;
+    color: var(--primary-color);
+    font-weight: 700;
+    position: absolute;
+    left: 0;
+    font-size: 1.2rem; /* Larger number */
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .referral-main-content {
+        padding: 1rem 2%;
+    }
+
+    .referral-container {
+        padding: 2rem;
+    }
+
+    .referral-title {
+        font-size: 2.5rem;
+    }
+
+    .referral-description {
+        font-size: 1.1rem;
+    }
+
+    .referral-code-display {
+        flex-direction: column;
+        font-size: 1.8rem;
+        padding: 1rem 1.2rem;
+    }
+
+    .copy-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .referral-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .share-buttons {
+        flex-direction: column;
+    }
+
+    .share-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

@@ -1,0 +1,338 @@
+/* General Body Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header Styles */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #162447;
+    border-bottom: 2px solid #1f4068;
+}
+
+.header h1 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #e43f5a;
+    margin: 0;
+}
+
+.header .fire {
+    color: #f8b400;
+}
+
+.nav-menu .nav-links {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-menu .nav-links li {
+    margin-left: 25px;
+}
+
+.nav-menu .nav-links a {
+    text-decoration: none;
+    color: #e0e0e0;
+    font-size: 18px;
+    font-weight: 500;
+    padding-bottom: 5px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.3s, border-bottom-color 0.3s;
+}
+
+.nav-menu .nav-links a:hover,
+.nav-menu .nav-links a.active {
+    color: #e43f5a;
+    border-bottom-color: #e43f5a;
+}
+
+/* Main Content Styles */
+.main-content {
+    padding: 40px;
+    text-align: center;
+}
+
+.wallet-container {
+    max-width: 500px;
+    margin: 0 auto;
+    background-color: #162447;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid #1f4068;
+}
+
+.balance-section {
+    margin-bottom: 30px;
+}
+
+.balance-section h2 {
+    font-size: 22px;
+    color: #b8b8b8;
+    margin-bottom: 10px;
+}
+
+.balance-amount {
+    font-size: 48px;
+    font-weight: bold;
+    color: #ffffff;
+    letter-spacing: 2px;
+}
+
+.actions-section {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.action-btn {
+    background-color: #e43f5a;
+    color: #ffffff;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.action-btn:hover {
+    background-color: #d4304a;
+    transform: translateY(-2px);
+}
+
+.action-btn.deposit {
+    background-color: #28a745;
+}
+
+.action-btn.deposit:hover {
+    background-color: #218838;
+}
+
+.action-btn i {
+    font-size: 20px;
+}
+
+/* Transaction History Styles */
+.history-container {
+    max-width: 800px;
+    margin: 40px auto 0;
+    background-color: #162447;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid #1f4068;
+}
+
+.history-container h2 {
+    font-size: 24px;
+    color: #ffffff;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.transaction-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 300px; /* Adjust as needed */
+    overflow-y: auto;
+    padding-right: 8px; /* Space for scrollbar */
+}
+
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #1f2a40; /* Slightly darker background */
+    border-radius: 8px;
+    border-left: 4px solid #e43f5a;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+}
+
+.transaction-item.referral {
+    border-left-color: #007bff; /* A nice blue for referrals */
+}
+
+.transaction-item.deposit-item {
+    border-left-color: #e43f5a; /* Red for deposits */
+}
+
+.transaction-item.withdrawal-item {
+    border-left-color: #28a745; /* Green for withdrawals */
+}
+
+.transaction-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.transaction-details {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.transaction-description {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 4px;
+}
+
+.transaction-date {
+    font-size: 13px;
+    color: #a0a0a0;
+}
+
+.transaction-amount {
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.transaction-status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-top: 5px;
+    text-transform: uppercase;
+}
+
+.status-completed {
+    color: #28a745;
+    background-color: rgba(40, 167, 69, 0.15);
+}
+
+.status-pending {
+    color: #ffc107;
+    background-color: rgba(255, 193, 7, 0.15);
+}
+
+.status-rejected {
+    color: #e43f5a;
+    background-color: rgba(228, 63, 90, 0.15);
+}
+
+.status-failed {
+    color: #e43f5a;
+    background-color: rgba(228, 63, 90, 0.15);
+}
+
+.deposit-amount {
+    color: #e43f5a;
+}
+
+.withdraw-amount {
+    color: #28a745;
+}
+
+/* Notification Styles */
+.notification {
+    position: fixed;
+    top: -100px; /* Start hidden */
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 25px;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 500;
+    z-index: 2000;
+    transition: top 0.5s ease-in-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.notification.show {
+    top: 20px;
+}
+
+.notification.success {
+    background-color: #28a745;
+}
+
+.notification.error {
+    background-color: #e43f5a;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #162447;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid #1f4068;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #e0e0e0;
+    cursor: pointer;
+}
+
+.modal-content h2 {
+    font-size: 24px;
+    color: #ffffff;
+    margin-bottom: 15px;
+}
+
+.modal-content p {
+    font-size: 16px;
+    color: #b8b8b8;
+    margin-bottom: 25px;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 25px;
+    border-radius: 8px;
+    border: 1px solid #1f4068;
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+    font-size: 16px;
+}
+
+.modal-content .action-btn {
+    width: 100%;
+    justify-content: center;
+}

@@ -1,308 +1,385 @@
-// Import Firebase services and utility functions
-import { auth, db } from './firebase-config.js';
-import { joinChallenge, hasJoinedChallenge } from './challenge-utils.js';
-import { 
-    collection, 
-    query, 
-    orderBy, 
-    where,
-    onSnapshot 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+// Firebase SDKs ko import kar rahe hain
+// Ab hum Firebase ko global object se access karenge, imports ki zaroorat nahi
 
-// DOM Elements
-const allContestsGrid = document.querySelector('.all-contests-grid');
-const loadingState = document.querySelector('.loading-state');
-const errorState = document.querySelector('.error-state');
-const retryBtn = document.querySelector('.retry-btn');
+// Aapki Firebase project ki configuration details
+const firebaseConfig = {
+    apiKey: "AIzaSyBgCHdqzcsiB9VBTsv4O1fU2R88GVoOOyA",
+    authDomain: "quizarena-c222d.firebaseapp.com",
+    projectId: "quizarena-c222d",
+    storageBucket: "quizarena-c222d.firebasestorage.app",
+    messagingSenderId: "892135666693",
+    appId: "1:892135666693:web:4f8bf849019603a937586c"
+};
 
-// Load All Contests from Firebase
-async function loadAllContests() {
-    try {
-        // Show loading state
-        loadingState?.classList.remove('hidden');
-        errorState?.classList.add('hidden');
-        allContestsGrid.innerHTML = '';
+// Firebase ko initialize kar rahe hain
+// Sirf ek baar initialize ho, iska dhyan rakhein
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 
-        // Create query for both active and upcoming contests
-        const contestsQuery = query(
-            collection(db, 'contests'),
-            where('status', 'in', ['Active', 'Upcoming'])
-        );
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-        // Set up real-time listener
-        return onSnapshot(contestsQuery, 
-            (snapshot) => {
-                const contests = [];
-                snapshot.forEach(doc => {
-                    contests.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
-                });
+// Jab poora HTML page load ho jaye, tab yeh function chalega
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // HTML se zaroori elements ko select kar rahe hain
+    const contestsGrid = document.querySelector('.all-contests-grid');
+    const loadingState = document.querySelector('.loading-state');
+    const errorState = document.querySelector('.error-state');
+    const contestCardTemplate = document.getElementById('contest-card-template');
+    const notification = document.getElementById('notification');
 
-                // Sort contests by startTime
-                contests.sort((a, b) => a.startTime - b.startTime);
+    let userCompletedContests = new Set(); // To store IDs of contests user has completed
+    let userContestResults = new Map(); // To store user's rank and prize for completed contests
+    let userWalletBalance = 0; // User ka wallet balance store karne ke liye
+    let contestsLoaded = false; // Flag taki contests baar baar load na ho
+    let currentUser = null;
+    let userDataFetched = false; // Naya flag user data ko ek baar fetch karne ke liye
 
-                // Separate contests into active and upcoming
-                const activeContests = contests.filter(contest => contest.status === 'Active');
-                const upcomingContests = contests.filter(contest => contest.status === 'Upcoming');
+    let totalReads = 0;
+    let totalWrites = 0;
 
-                // Clear the grid
-                allContestsGrid.innerHTML = '';
+    function logFirestoreOperation(type, count = 1) {
+        if (type === 'read') {
+            totalReads += count;
+        } else if (type === 'write') {
+            totalWrites += count;
+        }
+    }
 
-                // Create and append active contests section
-                if (activeContests.length > 0) {
-                    const activeSection = document.createElement('div');
-                    activeSection.className = 'contest-section';
-                    activeSection.innerHTML = `
-                        <h2 class="section-title">
-                            <i class="fas fa-fire"></i>
-                            Active Contests
-                        </h2>
-                        <div class="contest-grid active-contests"></div>
-                    `;
-                    allContestsGrid.appendChild(activeSection);
+    // Pagination variables
+    let lastVisible = null;
+    const pageSize = 10; // Ek baar me 10 contests load karenge
 
-                    const activeGrid = activeSection.querySelector('.active-contests');
-                    activeContests.forEach(contest => {
-                        const card = createContestCard(contest);
-                        activeGrid.appendChild(card);
-                    });
-                }
+    // Function to show notifications
+    function showNotification(message, type) {
+        notification.textContent = message;
+        notification.className = 'notification'; // Reset classes
+        notification.classList.add(type, 'show');
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 3000); // Hide after 3 seconds
+    }
 
-                // Create and append upcoming contests section
-                if (upcomingContests.length > 0) {
-                    const upcomingSection = document.createElement('div');
-                    upcomingSection.className = 'contest-section';
-                    upcomingSection.innerHTML = `
-                        <h2 class="section-title">
-                            <i class="fas fa-calendar-alt"></i>
-                            Upcoming Contests
-                        </h2>
-                        <div class="contest-grid upcoming-contests"></div>
-                    `;
-                    allContestsGrid.appendChild(upcomingSection);
+    // Yeh function contest ka data lekar uska HTML card banata hai
+    const createContestCard = (contestData, contestId, userCompletedContests) => {
+        // Template se naya card clone kar rahe hain
+        const card = contestCardTemplate.content.cloneNode(true).querySelector('.contest-card');
 
-                    const upcomingGrid = upcomingSection.querySelector('.upcoming-contests');
-                    upcomingContests.forEach(contest => {
-                        const card = createContestCard(contest);
-                        upcomingGrid.appendChild(card);
-                    });
-                }
+        // Aapke Firestore data ke hisaab se card ko bhar rahe hain
+        card.querySelector('.contest-title').textContent = contestData.title || 'No Title';
+        const prizeTextElement = card.querySelector('.prize-text');
+        prizeTextElement.className = 'prize-info'; // Naye style ke liye class badal rahe hain
+        prizeTextElement.innerHTML = `<span class="prize-label">PRIZE</span><span class="prize-amount">₹${contestData.prize || 0}</span>`;
 
-                // Show message if no contests are available
-                if (contests.length === 0) {
-                    allContestsGrid.innerHTML = `
-                        <div class="no-contests-message">
-                            <i class="fas fa-calendar-times"></i>
-                            <h3>No Contests Available</h3>
-                            <p>Check back later for new contests!</p>
-                        </div>
-                    `;
-                }
-
-                loadingState?.classList.add('hidden');
-            },
-            (error) => {
-                console.error('Error loading contests:', error);
-                loadingState?.classList.add('hidden');
-                errorState?.classList.remove('hidden');
-                allContestsGrid.innerHTML = `
-                    <div class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <h3>Error Loading Contests</h3>
-                        <p>Please try again later.</p>
-                        <button onclick="window.location.reload()" class="retry-btn">
-                            <i class="fas fa-sync-alt"></i> Retry
-                        </button>
-                    </div>
-                `;
+        // Agar winner declare ho gaya hai, to prize amount ko green highlight karein
+        if (contestData.winnerDeclared) {
+            const prizeAmountSpan = prizeTextElement.querySelector('.prize-amount');
+            if (prizeAmountSpan) {
+                prizeAmountSpan.classList.add('winner-declared-prize');
             }
-        );
-    } catch (error) {
-        console.error('Error loading contests:', error);
-        loadingState?.classList.add('hidden');
-        errorState?.classList.remove('hidden');
-        allContestsGrid.innerHTML = `
-            <div class="error-message">
-                <i class="fas fa-exclamation-circle"></i>
-                <h3>Error Loading Contests</h3>
-                <p>Please try again later.</p>
-                <button onclick="window.location.reload()" class="retry-btn">
-                    <i class="fas fa-sync-alt"></i> Retry
-                </button>
-            </div>
-        `;
-    }
-}
+        }
 
-// Create Contest Card
-function createContestCard(contest) {
-    const template = document.getElementById('contest-card-template');
-    const card = template.content.cloneNode(true);
-    
-    // Set contest data
-    card.querySelector('.contest-title').textContent = contest.title;
-    
-    // Set category icon
-    const categoryIcon = card.querySelector('.category-icon i');
-    categoryIcon.className = 'fas ' + getSubjectIcon(contest.subject);
+        // Prize section ko contest-title ke theek neeche move kar rahe hain
+        const prizeSection = card.querySelector('.prize-section');
+        const contestTitle = card.querySelector('.contest-title');
+        if (prizeSection && contestTitle) {
+            contestTitle.parentNode.insertBefore(prizeSection, contestTitle.nextSibling);
+        }
 
-    // Set prize section
-    const prizeText = card.querySelector('.prize-text');
-    prizeText.textContent = `Win ₹${contest.prize}`;
-
-    // Set entry fee
-    const entryFeeText = card.querySelector('.entry-fee-text');
-    entryFeeText.textContent = contest.entryFee === 0 ? 'Free Entry' : `₹${contest.entryFee}`;
-
-    // Set spots data
-    const cardElement = card.querySelector('.contest-card');
-    cardElement.dataset.max = contest.maxSpots || '50';
-    cardElement.dataset.filled = contest.participants ? contest.participants.length : '0';
-    
-    // Set spots filled
-    const spotsText = card.querySelector('.spots-filled');
-    spotsText.textContent = `${contest.participants ? contest.participants.length : 0} / ${contest.maxSpots} Spots`;
-    
-    // Set progress bar
-    const progressFill = card.querySelector('.progress-fill');
-    const progressText = card.querySelector('.progress-text');
-    const progressPercentage = card.querySelector('.progress-percentage');
-    
-    const spotsPercentage = ((contest.participants ? contest.participants.length : 0) / contest.maxSpots) * 100;
-    progressFill.style.width = `${spotsPercentage}%`;
-    progressText.textContent = 'Spots Filled';
-    progressPercentage.textContent = `${Math.round(spotsPercentage)}%`;
-
-    // Set join button
-    const joinButton = card.querySelector('.join-btn');
-    const joinText = card.querySelector('.join-text');
-    joinText.textContent = contest.entryFee === 0 ? 'Join Free' : `Join ₹${contest.entryFee}`;
-
-    // Add join button click handler
-    joinButton.addEventListener('click', () => handleJoinContest(contest, joinButton));
-
-    return card;
-}
-
-// Handle Join Contest
-async function handleJoinContest(contest, button) {
-    try {
-        const card = button.closest('.contest-card');
-        const maxSpots = parseInt(card.dataset.max) || 50;
-        const currentSpots = parseInt(card.dataset.filled) || 0;
+        card.querySelector('.entry-fee-text').textContent = `Entry: ₹${contestData.entryFee || 0}`;
         
-        // Check if contest is full
-        if (currentSpots >= maxSpots) {
-            showToast('Sorry, this contest is full!', 'error');
-            return;
-        }
+        const spotsFilled = contestData.filledSpots || 0;
+        const totalSpots = contestData.maxSpots || 0;
+        card.querySelector('.spots-filled').textContent = `${spotsFilled} / ${totalSpots} spots`;
 
-        // Check if user is authenticated
-        if (!auth.currentUser) {
-            // Redirect to login page with challenge ID
-            window.location.href = `/auth/login.html?challengeId=${contest.id}`;
-            return;
-        }
+        // Progress bar update kar rahe hain
+        const progressPercentage = totalSpots > 0 ? (spotsFilled / totalSpots) * 100 : 0;
+        card.querySelector('.progress-fill').style.width = `${progressPercentage}%`;
+        card.querySelector('.progress-percentage').textContent = `${Math.round(progressPercentage)}%`;
+        card.querySelector('.progress-text').textContent = `${totalSpots - spotsFilled} spots left`;
 
-        // Check if user has already joined
-        const hasJoined = await hasJoinedChallenge(contest.id);
-        if (hasJoined) {
-            showToast('You have already joined this contest!', 'error');
-            return;
-        }
-
-        // Attempt to join the contest
-        const result = await joinChallenge(contest.id);
-        
-        if (result.success) {
-            // Update UI after successful join
-            card.dataset.filled = currentSpots + 1;
-            button.disabled = true;
-            button.classList.add('joined');
-            button.innerHTML = `
-                <span class="join-text">✅ Joined</span>
-                <i class="fas fa-check"></i>
-                <div class="btn-glow"></div>
-            `;
-            
-            // Update progress
-            updateContestProgress(card);
-            
-            showToast(result.message, 'success');
+        // Contest ka status (Live, Ended, etc.) set kar rahe hain
+        const statusBadge = card.querySelector('.status-badge');
+        if (contestData.status === 'Active') {
+            statusBadge.textContent = 'Live';
+            statusBadge.classList.add('live');
+        } else if (contestData.status === 'upcoming') {
+            statusBadge.textContent = 'Upcoming';
+            statusBadge.classList.add('upcoming');
         } else {
-            showToast(result.message, 'error');
+            statusBadge.textContent = 'Ended';
+            statusBadge.classList.add('ended');
         }
 
-    } catch (error) {
-        console.error('Error joining contest:', error);
-        showToast('An error occurred. Please try again.', 'error');
-    }
-}
+        // Join button ka text aur link set kar rahe hain
+        const joinBtn = card.querySelector('.join-btn');
+        const joinTextSpan = joinBtn.querySelector('.join-text');
 
-// Update Contest Progress
-function updateContestProgress(card) {
-    const progressFill = card.querySelector('.progress-fill');
-    const spotsText = card.querySelector('.spots-filled');
-    const progressPercentage = card.querySelector('.progress-percentage');
-    
-    const maxSpots = parseInt(card.dataset.max) || 50;
-    const spotsFilled = parseInt(card.dataset.filled) || 0;
-    const percentage = (spotsFilled / maxSpots) * 100;
-    
-    progressFill.style.width = `${percentage}%`;
-    spotsText.textContent = `${spotsFilled} / ${maxSpots} Spots`;
-    progressPercentage.textContent = `${Math.round(percentage)}%`;
-}
+        // Define the click handler for joining a contest
+        const joinButtonClickHandler = async () => {
+            const entryFee = contestData.entryFee || 0;
+            let newBalance; // Declare newBalance here
 
-// Show Toast Message
-function showToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.textContent = message;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => toast.classList.add('show'), 100);
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
+            if (userWalletBalance >= entryFee) {
+                // Proceed to join contest
+                if (!currentUser) {
+                    showNotification("Please log in to join contest.", 'error');
+                    return;
+                }
 
-// Get Subject Icon
-function getSubjectIcon(subject) {
-    const iconMap = {
-        'Mathematics': 'fa-calculator',
-        'Science': 'fa-flask',
-        'Physics': 'fa-atom',
-        'Chemistry': 'fa-vial',
-        'Biology': 'fa-dna',
-        'English': 'fa-book',
-        'History': 'fa-landmark',
-        'Geography': 'fa-globe',
-        'General Knowledge': 'fa-brain',
-        'Computer Science': 'fa-laptop-code',
-        'Economics': 'fa-chart-line',
-        'Literature': 'fa-book-open',
-        'Current Affairs': 'fa-newspaper',
-        'Logical Reasoning': 'fa-puzzle-piece',
-        'Verbal Ability': 'fa-comments'
+                const walletRef = db.collection("wallets").doc(currentUser.uid);
+                const contestRef = db.collection("contests").doc(contestId);
+
+                try {
+                    await db.runTransaction(async (transaction) => {
+                        // Sabse pehle sab kuch padhein
+                        console.log('Firestore Read: Wallet aur contest join karne ke liye fetch kar rahe hain', currentUser.uid, contestId);
+                        const walletDoc = await transaction.get(walletRef);
+                        logFirestoreOperation('read');
+                        const contestDoc = await transaction.get(contestRef);
+                        logFirestoreOperation('read');
+
+                        // Padhe gaye data ke adhaar par jaanch karein
+                        if (!walletDoc.exists) {
+                            throw new Error("Wallet nahi mila! Kripya paise deposit karein.");
+                        }
+                        if (!contestDoc.exists) {
+                            throw new Error("Contest nahi mila!");
+                        }
+
+                        const currentBalance = walletDoc.data().balance || 0;
+                        if (currentBalance < entryFee) {
+                            throw new Error("Aparyapt balance!");
+                        }
+
+                        newBalance = currentBalance - entryFee; // Assign value here
+                        const newFilledSpots = (contestDoc.data().filledSpots || 0) + 1;
+
+                        // Sabhi READS ke baad sabhi WRITES
+                        // Wallet se entry fee kaate
+                        transaction.update(walletRef, { balance: newBalance });
+                        logFirestoreOperation('write');
+
+                        // Contest document update karein: participant jodein aur filledSpots badhayein
+                        transaction.update(contestRef, {
+                            participants: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+                            filledSpots: newFilledSpots
+                        });
+                        logFirestoreOperation('write');
+                    });
+
+                    showNotification('Contest Joined Sucessfully', 'success');
+                    // After successful join, update button to 'Continue'
+                    joinTextSpan.textContent = 'Continue';
+                    joinBtn.classList.add('joined');
+                    // Remove join handler and add continue handler
+                    joinBtn.removeEventListener('click', joinButtonClickHandler);
+                    joinBtn.addEventListener('click', () => {
+                        window.location.href = `/Home/quiz/quiz.html?contestId=${contestId}`;
+                    });
+                    userWalletBalance = newBalance; // Update the local balance variable
+
+                } catch (error) {
+                    console.error("Error joining contest:", error);
+                    if (error.message === "Insufficient funds!") {
+                        showNotification(`Insufficient funds! You need ₹${entryFee - userWalletBalance} more. Please deposit.`, 'error');
+                    } else if (error.message === "Wallet not found! Please deposit funds.") {
+                        showNotification("Wallet not found! Please deposit funds.", 'error');
+                    } else {
+                        showNotification(`Failed to join contest: ${error.message || 'Unknown error'}. Please try again.`, 'error');
+                    }
+                }
+            } else {
+                showNotification(`Insufficient funds! You need ₹${entryFee - userWalletBalance} more. Please deposit.`, 'error');
+            }
+        };
+
+        // Check if user has already joined this contest
+        const hasJoined = contestData.participants && contestData.participants.includes(currentUser.uid);
+        const hasPlayedQuiz = userCompletedContests.has(contestId); // Check if user completed this contest
+        const userResult = userContestResults.get(contestId); // Get user's specific result
+
+        // If contest has ended and user has a result, display it
+        if (contestData.status === 'ended' && userResult) {
+            card.classList.add('contest-ended-card'); // Add class for styling
+            card.querySelector('.entry-fee-text').style.display = 'none'; // Hide entry fee
+            card.querySelector('.spots-info').style.display = 'none'; // Hide spots info
+            card.querySelector('.progress-bar').style.display = 'none'; // Hide progress bar
+
+            // Update prize display to show user's prize
+            prizeTextElement.innerHTML = `<span class="prize-label">YOUR PRIZE</span><span class="prize-amount winner-declared-prize">₹${userResult.prizeWon || 0}</span>`;
+
+            // Display rank
+            const rankElement = document.createElement('p');
+            rankElement.classList.add('user-rank');
+            rankElement.textContent = `Your Rank: ${userResult.rank || 'N/A'}`;
+            card.querySelector('.contest-details').appendChild(rankElement);
+
+            joinTextSpan.textContent = 'View Details';
+            joinBtn.classList.add('view-details-btn');
+            joinBtn.removeEventListener('click', joinButtonClickHandler); // Remove existing handler
+            joinBtn.addEventListener('click', () => {
+                window.location.href = `/Home/quiz/results.html?contestId=${contestId}`;
+            });
+        } else if (hasPlayedQuiz) {
+            joinTextSpan.textContent = 'View Result';
+            joinBtn.classList.add('view-result-btn'); // Add class for yellow background
+            joinBtn.removeEventListener('click', joinButtonClickHandler); // Remove existing handler
+            joinBtn.addEventListener('click', () => {
+                window.location.href = `/Home/quiz/results.html?contestId=${contestId}`; // Redirect to results page
+            });
+        } else if (hasJoined) {
+            joinTextSpan.textContent = 'Continue';
+            joinBtn.classList.add('joined');
+            joinBtn.removeEventListener('click', joinButtonClickHandler); // Remove existing handler
+            joinBtn.addEventListener('click', () => {
+                window.location.href = `/Home/quiz/quiz.html?contestId=${contestId}`;
+            });
+        } else {
+            joinTextSpan.textContent = `Join for ₹${contestData.entryFee || 0}`;
+            joinBtn.removeEventListener('click', joinButtonClickHandler); // Ensure no duplicate listeners
+            joinBtn.addEventListener('click', joinButtonClickHandler); // Attach the named handler
+        }
+
+        // Pura taiyaar card lauta rahe hain
+        return card;
     };
-    return iconMap[subject] || 'fa-trophy';
-}
 
-// Retry loading contests
-retryBtn.addEventListener('click', loadAllContests);
+    // Yeh function contests ko load karta hai, pagination ke saath
+    const loadContests = async () => {
+        loadingState.style.display = 'block';
+        errorState.style.display = 'none';
+        contestsGrid.innerHTML = ''; // Clear existing contests before loading new ones
 
-// Initial load
-loadAllContests();
+        try {
+            let contestsQuery = db.collection("contests").orderBy("createdAt").limit(pageSize);
+            if (lastVisible) {
+                contestsQuery = contestsQuery.startAfter(lastVisible);
+            }
 
-// Mobile Menu Toggle
-const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-const navLinks = document.querySelector('.nav-links');
+            console.log('Firestore Read: Fetching contests with pagination');
+            const querySnapshot = await contestsQuery.get();
+            logFirestoreOperation('read', querySnapshot.size);
+            
+            loadingState.style.display = 'none';
 
-mobileMenuBtn.addEventListener('click', () => {
-    navLinks.classList.toggle('active');
+            if (querySnapshot.empty && !contestsLoaded) {
+                contestsGrid.innerHTML = '<p>No contests available right now. Check back later!</p>';
+                contestsGrid.style.display = 'block';
+                return;
+            }
+
+            querySnapshot.forEach(doc => {
+                const contestCard = createContestCard(doc.data(), doc.id, userCompletedContests);
+                contestsGrid.appendChild(contestCard);
+            });
+
+            // Update lastVisible for the next query
+            lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+
+            // Show/hide Load More button
+            const loadMoreBtn = document.getElementById('load-more-btn');
+            if (querySnapshot.docs.length < pageSize) {
+                if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+            } else {
+                if (loadMoreBtn) loadMoreBtn.style.display = 'block';
+            }
+
+            contestsGrid.style.display = 'grid';
+            contestsLoaded = true; // Set to true after initial load
+
+        }
+        catch (error) {
+            console.error("Error loading contests: ", error);
+            loadingState.style.display = 'none';
+            errorState.style.display = 'block';
+            contestsLoaded = false; // Allow retry
+        }
+    };
+
+    // User ke login status ko check kar rahe hain
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            currentUser = user; // Set the current user object
+            // Agar user logged in hai aur user data abhi tak fetch nahi hua hai
+            if (!userDataFetched) {
+                // Fetch wallet balance
+                const walletDocRef = db.collection("wallets").doc(user.uid);
+                try {
+                    const walletDocSnap = await walletDocRef.get();
+                    logFirestoreOperation('read');
+
+                    if (walletDocSnap.exists) {
+                        const walletData = walletDocSnap.data();
+                        userWalletBalance = walletData.balance || 0; // Get balance from wallet document
+                    } else {
+                        userWalletBalance = 0; // Wallet document not found, balance 0
+                    }
+                } catch (error) {
+                    console.error("Error fetching wallet data:", error);
+                    userWalletBalance = 0; // Error, set balance to 0
+                }
+
+                // Fetch user completed contests and results
+                const userDocRef = db.collection("users").doc(user.uid);
+                try {
+                    const userDocSnap = await userDocRef.get();
+                    logFirestoreOperation('read');
+
+                    if (userDocSnap.exists) {
+                        const userData = userDocSnap.data();
+                        if (userData.contests && Array.isArray(userData.contests)) {
+                            for (const contestResult of userData.contests) {
+                                if (contestResult.contestId && contestResult.isCompleted === true) {
+                                    userCompletedContests.add(contestResult.contestId);
+                                    // Fetch user's specific result for this contest
+                                    const resultDocRef = db.collection("contests").doc(contestResult.contestId).collection("results").doc(user.uid);
+                                    const resultDocSnap = await resultDocRef.get();
+                                    logFirestoreOperation('read');
+                                    if (resultDocSnap.exists) {
+                                        userContestResults.set(contestResult.contestId, resultDocSnap.data());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    console.log('User completed contests:', userCompletedContests);
+                    console.log('User contest results:', userContestResults);
+                } catch (error) {
+                    console.error("Error fetching user data and completed contests:", error);
+                }
+
+                userDataFetched = true; // Set flag to true after fetching
+            }
+            // Sirf tabhi contests load karein jab woh pehle se loaded na hon
+            if (!contestsLoaded) {
+                contestsLoaded = true; // Prevent multiple loads
+                loadContests();
+            }
+        } else {
+            // Agar nahi, to login page par bhej do
+            window.location.href = '/auth/login.html';
+        }
+    });
+
+    // Retry button ka logic
+    const retryBtn = document.querySelector('.retry-btn');
+    if (retryBtn) {
+        retryBtn.addEventListener('click', () => {
+            // Reset pagination for retry
+            lastVisible = null;
+            contestsGrid.innerHTML = ''; // Clear existing contests
+            loadContests();
+        });
+    }
+
+    // Load More button ka logic
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', loadContests);
+    }
+
+    console.log(`Home Page Firestore Operations: Reads: ${totalReads}, Writes: ${totalWrites}`);
 });

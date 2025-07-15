@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizChamp - Refer & Earn</title>
+    <link rel="stylesheet" href="referral.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div id="notification" class="notification"></div>
+
+    <!-- Header (will be dynamically loaded or copied from home/wallet) -->
+    <header class="header">
+        <h1>QuizChamp <span class="fire">🔥</span></h1>
+        <nav class="nav-menu">
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-links">
+                <li><a href="/Home/home.html">Home</a></li>
+                <li><a href="/wallets/wallet.html">Wallet</a></li>
+                <li><a href="#" class="active">Refer & Earn</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="referral-main-content">
+        <div class="referral-container">
+            <!-- New "Enter Friend's Code" section at the top -->
+            <div class="referral-card enter-friend-code-card">
+                <h3 class="referral-title">Have a Friend's Code?</h3>
+                <p class="referral-description">Enter it to get a bonus!</p>
+                
+                <div id="enter-code-section" class="referral-input-group" style="margin-top: 10px;">
+                    <input type="text" id="friend-referral-code-input" placeholder="Enter friend's code" maxlength="6">
+                    <button id="submit-friend-referral-btn" class="copy-btn">Submit Code</button>
+                    <div id="friend-referral-error-message" class="error-message"></div>
+                </div>
+            </div>
+
+            <h2 class="referral-title">Refer & Earn Rewards!</h2>
+            <p class="referral-description">Invite your friends to QuizChamp and earn exciting rewards for every successful referral.</p>
+
+            <div id="my-referral-section" class="hidden">
+                <div class="referral-card">
+                    <h3>Your Referral Code</h3>
+                    <div class="referral-code-display">
+                        <span id="referral-code">Loading...</span>
+                        <button id="copy-code-btn" class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+                    </div>
+                    <p class="referral-tip">Share this code with your friends. They get a bonus, and you get a reward!</p>
+                </div>
+
+                <div class="referral-stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <h4>Total Referrals</h4>
+                        <p id="total-referrals">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-dollar-sign"></i>
+                        <h4>Referral Earnings</h4>
+                        <p id="referral-earnings">₹0.00</p>
+                    </div>
+                </div>
+
+                <div class="referral-share-options">
+                    <h3>Share Your Code</h3>
+                    <div class="share-buttons">
+                        <button class="share-btn whatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                        <button class="share-btn telegram"><i class="fab fa-telegram-plane"></i> Telegram</button>
+                        <button class="share-btn twitter"><i class="fab fa-twitter"></i> Twitter</button>
+                        <button class="share-btn facebook"><i class="fab fa-facebook-f"></i> Facebook</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="referral-how-it-works">
+                <h3>How It Works:</h3>
+                <ul>
+                    <li>1. Share your unique referral code with friends.</li>
+                    <li>2. Your friend signs up using your code.</li>
+                    <li>3. You both get a bonus when your friend makes their first deposit!</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- Referral Logic -->
+    <script src="referral.js"></script>
+</body>
+</html>

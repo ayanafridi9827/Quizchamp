@@ -1,9 +1,8 @@
-// Firebase SDK imports
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js";
 
-// Firebase configuration
+// Aapki Firebase project ki configuration details
 const firebaseConfig = {
     apiKey: "AIzaSyBgCHdqzcsiB9VBTsv4O1fU2R88GVoOOyA",
     authDomain: "quizarena-c222d.firebaseapp.com",
@@ -13,10 +12,9 @@ const firebaseConfig = {
     appId: "1:892135666693:web:4f8bf849019603a937586c"
 };
 
-// Initialize Firebase
+// Firebase ko initialize kar rahe hain
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Export initialized Firebase services
-export { app, auth, db };
+export { auth, db };

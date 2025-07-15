@@ -8,7 +8,9 @@ import {
     collection,
     getDocs,
     query,
-    orderBy
+    orderBy,
+    doc,
+    getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -26,7 +28,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // DOM Elements
-const usersTableBody = document.getElementById('users-table-body');
+const usersContainer = document.getElementById('users-container');
 const searchInput = document.getElementById('search-input');
 const logoutBtn = document.getElementById('logout-btn');
 const challengeHistoryModal = document.getElementById('challenge-history-modal');
@@ -39,26 +41,38 @@ async function fetchUsers() {
         const usersQuery = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(usersQuery);
         
-        usersTableBody.innerHTML = '';
+        usersContainer.innerHTML = '';
         
         querySnapshot.forEach((doc) => {
             const user = doc.data();
-            const row = document.createElement('tr');
+            const userCard = document.createElement('div');
+            userCard.classList.add('user-card');
+            userCard.dataset.userId = doc.id; // Store user ID for search and actions
             
-            row.innerHTML = `
-                <td>${user.name || 'N/A'}</td>
-                <td>${user.email}</td>
-                <td>₹${user.walletBalance || 0}</td>
-                <td>${user.challengeHistory ? user.challengeHistory.length : 0}</td>
-                <td>
-                    <button class="secondary-btn view-history" data-user-id="${doc.id}">
-                        <i class="fas fa-history"></i>
-                        View History
+            userCard.innerHTML = `
+                <div class="user-card-header">
+                    <div class="user-avatar">${user.name ? user.name.charAt(0).toUpperCase() : 'N/A'}</div>
+                    <div class="user-info">
+                        <div class="user-name">${user.name || 'N/A'}</div>
+                        <div class="user-email">${user.email}</div>
+                    </div>
+                </div>
+                <div class="user-card-body">
+                    <div class="info-item">
+                        <strong>Wallet Balance:</strong> <span class="wallet-balance">₹${user.walletBalance || 0}</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Challenges Participated:</strong> <span class="challenges-count">${user.challengeHistory ? user.challengeHistory.length : 0}</span>
+                    </div>
+                </div>
+                <div class="user-card-actions">
+                    <button class="action-btn view-history" data-user-id="${doc.id}">
+                        <i class="fas fa-history"></i> View History
                     </button>
-                </td>
+                </div>
             `;
             
-            usersTableBody.appendChild(row);
+            usersContainer.appendChild(userCard);
         });
 
         // Add event listeners to view history buttons
@@ -104,16 +118,19 @@ async function showChallengeHistory(userId) {
 // Search functionality
 searchInput.addEventListener('input', (e) => {
     const searchTerm = e.target.value.toLowerCase();
-    const rows = usersTableBody.getElementsByTagName('tr');
+    const userCards = usersContainer.getElementsByClassName('user-card');
     
-    Array.from(rows).forEach(row => {
-        const name = row.cells[0].textContent.toLowerCase();
-        const email = row.cells[1].textContent.toLowerCase();
+    Array.from(userCards).forEach(card => {
+        const nameElement = card.querySelector('.user-name');
+        const emailElement = card.querySelector('.user-email');
+
+        const name = nameElement ? nameElement.textContent.toLowerCase() : '';
+        const email = emailElement ? emailElement.textContent.toLowerCase() : '';
         
         if (name.includes(searchTerm) || email.includes(searchTerm)) {
-            row.style.display = '';
+            card.style.display = '';
         } else {
-            row.style.display = 'none';
+            card.style.display = 'none';
         }
     });
 });

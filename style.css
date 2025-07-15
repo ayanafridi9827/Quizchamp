@@ -6,15 +6,15 @@
 }
 
 :root {
-    --primary-color: #4A90E2;
-    --secondary-color: #2C3E50;
-    --accent-color: #E74C3C;
-    --text-color: #333;
-    --light-text: #666;
-    --background: #fff;
-    --light-bg: #f5f6fa;
+    --primary-color: #E53935; /* Red - for primary actions, highlights */
+    --secondary-color: #1A1A2E; /* Deep Blue-Black - main background for some elements */
+    --accent-color: #00BFFF; /* Deep Sky Blue - for vibrant highlights, icons */
+    --text-color: #E0E0E0; /* Light Gray - main text */
+    --light-text: #B0B0B0; /* Lighter Gray - secondary text, descriptions */
+    --background: #0A0A0A; /* Very deep black for overall body */
+    --light-bg: #1E1E1E; /* Dark Gray - for cards, sections */
     --border-radius: 8px;
-    --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
     --transition: all 0.3s ease;
 }
 
@@ -30,7 +30,7 @@ body {
   font-size: 16px;
   font-weight: bold;
   color: #fff;
-  background: linear-gradient(120deg, #ff4e50, #f44336, #e53935);
+  background: linear-gradient(120deg, var(--primary-color), #f44336, #e53935);
   background-size: 200% auto;
   border: none;
   border-radius: 10px;
@@ -78,10 +78,11 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(10, 10, 10, 0.95); /* Use a slightly transparent very deep black */
     backdrop-filter: blur(10px);
     z-index: 1000;
     box-shadow: var(--box-shadow);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .header .container {
@@ -93,11 +94,11 @@ body {
 
 .logo h1 {
     font-size: 1.8rem;
-    color: var(--primary-color);
+    color: var(--primary-color); /* Red */
 }
 
 .fire {
-    color: var(--accent-color);
+    color: var(--accent-color); /* Deep Sky Blue */
 }
 
 .nav-menu {
@@ -128,12 +129,12 @@ body {
 }
 
 .btn-primary {
-    background: var(--primary-color);
+    background: var(--primary-color); /* Red */
     color: white;
 }
 
 .btn-primary:hover {
-    background: #357ABD;
+    background: #C62828; /* Darker Red */
     transform: translateY(-2px);
 }
 
@@ -145,8 +146,9 @@ body {
 /* Hero Section */
 .hero {
     padding: 120px 0 60px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--background) 100%); /* Dark gradient */
     text-align: center;
+    color: var(--text-color);
 }
 
 .hero-content {
@@ -155,13 +157,14 @@ body {
 }
 
 .hero h1 {
-    font-size: 2.5rem;
+    font-size: 2.8rem; /* Slightly larger */
     margin-bottom: 20px;
-    color: var(--secondary-color);
+    color: var(--text-color);
+    text-shadow: 0 0 10px rgba(229, 57, 53, 0.3); /* Subtle red glow */
 }
 
 .hero p {
-    font-size: 1.2rem;
+    font-size: 1.3rem; /* Slightly larger */
     color: var(--light-text);
     margin-bottom: 40px;
 }
@@ -171,6 +174,7 @@ body {
     justify-content: center;
     gap: 40px;
     margin: 40px 0;
+    color: var(--light-text);
 }
 
 .stat-item {
@@ -180,21 +184,67 @@ body {
 }
 
 .stat-item i {
+    font-size: 1.8rem; /* Slightly larger */
+    color: var(--accent-color); /* Deep Sky Blue */
+}
+
+/* Upcoming Contests Section */
+.upcoming-contests {
+    padding: 80px 0;
+    background: var(--background);
+    color: var(--text-color);
+}
+
+.contest-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.contest-card {
+    background: var(--light-bg);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: center;
+}
+
+.contest-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+.contest-card h3 {
     font-size: 1.5rem;
+    margin-bottom: 15px;
     color: var(--primary-color);
+}
+
+.contest-card p {
+    font-size: 1rem;
+    color: var(--light-text);
+    margin-bottom: 10px;
+}
+
+.contest-card .btn {
+    margin-top: 20px;
 }
 
 /* How It Works Section */
 .how-it-works {
     padding: 80px 0;
-    background: var(--light-bg);
+    background: var(--light-bg); /* Dark Gray */
+    color: var(--text-color);
 }
 
 .section-title {
     text-align: center;
-    font-size: 2rem;
+    font-size: 2.2rem; /* Slightly larger */
     margin-bottom: 50px;
-    color: var(--secondary-color);
+    color: var(--primary-color); /* Red */
+    text-shadow: 0 0 15px rgba(229, 57, 53, 0.4); /* Stronger red glow */
 }
 
 .steps {
@@ -206,24 +256,29 @@ body {
 
 .step {
     padding: 30px;
-    background: white;
+    background: var(--secondary-color); /* Deep Blue-Black */
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
     transition: var(--transition);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .step:hover {
     transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
 }
 
 .step-icon {
-    font-size: 2.5rem;
+    font-size: 3rem; /* Larger */
     margin-bottom: 20px;
+    color: var(--accent-color); /* Deep Sky Blue */
 }
 
 /* Features Section */
 .features {
     padding: 80px 0;
+    background: var(--background); /* Very deep black */
+    color: var(--text-color);
 }
 
 .feature-grid {
@@ -234,28 +289,137 @@ body {
 
 .feature-card {
     padding: 30px;
-    background: white;
+    background: var(--light-bg); /* Dark Gray */
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
     text-align: center;
     transition: var(--transition);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .feature-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
 }
 
 .feature-card i {
-    font-size: 2rem;
-    color: var(--primary-color);
+    font-size: 2.5rem; /* Larger */
+    color: var(--accent-color); /* Deep Sky Blue */
     margin-bottom: 20px;
+}
+
+/* Testimonials Section */
+.testimonials {
+    padding: 80px 0;
+    background: var(--light-bg);
+    color: var(--text-color);
+}
+
+.testimonial-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.testimonial-card {
+    background: var(--secondary-color);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.testimonial-card .quote {
+    font-size: 1.1rem;
+    font-style: italic;
+    margin-bottom: 15px;
+    color: var(--light-text);
+}
+
+.testimonial-card .author {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Call to Action Section */
+.cta-section {
+    padding: 80px 0;
+    background: linear-gradient(135deg, var(--primary-color) 0%, #C62828 100%); /* Red gradient */
+    text-align: center;
+    color: white;
+    border-radius: var(--border-radius);
+    margin: 40px auto;
+    max-width: 1000px;
+    box-shadow: 0 10px 30px rgba(229, 57, 53, 0.4);
+}
+
+.cta-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.cta-section p {
+    font-size: 1.2rem;
+    margin-bottom: 40px;
+    opacity: 0.9;
+}
+
+.cta-section .btn-primary {
+    background: white;
+    color: var(--primary-color);
+    padding: 15px 35px;
+    font-size: 1.1rem;
+    border-radius: 50px; /* Pill shape */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.cta-section .btn-primary:hover {
+    background: #f0f0f0;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* FAQ Section */
+.faq-section {
+    padding: 80px 0;
+    background: var(--background);
+    color: var(--text-color);
+}
+
+.faq-item {
+    background: var(--light-bg);
+    padding: 25px;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    box-shadow: var(--box-shadow);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: var(--transition);
+}
+
+.faq-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.faq-item h3 {
+    font-size: 1.3rem;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.faq-item p {
+    font-size: 1rem;
+    color: var(--light-text);
 }
 
 /* Footer */
 .footer {
-    background: var(--secondary-color);
-    color: white;
+    background: var(--secondary-color); /* Deep Blue-Black */
+    color: var(--light-text);
     padding: 60px 0 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .footer-content {
@@ -267,7 +431,8 @@ body {
 
 .footer-section h3 {
     margin-bottom: 20px;
-    font-size: 1.2rem;
+    font-size: 1.3rem; /* Slightly larger */
+    color: var(--primary-color); /* Red */
 }
 
 .footer-links {
@@ -277,13 +442,13 @@ body {
 }
 
 .footer-links a {
-    color: #fff;
+    color: var(--light-text);
     text-decoration: none;
     transition: var(--transition);
 }
 
 .footer-links a:hover {
-    color: var(--primary-color);
+    color: var(--primary-color); /* Red */
 }
 
 .social-links {
@@ -292,13 +457,13 @@ body {
 }
 
 .social-links a {
-    color: white;
-    font-size: 1.5rem;
+    color: var(--light-text);
+    font-size: 1.8rem; /* Larger */
     transition: var(--transition);
 }
 
 .social-links a:hover {
-    color: var(--primary-color);
+    color: var(--primary-color); /* Red */
 }
 
 .newsletter-form {
@@ -311,12 +476,15 @@ body {
     padding: 10px;
     border: none;
     border-radius: var(--border-radius);
+    background: #333; /* Dark input background */
+    color: var(--text-color);
 }
 
 .footer-bottom {
     text-align: center;
     padding-top: 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--light-text);
 }
 
 /* Mobile Menu */
@@ -326,7 +494,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.95); /* Even darker */
     z-index: 2000;
     display: none;
 }
@@ -352,7 +520,7 @@ body {
     background: none;
     border: none;
     color: white;
-    font-size: 1.5rem;
+    font-size: 1.8rem; /* Larger */
     cursor: pointer;
 }
 
@@ -366,18 +534,19 @@ body {
 .mobile-menu nav a {
     color: white;
     text-decoration: none;
-    font-size: 1.2rem;
+    font-size: 1.4rem; /* Larger */
     transition: var(--transition);
 }
 
 .mobile-menu nav a:hover {
-    color: var(--primary-color);
+    color: var(--primary-color); /* Red */
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .mobile-menu-btn {
         display: block;
+        color: var(--primary-color); /* Red */
     }
 
     .header-buttons {
@@ -389,7 +558,7 @@ body {
     }
 
     .hero h1 {
-        font-size: 2rem;
+        font-size: 2.2rem;
     }
 
     .hero-stats {
@@ -429,11 +598,11 @@ body {
     }
 
     .hero h1 {
-        font-size: 1.8rem;
+        font-size: 2rem;
     }
 
     .section-title {
-        font-size: 1.8rem;
+        font-size: 2rem;
     }
 
     .btn-large {

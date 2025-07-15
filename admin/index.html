@@ -3,478 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - QuizArena Admin</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <style>
-        .dashboard-container {
-            padding: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .dashboard-header h1 {
-            font-size: 2rem;
-            color: var(--text-primary);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background-color: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid var(--border-color);
-            transition: var(--transition);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--primary-color);
-        }
-
-        .stat-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background-color: var(--bg-tertiary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: var(--primary-color);
-        }
-
-        .stat-info h3 {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.25rem;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .stat-change {
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .stat-change.positive {
-            color: var(--success-color);
-        }
-
-        .stat-change.negative {
-            color: var(--danger-color);
-        }
-
-        .recent-activity {
-            background-color: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid var(--border-color);
-        }
-
-        .recent-activity h2 {
-            font-size: 1.25rem;
-            color: var(--text-primary);
-            margin-bottom: 1rem;
-        }
-
-        .activity-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .activity-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background-color: var(--bg-tertiary);
-            border-radius: 8px;
-        }
-
-        .activity-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            background-color: var(--bg-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            color: var(--primary-color);
-        }
-
-        .activity-info {
-            flex: 1;
-        }
-
-        .activity-info h4 {
-            font-size: 0.875rem;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .activity-info p {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        .activity-time {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-    </style>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-            <h1>QuizChamp <span class="fire">🔥</span></h1>
-            </div>
-        <ul class="nav-links">
-            <li class="nav-item active" data-section="dashboard">
-                <i class="fas fa-chart-line"></i>
-                <span>Dashboard</span>
-            </li>
-            <li class="nav-item" data-section="users">
-                <i class="fas fa-users"></i>
-                <span>Users</span>
-            </li>
-            <li class="nav-item" data-section="quizzes">
-                <i class="fas fa-question-circle"></i>
-                <span>Quizzes</span>
-            </li>
-            <li class="nav-item" data-section="categories">
-                <i class="fas fa-tags"></i>
-                <span>Categories</span>
-            </li>
-            <li class="nav-item" data-section="reports">
-                <i class="fas fa-chart-bar"></i>
-                <span>Reports</span>
-            </li>
-            <li class="nav-item" data-section="settings">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
-            </li>
-            </ul>
-        <div class="sidebar-footer">
-            <button class="logout-btn" id="logout-btn">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
-            </button>
-        </div>
-        </aside>
+    <div class="sidebar">
+        <h2>Admin Panel</h2>
+        <ul>
+            <li><a href="index.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="pages/users.html"><i class="fas fa-users"></i> Users</a></li>
+            <li><a href="pages/quizzes.html"><i class="fas fa-question-circle"></i> Quizzes</a></li>
+            <li><a href="pages/challenges.html"><i class="fas fa-trophy"></i> Challenges</a></li>
+            <li><a href="pages/withdrawals.html"><i class="fas fa-wallet"></i> Withdrawals</a></li>
+            <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
 
-    <!-- Main Content -->
-        <main class="main-content">
-        <div class="dashboard-container">
-            <div class="dashboard-header">
-                <h1>Dashboard</h1>
-                <div class="header-actions">
-                    <button class="primary-btn" id="refresh-btn">
-                        <i class="fas fa-sync-alt"></i>
-                        Refresh Data
-                    </button>
-                </div>
-            </div>
+    <div class="main-content">
+        <header>
+            <h1>Dashboard</h1>
+        </header>
 
-            <div class="stats-grid">
-                    <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>Total Users</h3>
-                            <div class="stat-value" id="total-users">0</div>
-                            <div class="stat-change positive">
-                                <i class="fas fa-arrow-up"></i>
-                                <span id="users-growth">0%</span> from last month
-                            </div>
-                        </div>
+        <main>
+            <div class="card-container">
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-users"></i></div>
+                    <div class="card-info">
+                        <p>Total Users</p>
+                        <h3 id="users-count">Loading...</h3>
                     </div>
                 </div>
-
-                    <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">
-                            <i class="fas fa-trophy"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>Active Contests</h3>
-                            <div class="stat-value" id="active-contests">0</div>
-                            <div class="stat-change positive">
-                                <i class="fas fa-arrow-up"></i>
-                                <span id="contests-growth">0%</span> from last month
-                    </div>
-                        </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-question-circle"></i></div>
+                    <div class="card-info">
+                        <p>Total Quizzes</p>
+                        <h3 id="quizzes-count">Loading...</h3>
                     </div>
                 </div>
-
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">
-                            <i class="fas fa-question-circle"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>Total Quizzes</h3>
-                            <div class="stat-value" id="total-quizzes">0</div>
-                            <div class="stat-change positive">
-                                <i class="fas fa-arrow-up"></i>
-                                <span id="quizzes-growth">0%</span> from last month
-                        </div>
-                        </div>
-                        </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-trophy"></i></div>
+                    <div class="card-info">
+                        <p>Total Challenges</p>
+                        <h3 id="challenges-count">Loading...</h3>
+                    </div>
                 </div>
-
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">
-                            <i class="fas fa-coins"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>Total Revenue</h3>
-                            <div class="stat-value" id="total-revenue">₹0</div>
-                            <div class="stat-change positive">
-                                <i class="fas fa-arrow-up"></i>
-                                <span id="revenue-growth">0%</span> from last month
-                            </div>
-                        </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-wallet"></i></div>
+                    <div class="card-info">
+                        <p>Pending Withdrawals</p>
+                        <h3 id="withdrawals-count">Loading...</h3>
                     </div>
                 </div>
             </div>
-
-            <div class="recent-activity">
-                <h2>Recent Activity</h2>
-                <div class="activity-list" id="activity-list">
-                    <!-- Activity items will be populated here -->
-                </div>
-            </div>
-        </div>
         </main>
+    </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            getDocs, 
-            query, 
-            where, 
-            orderBy, 
-            limit,
-            getCountFromServer,
-            onSnapshot
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-          apiKey: "AIzaSyBgCHdqzcsiB9VBTsv4O1fU2R88GVoOOyA",
-          authDomain: "quizarena-c222d.firebaseapp.com",
-          projectId: "quizarena-c222d",
-          storageBucket: "quizarena-c222d.firebasestorage.app",
-          messagingSenderId: "892135666693",
-          appId: "1:892135666693:web:4f8bf849019603a937586c"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Check authentication state
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-            } else {
-                // Check if user is admin
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
-                if (!userDoc.exists() || userDoc.data().role !== 'admin') {
-                    await signOut(auth);
-                    window.location.href = 'login.html';
-                }
-            }
-        });
-
-        // Navigation
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const section = item.dataset.section;
-                switch(section) {
-                    case 'dashboard':
-                        window.location.href = 'index.html';
-                        break;
-                    case 'users':
-                        window.location.href = 'pages/users.html';
-                        break;
-                    case 'quizzes':
-                        window.location.href = 'pages/questions.html';
-                        break;
-                    case 'categories':
-                        window.location.href = 'pages/categories.html';
-                        break;
-                    case 'reports':
-                        window.location.href = 'pages/reports.html';
-                        break;
-                    case 'settings':
-                        window.location.href = 'pages/settings.html';
-                        break;
-                }
-            });
-        });
-
-        // Logout
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-                window.location.href = 'login.html';
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
-        });
-
-        // Update dashboard stats
-        async function updateDashboardStats() {
-            try {
-                // Get total users count
-                const usersRef = collection(db, 'users');
-                const totalUsersSnapshot = await getCountFromServer(usersRef);
-                document.getElementById('total-users').textContent = totalUsersSnapshot.data().count;
-
-                // Get active contests count
-                const contestsRef = collection(db, 'contests');
-                const activeContestsSnapshot = await getCountFromServer(
-                    query(contestsRef, where('status', '==', 'active'))
-                );
-                document.getElementById('active-contests').textContent = activeContestsSnapshot.data().count;
-
-                // Get total quizzes count
-                const quizzesRef = collection(db, 'quizzes');
-                const totalQuizzesSnapshot = await getCountFromServer(quizzesRef);
-                document.getElementById('total-quizzes').textContent = totalQuizzesSnapshot.data().count;
-
-                // Calculate growth percentages
-                const lastMonth = new Date();
-                lastMonth.setMonth(lastMonth.getMonth() - 1);
-
-                // Users growth
-                const lastMonthUsers = await getCountFromServer(
-                    query(usersRef, where('createdAt', '>=', lastMonth))
-                );
-                const usersGrowth = ((lastMonthUsers.data().count / totalUsersSnapshot.data().count) * 100).toFixed(1);
-                document.getElementById('users-growth').textContent = `${usersGrowth}%`;
-
-                // Contests growth
-                const lastMonthContests = await getCountFromServer(
-                    query(contestsRef, where('createdAt', '>=', lastMonth))
-                );
-                const contestsGrowth = ((lastMonthContests.data().count / activeContestsSnapshot.data().count) * 100).toFixed(1);
-                document.getElementById('contests-growth').textContent = `${contestsGrowth}%`;
-
-                // Quizzes growth
-                const lastMonthQuizzes = await getCountFromServer(
-                    query(quizzesRef, where('createdAt', '>=', lastMonth))
-                );
-                const quizzesGrowth = ((lastMonthQuizzes.data().count / totalQuizzesSnapshot.data().count) * 100).toFixed(1);
-                document.getElementById('quizzes-growth').textContent = `${quizzesGrowth}%`;
-
-            } catch (error) {
-                console.error('Error updating dashboard stats:', error);
-            }
-        }
-
-        // Update recent activity
-        function updateRecentActivity() {
-            const activityList = document.getElementById('activity-list');
-            const activities = [
-                {
-                    icon: 'fa-user-plus',
-                    title: 'New User Registration',
-                    description: 'John Doe joined QuizArena',
-                    time: '2 minutes ago'
-                },
-                {
-                    icon: 'fa-trophy',
-                    title: 'Contest Completed',
-                    description: 'Weekly Quiz Challenge ended',
-                    time: '15 minutes ago'
-                },
-                {
-                    icon: 'fa-coins',
-                    title: 'Payment Received',
-                    description: '₹500 received from contest entry',
-                    time: '1 hour ago'
-                }
-            ];
-
-            activityList.innerHTML = activities.map(activity => `
-                <div class="activity-item">
-                    <div class="activity-icon">
-                        <i class="fas ${activity.icon}"></i>
-                    </div>
-                    <div class="activity-info">
-                        <h4>${activity.title}</h4>
-                        <p>${activity.description}</p>
-                    </div>
-                    <div class="activity-time">${activity.time}</div>
-                </div>
-            `).join('');
-        }
-
-        // Refresh button
-        document.getElementById('refresh-btn').addEventListener('click', () => {
-            updateDashboardStats();
-            updateRecentActivity();
-        });
-
-        // Initial load
-        updateDashboardStats();
-        updateRecentActivity();
-
-        // Set up real-time listeners
-        const usersRef = collection(db, 'users');
-        onSnapshot(usersRef, () => {
-            updateDashboardStats();
-        });
-
-        const contestsRef = collection(db, 'contests');
-        onSnapshot(contestsRef, () => {
-            updateDashboardStats();
-        });
-
-        const quizzesRef = collection(db, 'quizzes');
-        onSnapshot(quizzesRef, () => {
-            updateDashboardStats();
-        });
-    </script>
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="admin-session.js"></script>
+    <script type="module" src="js/dashboard.js"></script>
 </body>
-</html> 
+</html>

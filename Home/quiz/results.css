@@ -1,0 +1,133 @@
+:root {
+    --correct-bg: #e8f5e9;
+    --incorrect-bg: #fbe9e7;
+}
+
+.results-container {
+    width: 100%;
+    max-width: 800px;
+    height: 95vh;
+    max-height: 900px;
+    background: var(--card-background);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 var(--shadow-color);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.results-body {
+    padding: 2rem;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+}
+
+.summary-card h3 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.summary-card p {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.summary-card.score p { color: var(--primary-color); }
+.summary-card.correct p { color: var(--correct-color); }
+.summary-card.incorrect p { color: var(--incorrect-color); }
+.summary-card.time p { color: var(--secondary-color); }
+
+.answers-breakdown h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.answer-item {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 12px;
+}
+
+.answer-item.correct {
+    background: var(--correct-bg);
+    border-left: 5px solid var(--correct-color);
+}
+
+.answer-item.incorrect {
+    background: var(--incorrect-bg);
+    border-left: 5px solid var(--incorrect-color);
+}
+
+.answer-item p {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.answer-details span {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.winner-info-box {
+    background-color: var(--incorrect-bg);
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    margin: 2rem auto;
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: 600;
+    color: var(--incorrect-color);
+    max-width: 600px;
+}
+
+.results-footer {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+#home-btn {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: var(--light-text-color);
+    border: none;
+    border-radius: 12px;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+#home-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(142, 68, 173, 0.4);
+}

@@ -25,7 +25,6 @@ const closeModalBtn = document.getElementById('close-modal');
 const addChallengeForm = document.getElementById('add-challenge-form');
 const participantsModal = document.getElementById('participants-modal');
 const closeParticipantsModal = document.getElementById('close-participants-modal');
-const participantsGrid = document.getElementById('participants-grid');
 const prizeInputModal = document.getElementById('prize-input-modal');
 const closePrizeModal = document.getElementById('close-prize-modal');
 const prizeInputForm = document.getElementById('prize-input-form');
@@ -137,170 +136,173 @@ function createChallengeCard(id, challenge) {
 async function viewParticipants(contestId) {
     try {
         currentContestId = contestId;
-        
-        // Show modal and loading state
         participantsModal.classList.add('active');
-        participantsGrid.innerHTML = `
-            <div class="loading-state">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Loading participants...</p>
-            </div>
-        `;
-        
-        // Get contest data
+
+        const participantsList = document.getElementById('participants-list');
+        const participantsLoadingState = document.getElementById('participants-loading-state');
+        const participantsErrorState = document.getElementById('participants-error-state');
+        const noParticipantsState = document.getElementById('no-participants-state');
+        const retryParticipantsBtn = document.getElementById('retry-participants-btn');
+
+        // Log to see if elements are found
+        console.log('participantsList:', participantsList);
+        console.log('participantsLoadingState:', participantsLoadingState);
+        console.log('participantsErrorState:', participantsErrorState);
+        console.log('noParticipantsState:', noParticipantsState);
+        console.log('retryParticipantsBtn:', retryParticipantsBtn);
+
+        // Show loading state, hide others
+        if (participantsLoadingState) participantsLoadingState.style.display = 'flex';
+        if (participantsErrorState) participantsErrorState.style.display = 'none';
+        if (noParticipantsState) noParticipantsState.style.display = 'none';
+        if (participantsList) participantsList.innerHTML = ''; // Clear previous participants
+
+        // Attach retry listener
+        if (retryParticipantsBtn) {
+            retryParticipantsBtn.onclick = () => viewParticipants(contestId);
+        }
+
         const contestRef = doc(db, 'contests', contestId);
         const contestDoc = await getDoc(contestRef);
-        
+
         if (!contestDoc.exists()) {
             throw new Error('Contest not found');
         }
-        
+
         currentContestData = contestDoc.data();
         const participants = currentContestData.participants || [];
-        
+
         if (participants.length === 0) {
-            participantsGrid.innerHTML = `
-                <div class="no-participants">
-                    <i class="fas fa-users-slash"></i>
-                    <p>No participants yet</p>
-                </div>
-            `;
+            if (participantsLoadingState) participantsLoadingState.style.display = 'none';
+            if (noParticipantsState) noParticipantsState.style.display = 'flex';
             return;
         }
-        
-        // Clear grid and start loading participants
-        participantsGrid.innerHTML = '';
-        let loadedCount = 0;
-        
-        // Create a container for all participant cards
-        const cardsContainer = document.createElement('div');
-        cardsContainer.className = 'participants-grid';
-        
+
+        let loadedParticipants = [];
         for (const participantId of participants) {
             try {
-                // Update loading progress
-                loadedCount++;
-                participantsGrid.innerHTML = `
-                    <div class="loading-state">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Loading participants... (${loadedCount}/${participants.length})</p>
-                    </div>
-                `;
-                
-                // Get user data
                 const userRef = doc(db, 'users', participantId);
                 const userDoc = await getDoc(userRef);
-                
+
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
                     const isWinner = currentContestData.winners?.some(w => w.userId === participantId);
-                    
-                    // Get contest-specific stats from user's challengeHistory array
-                    const challengeHistory = userData.challengeHistory || [];
-                    console.log('Challenge History:', challengeHistory); // Debug log
-                    
-                    // Find the specific contest stats
-                    const contestStats = challengeHistory.find(c => c.contestId === contestId);
-                    console.log('Contest Stats:', contestStats); // Debug log
-                    
-                    // Get the stats with proper fallback
+
+                    const userContests = userData.contests || [];
+                    console.log('User Data:', userData);
+                    console.log('User Contests for user:', userData.contests);
+                    console.log('Contest ID being searched:', contestId);
+                    const contestStats = userContests.find(c => c.contestId === contestId);
+                    console.log('Found Contest Stats:', contestStats);
+
                     const stats = {
                         score: contestStats?.score || 0,
-                        correctAnswers: contestStats?.correct || 0,
-                        wrongAnswers: contestStats?.wrong || 0,
+                        correct: contestStats?.correctQuestions || 0,
+                        wrong: contestStats?.wrongQuestions || 0,
                         timeTaken: contestStats?.timeTaken || 0
                     };
-                    
-                    console.log('Stats for user:', participantId, stats); // Debug log
-                    
-                    const participantCard = document.createElement('div');
-                    participantCard.className = `participant-card ${isWinner ? 'winner' : ''}`;
-                    
-                    participantCard.innerHTML = `
-                        <div class="participant-header">
-                            <div class="participant-info">
-                                <h3 class="participant-name">
-                                    ${userData.name}
-                                    ${isWinner ? '<span class="winner-badge"><i class="fas fa-crown"></i> Winner</span>' : ''}
-                                </h3>
-                                <p class="participant-email">${userData.email}</p>
-                            </div>
-                        </div>
-                        <div class="stat-group">
-                            <h4><i class="fas fa-chart-line"></i> Contest Performance</h4>
-                            <div class="stat-grid">
-                                <div class="stat-item">
-                                    <div class="stat-label">
-                                        <i class="fas fa-star"></i>
-                                        Score
-                                    </div>
-                                    <div class="stat-value">${stats.score}</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-label">
-                                        <i class="fas fa-check-circle"></i>
-                                        Correct
-                                    </div>
-                                    <div class="stat-value">${stats.correctAnswers}</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-label">
-                                        <i class="fas fa-times-circle"></i>
-                                        Wrong
-                                    </div>
-                                    <div class="stat-value">${stats.wrongAnswers}</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-label">
-                                        <i class="fas fa-clock"></i>
-                                        Time
-                                    </div>
-                                    <div class="stat-value">${stats.timeTaken}s</div>
-                                </div>
-                            </div>
-                        </div>
-                        ${!isWinner ? `
-                            <button class="winner-btn" onclick="makeWinner('${participantId}')">
-                                <i class="fas fa-trophy"></i>
-                                Mark as Winner
-                            </button>
-                        ` : ''}
-                    `;
-                    
-                    cardsContainer.appendChild(participantCard);
+
+                    loadedParticipants.push({
+                        id: participantId,
+                        name: userData.name,
+                        email: userData.email,
+                        isWinner: isWinner,
+                        stats: stats
+                    });
                 }
             } catch (error) {
                 console.error('Error loading participant:', error);
             }
         }
-        
-        // Clear loading state and show all participant cards
-        participantsGrid.innerHTML = '';
-        participantsGrid.appendChild(cardsContainer);
-        
-        // If no participants were loaded successfully
-        if (cardsContainer.children.length === 0) {
-            participantsGrid.innerHTML = `
-                <div class="error-state">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <p>No participants found</p>
+
+        participantsLoadingState.style.display = 'none';
+
+        if (loadedParticipants.length === 0) {
+            noParticipantsState.style.display = 'flex';
+            return;
+        }
+
+        // Sort participants by score (descending) then time taken (ascending)
+        loadedParticipants.sort((a, b) => {
+            if (b.stats.score !== a.stats.score) {
+                return b.stats.score - a.stats.score;
+            }
+            return a.stats.timeTaken - b.stats.timeTaken;
+        });
+
+        loadedParticipants.forEach((participant, index) => {
+            const participantRow = document.createElement('div');
+            participantRow.className = 'participant-row';
+            // Add rank-specific class for styling
+            if (index === 0) participantRow.classList.add('rank-1');
+            else if (index === 1) participantRow.classList.add('rank-2');
+            else if (index === 2) participantRow.classList.add('rank-3');
+
+            participantRow.innerHTML = `
+                <div class="participant-cell">${index + 1}</div>
+                <div class="participant-cell name">
+                    ${participant.isWinner ? '<i class="fas fa-trophy participant-trophy-icon"></i>' : ''}
+                    ${participant.name}
+                </div>
+                <div class="participant-cell score">${participant.stats.score}</div>
+                <div class="participant-cell correct">${participant.stats.correct}</div>
+                <div class="participant-cell wrong">${participant.stats.wrong}</div>
+                <div class="participant-cell time">${participant.stats.timeTaken}s</div>
+                <div class="participant-cell action-buttons">
+                    ${!participant.isWinner ? `
+                        <button class="winner-btn" onclick="makeWinner('${participant.id}')">
+                            <i class="fas fa-trophy"></i>
+                            Mark as Winner
+                        </button>
+                    ` : ''}
+                    <button class="delete-participant-btn" onclick="deleteParticipant('${contestId}', '${participant.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
             `;
-        }
-        
+            participantsList.appendChild(participantRow);
+        });
+
     } catch (error) {
         console.error('Error viewing participants:', error);
         showToast('Error loading participants', 'error');
-        participantsGrid.innerHTML = `
-            <div class="error-state">
-                <i class="fas fa-exclamation-circle"></i>
-                <p>Error loading participants</p>
-                <button class="retry-btn" onclick="viewParticipants('${contestId}')">
-                    <i class="fas fa-redo"></i>
-                    Retry
-                </button>
-            </div>
-        `;
+        // Ensure these elements are correctly referenced even in error state
+        document.getElementById('participants-loading-state').style.display = 'none';
+        document.getElementById('participants-error-state').style.display = 'flex';
+    }
+}
+
+async function deleteParticipant(contestId, userId) {
+    if (confirm('Are you sure you want to remove this participant from the challenge?')) {
+        try {
+            const contestRef = doc(db, 'contests', contestId);
+            const contestDoc = await getDoc(contestRef);
+
+            if (!contestDoc.exists()) {
+                showToast('Contest not found', 'error');
+                return;
+            }
+
+            const currentParticipants = contestDoc.data().participants || [];
+            const updatedParticipants = currentParticipants.filter(id => id !== userId);
+
+            await updateDoc(contestRef, {
+                participants: updatedParticipants
+            });
+
+            // Optionally, remove from winners if they were a winner
+            const currentWinners = contestDoc.data().winners || [];
+            const updatedWinners = currentWinners.filter(winner => winner.userId !== userId);
+            await updateDoc(contestRef, {
+                winners: updatedWinners
+            });
+
+            showToast('Participant removed successfully', 'success');
+            viewParticipants(contestId); // Refresh the list
+        } catch (error) {
+            console.error('Error removing participant:', error);
+            showToast('Error removing participant', 'error');
+        }
     }
 }
 
@@ -308,8 +310,10 @@ async function viewParticipants(contestId) {
 async function makeWinner(userId) {
     try {
         currentUserId = userId;
+        console.log('makeWinner called for userId:', userId);
         prizeInputModal.classList.add('active');
         prizeInputForm.reset();
+        console.log('prizeInputModal should be active now.');
     } catch (error) {
         console.error('Error preparing winner form:', error);
         showToast('Error preparing winner form', 'error');
@@ -319,12 +323,15 @@ async function makeWinner(userId) {
 // Handle prize form submission
 prizeInputForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    console.log('Prize form submitted.');
     
     try {
         const prizeAmount = parseFloat(document.getElementById('prizeAmount').value);
         const rank = parseInt(document.getElementById('rank').value);
+        console.log('Prize Amount:', prizeAmount, 'Rank:', rank);
         
         if (!currentContestId || !currentUserId || !currentContestData) {
+            console.error('Missing contest or user data', { currentContestId, currentUserId, currentContestData });
             throw new Error('Missing contest or user data');
         }
         
@@ -334,6 +341,7 @@ prizeInputForm.addEventListener('submit', async (e) => {
         const existingRank = winnersSnapshot.docs.find(doc => doc.data().rank === rank);
         
         if (existingRank) {
+            console.warn('This rank is already assigned to another winner', existingRank.data());
             throw new Error('This rank is already assigned to another winner');
         }
         
@@ -342,10 +350,12 @@ prizeInputForm.addEventListener('submit', async (e) => {
         const userDoc = await getDoc(userRef);
         
         if (!userDoc.exists()) {
+            console.error('User not found for userId:', currentUserId);
             throw new Error('User not found');
         }
         
         const userData = userDoc.data();
+        console.log('User Data for winner:', userData);
         
         // Create winner data
         const winnerData = {
@@ -366,10 +376,6 @@ prizeInputForm.addEventListener('submit', async (e) => {
             timeTaken: userData.timeTaken || 0
         };
         
-        // Add to winners subcollection
-        const winnerRef = doc(winnersRef, currentUserId);
-        await setDoc(winnerRef, winnerData);
-        
         // Update contest document
         const contestRef = doc(db, 'contests', currentContestId);
         await updateDoc(contestRef, {
@@ -378,17 +384,21 @@ prizeInputForm.addEventListener('submit', async (e) => {
                 name: userData.name,
                 prize: prizeAmount,
                 rank: rank
-            }]
+            }],
+            status: 'ended', // Mark contest as ended
+            winnerDeclared: true // Add a flag for winner declaration
         });
+        console.log('Contest document updated with new winner and status.');
         
-        // Update user's challenge history
-        const userChallengeRef = doc(db, `users/${currentUserId}/challengeHistory/${currentContestId}`);
-        await setDoc(userChallengeRef, {
+        // Update user's contest history with winner status
+        const userContestRef = doc(db, `users/${currentUserId}/contests/${currentContestId}`);
+        await setDoc(userContestRef, {
             status: 'winner',
             prize: prizeAmount,
             rank: rank,
             updatedAt: serverTimestamp()
         }, { merge: true });
+        console.log('User contest history updated with winner status.');
         
         showToast('Winner marked successfully', 'success');
         prizeInputModal.classList.remove('active');
@@ -405,13 +415,17 @@ prizeInputForm.addEventListener('submit', async (e) => {
 // View winners
 async function viewWinners(contestId) {
     try {
-        const winnersRef = collection(db, `contests/${contestId}/winners`);
-        const winnersSnapshot = await getDocs(winnersRef);
-        
-        const winners = [];
-        winnersSnapshot.forEach(doc => {
-            winners.push({ id: doc.id, ...doc.data() });
-        });
+        // Fetch the contest document to get the winners array
+        const contestRef = doc(db, 'contests', contestId);
+        const contestDoc = await getDoc(contestRef);
+
+        if (!contestDoc.exists()) {
+            showToast('Contest not found', 'error');
+            return;
+        }
+
+        const contestData = contestDoc.data();
+        const winners = contestData.winners || [];
         
         // Sort winners by rank
         winners.sort((a, b) => a.rank - b.rank);
@@ -424,7 +438,7 @@ async function viewWinners(contestId) {
                 <div class="winners-modal-header">
                     <div class="contest-info">
                         <h2><i class="fas fa-trophy"></i> Contest Winners</h2>
-                        <p class="contest-subtitle">${currentContestData?.title || 'Contest'}</p>
+                        <p class="contest-subtitle">${contestData?.title || 'Contest'}</p>
                     </div>
                     <button class="close-btn" onclick="this.closest('.winners-modal').remove()">&times;</button>
                 </div>
@@ -452,7 +466,7 @@ async function viewWinners(contestId) {
                                     </div>
                                     <div class="stat">
                                         <i class="fas fa-chart-line"></i>
-                                        Score: ${winner.score}
+                                        Score: ${winner.score || 'N/A'}
                                     </div>
                                 </div>
                             </div>
@@ -473,10 +487,25 @@ async function viewWinners(contestId) {
 // Helper functions
 function getChallengeStatus(challenge) {
     const now = new Date();
-    const startTime = challenge.startTime?.toDate();
-    const endTime = challenge.endTime?.toDate();
+    let startTime = challenge.startTime;
+    let endTime = challenge.endTime;
+
+    // Convert to Date objects if they are Firestore Timestamps
+    if (startTime && typeof startTime.toDate === 'function') {
+        startTime = startTime.toDate();
+    } else if (startTime) {
+        // Attempt to parse if it's a string or other format
+        startTime = new Date(startTime);
+    }
+
+    if (endTime && typeof endTime.toDate === 'function') {
+        endTime = endTime.toDate();
+    } else if (endTime) {
+        // Attempt to parse if it's a string or other format
+        endTime = new Date(endTime);
+    }
     
-    if (!startTime || !endTime) return 'Unknown';
+    if (!startTime || !endTime || isNaN(startTime.getTime()) || isNaN(endTime.getTime())) return 'Unknown';
     
     if (now < startTime) return 'Upcoming';
     if (now > endTime) return 'Ended';
@@ -529,6 +558,53 @@ filterButtons.forEach(button => {
     });
 });
 
+addChallengeForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const title = document.getElementById('challenge-title').value;
+    const entryFee = parseFloat(document.getElementById('challenge-entry-fee').value);
+    const prize = parseFloat(document.getElementById('challenge-prize').value);
+    const maxSpots = parseInt(document.getElementById('challenge-max-spots').value);
+    const startTime = new Date(document.getElementById('challenge-start-time').value); // Get as Date object
+    const endTime = new Date(document.getElementById('challenge-end-time').value);     // Get as Date object
+    const totalWinners = parseInt(document.getElementById('challenge-total-winners').value);
+
+    // Basic validation
+    if (!title || isNaN(entryFee) || isNaN(prize) || isNaN(maxSpots) || isNaN(totalWinners) || !startTime || !endTime) {
+        showToast('Please fill all fields correctly', 'error');
+        return;
+    }
+
+    if (startTime >= endTime) {
+        showToast('Start time must be before end time', 'error');
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, 'contests'), {
+            title,
+            entryFee,
+            prize,
+            maxSpots,
+            filledSpots: 0,
+            startTime: startTime, // Store as Date object, Firestore will convert to Timestamp
+            endTime: endTime,     // Store as Date object, Firestore will convert to Timestamp
+            totalWinners,
+            winners: [],
+            participants: [],
+            status: 'upcoming', // Default status
+            createdAt: serverTimestamp()
+        });
+        showToast('Challenge added successfully', 'success');
+        addChallengeModal.classList.remove('active');
+        addChallengeForm.reset();
+        loadChallenges();
+    } catch (error) {
+        console.error('Error adding challenge:', error);
+        showToast('Error adding challenge', 'error');
+    }
+});
+
 // Make functions available globally
 window.viewParticipants = viewParticipants;
 window.makeWinner = makeWinner;
@@ -549,3 +625,4 @@ window.deleteChallenge = async (id) => {
         }
     }
 };
+window.deleteParticipant = deleteParticipant;

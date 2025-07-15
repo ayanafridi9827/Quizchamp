@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <div id="notification" class="notification"></div>
     <!-- Header -->
     <header class="header">
         <h1>QuizChamp <span class="fire">🔥</span></h1>
@@ -18,8 +19,7 @@
             <ul class="nav-links">
                 <li><a href="#" class="active">Home</a></li>
                 <li><a href="/wallets/wallet.html">Wallet</a></li>
-                <li><a href="my-challenges.html">My Challenges</a></li>
-                <li><a href="#">Profile</a></li>
+                <li><a href="/referral/referral.html">Refer & Earn</a></li>
             </ul>
         </nav>
     </header>
@@ -44,12 +44,10 @@
             <button class="retry-btn">Retry</button>
         </div>
 
-        <!-- Sticky My Challenges Button -->
-        <a href="my-challenges.html" class="sticky-challenges-btn">
-            <i class="fas fa-trophy"></i>
-            <span>My Challenges</span>
-            <div class="btn-glow"></div>
-        </a>
+        <!-- Load More Button -->
+        <div class="load-more-container">
+            <button id="load-more-btn" class="btn btn-primary" style="display: none;">Load More Contests</button>
+        </div>
     </main>
 
     <!-- Contest Card Template -->
@@ -57,6 +55,7 @@
         <div class="contest-card">
             <div class="card-glow"></div>
             <div class="particles"></div>
+            <div class="horizontal-glow"></div>
             
             <div class="contest-header">
                 <div class="category-icon">
@@ -117,7 +116,12 @@
         </div>
     </template>
 
-    <!-- Load the main script as a module -->
-    <script type="module" src="home.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- Load the main script -->
+    <script src="home.js"></script>
 </body>
 </html>

@@ -3,448 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz - QuizArena</title>
+    <title>Quiz In Progress...</title>
+    <link rel="stylesheet" href="quiz.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="../styles.css">
-    <style>
-        /* Quiz Container Styles */
-        .quiz-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Quiz Header */
-        .quiz-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid #eee;
-        }
-
-        .quiz-title {
-            font-size: 1.5rem;
-            color: #333;
-            margin: 0;
-        }
-
-        .quiz-info {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
-        }
-
-        /* Timer Styles */
-        .timer {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1.2rem;
-            color: #666;
-        }
-
-        .timer.warning {
-            color: #f59e0b;
-        }
-
-        .timer.danger {
-            color: #ef4444;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        /* Progress Bar */
-        .progress {
-            font-size: 1.1rem;
-            color: #666;
-        }
-
-        /* Question Container */
-        .question-container {
-            margin-bottom: 2rem;
-        }
-
-        .question-text {
-            font-size: 1.3rem;
-            color: #333;
-            margin-bottom: 1.5rem;
-        }
-
-        /* Options Container */
-        .options-container {
-            display: grid;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .option-button {
-            padding: 1rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            background: white;
-            text-align: left;
-            font-size: 1.1rem;
-            color: #333;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .option-button:hover {
-            border-color: #3b82f6;
-            background: #f0f7ff;
-        }
-
-        .option-button.selected {
-            border-color: #3b82f6;
-            background: #f0f7ff;
-        }
-
-        .option-button.correct {
-            border-color: #10b981;
-            background: #ecfdf5;
-        }
-
-        .option-button.wrong {
-            border-color: #ef4444;
-            background: #fef2f2;
-        }
-
-        /* Navigation Buttons */
-        .quiz-navigation {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 2rem;
-        }
-
-        .nav-btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 6px;
-            background: #3b82f6;
-            color: white;
-            font-size: 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-        }
-
-        .nav-btn:hover {
-            background: #2563eb;
-        }
-
-        .nav-btn:disabled {
-            background: #e5e7eb;
-            cursor: not-allowed;
-        }
-
-        /* Submit Button */
-        .submit-btn {
-            width: 100%;
-            padding: 1rem;
-            border: none;
-            border-radius: 6px;
-            background: #10b981;
-            color: white;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .submit-btn:hover {
-            background: #059669;
-        }
-
-        .submit-btn:disabled {
-            background: #e5e7eb;
-            cursor: not-allowed;
-        }
-
-        /* Loading State */
-        .loading-spinner {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            padding: 2rem;
-            color: #666;
-        }
-
-        .loading-spinner.hidden {
-            display: none;
-        }
-
-        /* Feedback Message */
-        .feedback-message {
-            text-align: center;
-            padding: 1rem;
-            margin: 1rem 0;
-            border-radius: 6px;
-            font-size: 1.2rem;
-            display: none;
-        }
-
-        .feedback-message.correct {
-            background: #ecfdf5;
-            color: #059669;
-            display: block;
-        }
-
-        .feedback-message.wrong {
-            background: #fef2f2;
-            color: #ef4444;
-            display: block;
-        }
-
-        /* Results Page */
-        .results-container {
-            text-align: center;
-            padding: 3rem;
-            max-width: 800px;
-            margin: 2rem auto;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .results-container h2 {
-            font-size: 2.5rem;
-            color: #1a1a1a;
-            margin-bottom: 2rem;
-            font-weight: 700;
-        }
-
-        .results-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-            padding: 2rem;
-            background: #f8fafc;
-            border-radius: 12px;
-        }
-
-        .stat-card {
-            padding: 1.5rem;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-card h3 {
-            font-size: 1.2rem;
-            color: #4b5563;
-            margin-bottom: 0.75rem;
-            font-weight: 600;
-        }
-
-        .stat-card p {
-            font-size: 2.5rem;
-            color: #1a1a1a;
-            margin: 0;
-            font-weight: 700;
-        }
-
-        /* Winner Announcement Styles */
-        .winner-announcement {
-            margin: 3rem 0;
-            padding: 2rem;
-            border-radius: 16px;
-            background: #fff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .winner-announcement h3 {
-            font-size: 2rem;
-            color: #1a1a1a;
-            margin-bottom: 1.5rem;
-            font-weight: 700;
-        }
-
-        .winner-announcement .bg-green-100 {
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-            padding: 2rem;
-            border-radius: 12px;
-            border: 2px solid #10b981;
-        }
-
-        .winner-announcement .bg-yellow-100 {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            padding: 2rem;
-            border-radius: 12px;
-            border: 2px solid #f59e0b;
-        }
-
-        .winner-announcement i {
-            font-size: 2rem;
-            margin-right: 1rem;
-            vertical-align: middle;
-        }
-
-        .winner-announcement p {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin: 0;
-            display: inline-block;
-            vertical-align: middle;
-        }
-
-        .winner-announcement .bg-green-100 p {
-            color: #065f46;
-        }
-
-        .winner-announcement .bg-yellow-100 p {
-            color: #92400e;
-        }
-
-        #back-to-contests {
-            margin-top: 2rem;
-            padding: 1rem 2rem;
-            font-size: 1.2rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        #back-to-contests:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .quiz-container {
-                margin: 1rem;
-                padding: 1rem;
-            }
-
-            .quiz-header {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-
-            .quiz-info {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .option-button {
-                padding: 0.75rem;
-                font-size: 1rem;
-            }
-        }
-
-        /* Added style for Result button */
-        .continue-btn.result-btn {
-            background-color: #10b981; /* Green background */
-            border: none;
-        }
-
-        .continue-btn.result-btn:hover {
-            background-color: #059669; /* Darker green on hover */
-        }
-    </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="nav-brand">
-            <a href="../home.html">
-                <img src="../../assets/logo.png" alt="QuizArena Logo">
-                <span>QuizArena</span>
-            </a>
-        </div>
-        <div class="nav-links">
-            <a href="../home.html" class="nav-link">Home</a>
-            <a href="../my-contests.html" class="nav-link">My Contests</a>
-            <a href="../leaderboard.html" class="nav-link">Leaderboard</a>
-            <a href="../profile.html" class="nav-link">Profile</a>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Quiz Container -->
-        <div class="quiz-container">
-            <!-- Quiz Header -->
-            <div class="quiz-header">
-                <h1 class="quiz-title">Loading Quiz...</h1>
-                <div class="quiz-info">
-                    <div class="timer">
-                        <i class="fas fa-clock"></i>
-                        <span id="time-remaining">30</span>
-                    </div>
-                    <div class="progress">
-                        <span id="current-question">0</span>/<span id="total-questions">0</span>
-                    </div>
+    <div class="quiz-container">
+        <header class="quiz-header">
+            <div class="header-content">
+                <a href="/Home/home.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+                <h1 id="quiz-title">Loading Quiz...</h1>
+                <div class="timer-container">
+                    <i class="fas fa-clock"></i>
+                    <span id="timer">00:00</span>
                 </div>
             </div>
+        </header>
 
-            <!-- Loading Spinner -->
-            <div id="loading-spinner" class="loading-spinner">
-                <i class="fas fa-spinner fa-spin fa-2x"></i>
-                <p>Loading quiz...</p>
+        <main class="quiz-body">
+            <div id="loading-state" class="loading-state">
+                <div class="loader"></div>
+                <p>Preparing your quiz...</p>
             </div>
 
-            <!-- Quiz Content -->
-            <div class="quiz-content">
-                <div class="question-container">
-                    <h2 class="question-text">Loading question...</h2>
-                    <div class="options-container">
-                        <!-- Options will be dynamically added here -->
+            <div id="quiz-content" class="hidden">
+                <div class="question-header">
+                    <p id="question-counter"></p>
+                    <div class="progress-bar-container">
+                        <div id="progress-bar"></div>
                     </div>
                 </div>
-
-                <!-- Feedback Message -->
-                <div id="feedback-message" class="feedback-message"></div>
-
-                <!-- Navigation Buttons -->
-                <div class="quiz-navigation">
-                    <button id="prev-btn" class="nav-btn" disabled>
-                        <i class="fas fa-arrow-left"></i>
-                        Previous
-                    </button>
-                    <button id="next-btn" class="nav-btn">
-                        Next
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
+                <h2 id="question-text"></h2>
+                <div id="options-container" class="options-container">
+                    <!-- Options will be dynamically inserted here -->
                 </div>
             </div>
+        </main>
 
-            <!-- Quiz Footer -->
-            <div class="quiz-footer">
-                <button id="submit-quiz" class="submit-btn" disabled>
-                    Submit Quiz
-                </button>
-            </div>
-        </div>
+        <footer class="quiz-footer">
+            <button id="next-btn" class="hidden">
+                <span>Next Question</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </footer>
+    </div>
 
-        <!-- Results Container (Will be dynamically added) -->
-    </main>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    <!-- Scripts -->
-    <script type="module" src="quiz.js"></script>
+    <!-- Quiz Logic -->
+    <script src="quiz.js"></script>
 </body>
-</html> 
+</html>

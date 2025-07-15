@@ -103,8 +103,37 @@ body {
 }
 
 .nav-links a:hover,
-.nav-links a.active {
-    color: var(--primary-color);
+.nav-menu .nav-links a.active {
+    color: #e43f5a;
+    border-bottom-color: #e43f5a;
+}
+
+/* Notification Styles (Copied from wallet.css) */
+.notification {
+    position: fixed;
+    top: -100px; /* Start hidden */
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 25px;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 500;
+    z-index: 2000;
+    transition: top 0.5s ease-in-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.notification.show {
+    top: 20px;
+}
+
+.notification.success {
+    background-color: #28a745;
+}
+
+.notification.error {
+    background-color: #e43f5a;
 }
 
 .mobile-menu-btn {
@@ -161,7 +190,7 @@ body {
     background: var(--gradient);
     color: white;
     border: none;
-    padding: 0.8rem 1.5rem;
+    padding: 0.5rem 0.3rem; /* Left aur Right padding aur kam kar di */
     border-radius: 25px;
     cursor: pointer;
     margin-top: 1rem;
@@ -204,7 +233,7 @@ body {
 .contest-card {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 20px;
-    padding: 1rem;
+    padding: 0.4rem; /* Padding aur kam ki */
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -282,7 +311,11 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.8rem;
+    padding: 0rem 1rem; /* Padding add ki */
+    background: rgba(255, 255, 255, 0.1); /* Halki transparent background */
+    border-radius: 10px; /* Rounded corners */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Halki border */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Halki shadow */
 }
 
 .category-icon {
@@ -302,13 +335,25 @@ body {
     position: absolute;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.8), transparent 70%);
+    background: radial-gradient(circle at center, rgba(255, 59, 59, 0.5), transparent 70%); /* Primary color glow */
     opacity: 0;
     transition: opacity 0.3s ease;
+    animation: icon-glow-pulse 2s infinite alternate; /* Naya animation add kiya */
 }
 
 .category-icon:hover .icon-glow {
-    opacity: 0.3;
+    opacity: 0.6; /* Hover par thoda zyada visible */
+}
+
+@keyframes icon-glow-pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.4;
+    }
+    100% {
+        transform: scale(1.1);
+        opacity: 0.7;
+    }
 }
 
 .category-icon i {
@@ -331,47 +376,138 @@ body {
     position: relative;
     z-index: 1;
     flex-grow: 1;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 .contest-title {
-    font-size: 1.3rem;
+    font-size: 1.5rem; /* Font size badhaya */
     font-weight: 800;
-    margin-bottom: 0.8rem;
-    background: linear-gradient(135deg, #ff3b3b 0%, #ff6b6b 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0.3rem;
+    color: var(--secondary-color); /* Solid color */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2); /* Behtar shadow */
+    -webkit-background-clip: unset; /* Hata diya */
+    -webkit-text-fill-color: unset; /* Hata diya */
 }
 
 .prize-section {
     position: relative;
-    margin-bottom: 1rem;
-    padding: 0.8rem;
-    background: linear-gradient(135deg, rgba(255, 59, 59, 0.15) 0%, rgba(255, 107, 107, 0.15) 100%);
+    width: fit-content;
+    margin: 0 auto 1rem auto;
+    padding: 0.8rem 1rem; /* Left aur Right padding thodi badhai */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 16px;
     overflow: hidden;
+    display: flex;
+    justify-content: center;
+}
+
+/* Naya horizontal glow */
+.horizontal-glow {
+    position: absolute;
+    top: 50%; /* Card ke beech mein */
+    left: 0;
+    width: 100%;
+    height: 80px; /* Glow ki height badhai */
+    background: radial-gradient(ellipse at center, rgba(255, 255, 0, 0.25) 0%, transparent 70%); /* Bright yellow glow */
+    filter: blur(30px); /* Aur zyada blur */
+    transform: translateY(-50%);
+    z-index: 0;
+    pointer-events: none;
+    animation: horizontal-pulse 3s infinite alternate;
+}
+
+@keyframes horizontal-pulse {
+    0% {
+        opacity: 0.5;
+        transform: translateY(-50%) scaleX(0.8);
+    }
+    100% {
+        opacity: 0.8;
+        transform: translateY(-50%) scaleX(1);
+    }
 }
 
 .prize-content {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    justify-content: center;
+    gap: 0.8rem;
     position: relative;
     z-index: 1;
+    background: rgba(255, 255, 255, 0.8); /* Light white background */
+    padding: 0.8rem 1.2rem; /* Padding add ki */
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Halki shadow */
+    border: 1px solid rgba(255, 255, 255, 0.5); /* Halki border */
+}
+
+.prize-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    position: relative;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.8); /* Light white background */
+    padding: 0.8rem 1.2rem; /* Padding add ki */
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Halki shadow */
+    border: 1px solid rgba(255, 255, 255, 0.5); /* Halki border */
 }
 
 .prize-content i {
-    font-size: 1.5rem;
-    color: #ffd700;
-    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+    font-size: 2rem;
+    color: #FFD700;
+    filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.9));
     animation: pulse 2s infinite;
 }
 
-.prize-text {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: rgb(0, 0, 0);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+/* Naye styles prize info ke liye */
+.prize-info {
+    display: flex;
+    flex-direction: column; /* Label aur amount ko upar-neeche rakhega */
+    align-items: flex-start; /* Left align karega */
+    line-height: 1.2;
+}
+
+.prize-label {
+    font-size: 0.75rem; /* Label ka font size */
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.7); /* Thoda halka color */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.prize-amount {
+    font-size: 1.6rem; /* Amount ka font size */
+    font-weight: 900;
+    color: #000; /* Black color */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Naye styles prize info ke liye */
+.prize-info {
+    display: flex;
+    flex-direction: column; /* Label aur amount ko upar-neeche rakhega */
+    align-items: flex-start; /* Left align karega */
+    line-height: 1.2;
+}
+
+.prize-label {
+    font-size: 0.75rem; /* Label ka font size */
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.7); /* Thoda halka color */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.prize-amount {
+    font-size: 1.6rem; /* Amount ka font size */
+    font-weight: 900;
+    color: #000; /* Black color */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .progress-text {
@@ -384,10 +520,11 @@ body {
 
 .prize-glow {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 50%;
+    left: 50%;
+    width: 80%; /* Glow ki width kam kar di */
+    height: 80%; /* Glow ki height kam kar di */
+    transform: translate(-50%, -50%); /* Glow ko bilkul center mein laayega */
     background: radial-gradient(circle at center, rgba(255, 215, 0, 0.3), transparent 70%);
     animation: glow 3s infinite;
     opacity: 0.8;
@@ -437,42 +574,39 @@ body {
 .detail-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem;
-    background: rgba(255, 255, 255, 0.1);
+    gap: 0.6rem; /* Gap thoda badhaya */
+    padding: 0.3rem; /* Padding badhai */
+    background: rgba(255, 255, 255, 0.15); /* Halki transparent background */
     border-radius: 12px;
     transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Halki border */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Halki shadow */
 }
 
 .detail-item:hover {
-    transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
 .detail-item i {
-    font-size: 1rem;
-    color: #ffd700;
-    background: rgba(255, 215, 0, 0.1);
-    padding: 0.6rem;
+    font-size: 1.2rem; /* Icon size badhaya */
+    color: var(--primary-color); /* Primary color */
+    background: rgba(255, 59, 59, 0.1); /* Halki transparent background */
+    padding: 0.8rem; /* Padding badhai */
     border-radius: 10px;
     transition: all 0.3s ease;
 }
 
 .detail-item:hover i {
-    transform: scale(1.1);
-    background: rgba(255, 215, 0, 0.2);
+    transform: scale(1.15);
+    background: rgba(255, 59, 59, 0.2);
 }
 
 .detail-item span {
-    font-size: 0.9rem;
-    color: var(--secondary-color);
-    font-weight: 500;
-}
-
-.progress-section {
-    margin-bottom: 1rem;
+    font-size: 1rem; /* Font size badhaya */
+    color: var(--text-color); /* Text color */
+    font-weight: 600; /* Bold kiya */
 }
 
 .progress-info {
@@ -581,6 +715,33 @@ body {
     transform: translateY(-1px);
 }
 
+.view-result-btn {
+    background: #FFD700; /* Yellow background */
+    color: #333; /* Dark text color for contrast */
+    border: none;
+    padding: 0.8rem 1.2rem;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2); /* Yellow shadow */
+    display: flex; /* To align content like join-btn */
+    align-items: center;
+    justify-content: center;
+}
+
+.view-result-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+}
+
+.view-result-btn:active {
+    transform: translateY(-1px);
+}
+
 /* Add animation classes */
 @keyframes cardAppear {
     from {
@@ -598,7 +759,7 @@ body {
 }
 
 /* Mobile Menu Styles */
-@media (max-width: 768px) {
+@media (max-width: 800px) {
     .mobile-menu-btn {
         display: block;
     }
@@ -629,77 +790,75 @@ body {
         padding: 0.5rem;
     }
 
-    .contest-grid {
-        grid-template-columns: 1fr;
+    .all-contests-grid {
+        grid-template-columns: 1fr; /* Ek column */
         gap: 1.5rem;
+        max-width: 100%; /* Poori width lega */
+        padding: 0 1rem; /* Side padding */
     }
 
     .main-content {
-        padding: 1rem;
+        padding: 1rem 0.5rem; /* Mobile par side padding kam ki */
     }
 
     .contest-card {
-        padding: 0.8rem;
+        padding: 0.6rem; /* Mobile par padding adjust ki */
+        gap: 0.6rem; /* Mobile par gap adjust kiya */
+    }
+
+    .contest-header {
+        padding: 0.4rem 0.6rem; /* Mobile par header padding */
+        margin-bottom: 0.6rem;
     }
 
     .contest-title {
-        font-size: 1.2rem;
-    }
-
-    .contest-details {
-        grid-template-columns: 1fr;
-        gap: 0.6rem;
+        font-size: 1.1rem; /* Mobile par title font size */
+        margin-bottom: 0.6rem;
     }
 
     .detail-item {
+        padding: 0.5rem; /* Mobile par detail item padding */
+        gap: 0.4rem;
+    }
+
+    .detail-item i {
+        font-size: 1rem; /* Mobile par detail item icon size */
         padding: 0.6rem;
     }
 
-    .join-btn {
-        padding: 0.7rem 1rem;
-        font-size: 0.9rem;
-    }
-
-    .category-icon {
-        width: 50px;
-        height: 50px;
-    }
-
-    .category-icon i {
-        font-size: 1.2rem;
+    .detail-item span {
+        font-size: 0.85rem; /* Mobile par detail item text size */
     }
 
     .prize-section {
-        padding: 0.8rem;
+        padding: 0.5rem 0.6rem; /* Mobile par prize section padding */
+        margin-bottom: 0.8rem;
+    }
+
+    .prize-content {
+        padding: 0.6rem 0.8rem; /* Mobile par prize content padding */
+        gap: 0.6rem;
     }
 
     .prize-content i {
-        font-size: 1.2rem;
+        font-size: 1.4rem; /* Mobile par prize icon size aur adjust ki */
     }
 
-    .prize-text {
-        font-size: 1rem;
+    .prize-label {
+        font-size: 0.6rem; /* Mobile par prize label size */
     }
 
-    .section-title {
-        font-size: 1.5rem;
+    .prize-amount {
+        font-size: 1.4rem; /* Mobile par prize amount size */
     }
 
-    .no-contests-message {
-        padding: 2rem;
-        margin: 1rem;
+    .progress-info {
+        font-size: 0.85rem; /* Mobile par progress info size */
     }
 
-    .no-contests-message i {
-        font-size: 3rem;
-    }
-
-    .no-contests-message h3 {
-        font-size: 1.5rem;
-    }
-
-    .no-contests-message p {
-        font-size: 1rem;
+    .join-btn {
+        padding: 0.6rem 1rem; /* Mobile par join button padding */
+        font-size: 0.9rem;
     }
 }
 
@@ -779,11 +938,10 @@ body {
 /* Additional styles for spacing and alignment */
 .all-contests-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
     max-width: 1200px;
     margin: 0 auto;
-    padding-top: 1rem;
 }
 
 .detail-item.entry-fee {
@@ -876,6 +1034,16 @@ body {
         right: 20px;
         text-align: center;
         bottom: 20px;
+    }
+    .all-contests-grid{
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .detail-item.entry-fee{
+        font-weight: bold;
     }
 }
 
@@ -1105,4 +1273,28 @@ body {
     transform: translateY(-5px);
     box-shadow: 0 8px 25px rgba(76, 175, 80, 0.15);
     opacity: 1;
+}
+
+/* Animated Live Badge */
+.status-badge.live {
+    background-color: #28a745; /* Green background */
+    color: white; /* White text */
+    border: 1px solid #28a745;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5); /* Green glow */
+    animation: pulse-live 1.5s infinite;
+}
+
+@keyframes pulse-live {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+    }
 }
