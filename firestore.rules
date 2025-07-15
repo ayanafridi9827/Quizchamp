@@ -195,6 +195,12 @@ service cloud.firestore {
     // Wallets collection rules
     match /wallets/{walletId} {
       allow read: if isOwner(walletId);
+      allow create: if isOwner(walletId) &&
+        request.resource.data.keys().hasAll(['balance', 'deposits', 'withdraws', 'createdAt']) &&
+        request.resource.data.balance == 0 &&
+        request.resource.data.deposits.size() == 0 &&
+        request.resource.data.withdraws.size() == 0 &&
+        request.resource.data.createdAt is timestamp;
       allow write: if isOwner(walletId) && (
         // Deposit operation: allows updating balance, deposits (arrayUnion), and lastTransaction
         (request.resource.data.diff(resource.data).affectedKeys().hasAll(['balance', 'deposits', 'lastTransaction']) &&
@@ -218,11 +224,13 @@ service cloud.firestore {
     match /referrals/{referralId} {
       allow create: if isAuthenticated() &&
         request.auth.uid == referralId &&
+        request.resource.data.keys().hasAll(['code', 'referredBy', 'joined', 'earnings', 'createdAt']) &&
         request.resource.data.code is string &&
         request.resource.data.code.matches('^[A-Z0-9]{6}$') &&
         (request.resource.data.referredBy is string || request.resource.data.referredBy == null) &&
         request.resource.data.joined is list &&
         request.resource.data.earnings is number &&
+        request.resource.data.createdAt is timestamp &&
         !exists(/databases/$(database)/documents/referrals/$(referralId));
 
       allow read: if isAuthenticated();

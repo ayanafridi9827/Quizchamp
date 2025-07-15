@@ -94,7 +94,7 @@ async function createOrUpdateUserProfile(user, challengeId = null, referrerCode 
             name: user.displayName || "No Name",
             email: user.email,
             photoURL: user.photoURL || '',
-            lastLogin: new Date().toISOString(),
+            lastLogin: serverTimestamp(),
             role: 'user'
         };
 
@@ -102,7 +102,7 @@ async function createOrUpdateUserProfile(user, challengeId = null, referrerCode 
             // Create new user profile with all required fields
             const initialData = {
                 ...userData,
-                createdAt: new Date().toISOString(),
+                createdAt: serverTimestamp(),
                 
                 // Arrays and collections
                 contests: [],
@@ -175,7 +175,7 @@ async function createWalletAndReferralEntry(user) {
             balance: 0,
             deposits: [],
             withdraws: [],
-            createdAt: new Date().toISOString()
+            createdAt: serverTimestamp()
         });
         console.log('Initial wallet created for user.');
     }
@@ -190,7 +190,7 @@ async function createWalletAndReferralEntry(user) {
             referredBy: null,
             joined: [],
             earnings: 0,
-            createdAt: new Date().toISOString()
+            createdAt: serverTimestamp()
         });
         console.log('Initial referral entry created for user.');
     }
