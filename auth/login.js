@@ -24,6 +24,9 @@ provider.setCustomParameters({
 // Get the sign-in button
 const googleSignInButton = document.getElementById('googleSignIn');
 
+// Flag to prevent race conditions between sign-in and auth state changes
+let isSigningIn = false;
+
 // Add loading state to button
 function setLoading(isLoading) {
     if (isLoading) {
@@ -37,6 +40,9 @@ function setLoading(isLoading) {
 
 // Handle Google Sign In
 async function handleGoogleSignIn() {
+    if (isSigningIn) return; // Prevent double-clicks
+    isSigningIn = true;
+    
     try {
         setLoading(true);
         const result = await signInWithPopup(auth, provider);
@@ -75,6 +81,7 @@ async function handleGoogleSignIn() {
         setTimeout(() => errorMessage.remove(), 5000);
     } finally {
         setLoading(false);
+        isSigningIn = false; // Reset the flag
     }
 }
 
@@ -198,7 +205,8 @@ async function createWalletAndReferralEntry(user) {
 
 // Listen for auth state changes
 onAuthStateChanged(auth, async (user) => {
-    if (user) {
+    // If a sign-in process is not active, then update the user profile
+    if (user && !isSigningIn) {
         try {
             // Update last login time and ensure wallet/referral exist
             await createOrUpdateUserProfile(user);

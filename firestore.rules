@@ -2,132 +2,110 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
+    // =====================================================================
+    // Helper Functions
+    // =====================================================================
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Admin helper function
     function isAdmin() {
-      return isAuthenticated() && 
-        (
-          // Check if user exists in admins collection
-          exists("/databases/" + database + "/documents/admins/" + request.auth.uid) &&
-          get("/databases/" + database + "/documents/admins/" + request.auth.uid).data.role == 'admin'
-        ) ||
-        // Allow specific email
-        request.auth.token.email == 'ayanafridi752@gmail.com';
+      return isAuthenticated() &&
+             ((exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+               get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin') ||
+              request.auth.token.email == 'ayanafridi752@gmail.com');
     }
 
-    // New helper function for auth/login.html restriction
-    function isAllowedEmail() {
-      return request.auth.token.email == 'ayanafridi752@gmail.com';
-    }
-    
-    function isValidUserData() {
-      return request.resource.data.keys().hasAll([
-        'uid', 'name', 'email', 'photoURL', 'createdAt', 'lastLogin', 'contests'
-      ]) &&
-             request.resource.data.uid == request.auth.uid &&
-             request.resource.data.contests is list &&
-             // Make challengeHistory and totalChallengesJoined optional
-             (request.resource.data.keys().hasAny(['challengeHistory']) ? request.resource.data.challengeHistory is list : true) &&
-             (request.resource.data.keys().hasAny(['totalChallengesJoined']) ? request.resource.data.totalChallengesJoined is number : true);
-    }
+    // =====================================================================
+    // User, Wallet, and Referral Rules
+    // =====================================================================
 
-    function isValidAdminData() {
-      return request.resource.data.keys().hasAll([
-        'uid', 'email', 'name', 'photoURL', 'role', 'lastLogin', 'createdAt',
-        'permissions', 'status'
-      ]) &&
-      request.resource.data.uid == request.auth.uid &&
-      request.resource.data.role == 'admin' &&
-      request.resource.data.permissions is map &&
-      request.resource.data.status in ['active', 'inactive'];
-    }
-
-    function isValidQuestion() {
-      return request.resource.data.keys().hasAll([
-        'question', 'options', 'correctOption', 'points', 'createdAt'
-      ]) &&
-      request.resource.data.options is list &&
-      request.resource.data.options.size() == 4 &&
-      request.resource.data.points is number &&
-      request.resource.data.points > 0;
-    }
-
-    function isValidQuizData() {
-      return request.resource.data.keys().hasAll(['contestId', 'questions', 'createdAt']) &&
-             request.resource.data.questions is list &&
-             request.resource.data.questions.size() > 0;
-    }
-
-    function hasJoinedChallenge(challengeId) {
-      return exists("/databases/" + database + "/documents/userChallenges/" + request.auth.uid + '_' + challengeId);
-    }
-
-    // Users collection rules
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isAuthenticated() && request.auth.uid == userId && isValidUserData();
-      allow update: if isOwner(userId);
       allow delete: if isAdmin();
 
-      // Challenge History subcollection rules
-      match /challengeHistory/{challengeId} {
-        allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-        allow create: if isAuthenticated() && request.auth.uid == userId;
-        allow update: if isAuthenticated() && request.auth.uid == userId;
-        allow delete: if isAdmin();
-      }
+      allow create: if isOwner(userId) &&
+                     request.resource.data.uid == userId &&
+                     request.resource.data.name is string &&
+                     request.resource.data.email == request.auth.token.email &&
+                     request.resource.data.photoURL is string &&
+                     request.resource.data.role == 'user' &&
+                     request.resource.data.contests is list &&
+                     request.resource.data.createdAt == request.time &&
+                     request.resource.data.lastLogin == request.time;
+
+      allow update: if isOwner(userId) &&
+                     request.resource.data.uid == resource.data.uid &&
+                     request.resource.data.email == resource.data.email &&
+                     request.resource.data.role == resource.data.role &&
+                     request.resource.data.createdAt == resource.data.createdAt &&
+                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'photoURL', 'lastLogin', 'contests', 'challengeHistory', 'totalChallengesJoined']);
     }
 
-    // Rule to allow listing/querying the entire users collection
+    match /wallets/{walletId} {
+      allow read: if isOwner(walletId) || isAdmin();
+      allow create: if isOwner(walletId) &&
+                     request.resource.data.balance == 0 &&
+                     request.resource.data.deposits is list &&
+                     request.resource.data.deposits.size() == 0 &&
+                     request.resource.data.withdraws is list &&
+                     request.resource.data.withdraws.size() == 0 &&
+                     request.resource.data.createdAt == request.time;
+      allow update: if isOwner(walletId);
+    }
+
+    match /referrals/{referralId} {
+      allow read: if isAuthenticated();
+      allow update: if isOwner(referralId);
+      allow create: if isOwner(referralId) &&
+                     request.resource.data.code is string &&
+                     request.resource.data.referredBy == null &&
+                     request.resource.data.joined is list &&
+                     request.resource.data.joined.size() == 0 &&
+                     request.resource.data.earnings == 0 &&
+                     request.resource.data.createdAt == request.time;
+    }
+
+    // =====================================================================
+    // Other Collections
+    // =====================================================================
+
     match /users {
       allow list: if isAdmin();
     }
 
-    // Contests collection rules for individual documents
     match /contests/{contestId} {
       allow read: if isAuthenticated();
       allow create: if isAdmin();
       allow update: if isAdmin() || (
         isAuthenticated() &&
-        // Ensure only 'participants' and 'filledSpots' are modified
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants', 'filledSpots']) &&
-        // Ensure the current user is being added to participants and was not already there
         request.resource.data.participants.hasAny([request.auth.uid]) &&
         !resource.data.participants.hasAny([request.auth.uid]) &&
-        // Ensure filledSpots increments by 1
         request.resource.data.filledSpots == resource.data.filledSpots + 1 &&
-        // Ensure maxSpots is not exceeded
         request.resource.data.filledSpots <= resource.data.maxSpots
       );
       allow delete: if isAdmin();
 
-      // Participants subcollection under contests
       match /participants/{participantId} {
         allow read: if isAuthenticated();
         allow write: if isAdmin();
       }
 
-      // Results subcollection under contests
       match /results/{userId} {
         allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
         allow write: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
       }
     }
 
-    // Rule to allow listing/querying the entire contests collection
     match /contests {
       allow list: if isAuthenticated();
     }
 
-    // Quiz collection rules
     match /quiz/{quizId} {
       allow read: if true;
       allow create: if isAdmin();
@@ -135,115 +113,51 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Rule to allow listing/querying the entire quizzes collection
     match /quizzes {
       allow list: if isAuthenticated() || isAdmin();
     }
 
-    // UserChallenges collection rules
     match /userChallenges/{userChallengeId} {
-      allow read: if isAuthenticated() &&
-        (userChallengeId.matches(request.auth.uid + '_.*') || isAdmin());
-      allow create: if isAuthenticated() &&
-        userChallengeId.matches(request.auth.uid + '_.*');
+      allow read: if isAuthenticated() && (userChallengeId.matches(request.auth.uid + '_.*') || isAdmin());
+      allow create: if isAuthenticated() && userChallengeId.matches(request.auth.uid + '_.*');
       allow update: if isAuthenticated() &&
         userChallengeId.matches(request.auth.uid + '_.*') &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'lastUpdated']);
       allow delete: if isAdmin();
     }
 
-    // UserContests collection rules
     match /userContests/{userContestId} {
-      allow read: if isAuthenticated() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
-      allow create: if isAuthenticated() &&
-        (request.resource.data.userId == request.auth.uid || isAdmin());
-      allow update: if isAuthenticated() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
       allow delete: if isAdmin();
     }
 
-    // Admin settings collection
     match /adminSettings/{settingId} {
       allow read: if isAdmin();
       allow write: if isAdmin();
     }
 
-    // Admins collection rules
     match /admins/{adminId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && 
-        request.auth.uid == adminId &&
-        isValidAdminData();
-      allow update: if isOwner(adminId) && 
-        request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['lastLogin', 'permissions', 'status']);
+      allow create: if isAuthenticated() && request.auth.uid == adminId;
+      allow update: if isOwner(adminId);
       allow delete: if isAdmin();
     }
 
-    // Auth collection rules - allow anyone to access
     match /auth/{document=**} {
       allow read, write: if true;
     }
 
-    // Admin auth collection rules - only allow admin email
     match /adminAuth/{document=**} {
-      allow read, write: if request.auth != null &&
-        request.auth.token.email == 'ayanafridi752@gmail.com';
+      allow read, write: if request.auth != null && request.auth.token.email == 'ayanafridi752@gmail.com';
     }
 
-    // Wallets collection rules
-    match /wallets/{walletId} {
-      allow read: if isOwner(walletId);
-      allow create: if isOwner(walletId) &&
-        request.resource.data.keys().hasAll(['balance', 'deposits', 'withdraws', 'createdAt']) &&
-        request.resource.data.balance == 0 &&
-        request.resource.data.deposits.size() == 0 &&
-        request.resource.data.withdraws.size() == 0 &&
-        request.resource.data.createdAt is timestamp;
-      allow write: if isOwner(walletId) && (
-        // Deposit operation: allows updating balance, deposits (arrayUnion), and lastTransaction
-        (request.resource.data.diff(resource.data).affectedKeys().hasAll(['balance', 'deposits', 'lastTransaction']) &&
-         request.resource.data.balance is number &&
-         request.resource.data.deposits is list &&
-         request.resource.data.lastTransaction is timestamp)
-        ||
-        // Contest join operation: allows updating only balance
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['balance']) &&
-         request.resource.data.balance is number)
-      );
-    }
-
-    // Results collection rules
     match /results/{resultId} {
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow write: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
     }
 
-    // Referrals collection rules
-    match /referrals/{referralId} {
-      allow create: if isAuthenticated() &&
-        request.auth.uid == referralId &&
-        request.resource.data.keys().hasAll(['code', 'referredBy', 'joined', 'earnings', 'createdAt']) &&
-        request.resource.data.code is string &&
-        request.resource.data.code.matches('^[A-Z0-9]{6}$') &&
-        (request.resource.data.referredBy is string || request.resource.data.referredBy == null) &&
-        request.resource.data.joined is list &&
-        request.resource.data.earnings is number &&
-        request.resource.data.createdAt is timestamp &&
-        !exists(/databases/$(database)/documents/referrals/$(referralId));
-
-      allow read: if isAuthenticated();
-
-      allow update: if isOwner(referralId) || (
-        isAuthenticated() &&
-        request.resource.data.keys().hasAll(['joined', 'earnings', 'referredBy']) &&
-        request.resource.data.joined is list &&
-        request.resource.data.earnings is number
-      );
-    }
-
-    // Withdrawal Requests collection rules
     match /withdrawalRequests/{withdrawalId} {
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow read: if isAdmin();
@@ -251,10 +165,8 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Rule to allow listing/querying the entire withdrawalRequests collection
     match /withdrawalRequests {
       allow list: if isAdmin();
     }
-
   }
 }
