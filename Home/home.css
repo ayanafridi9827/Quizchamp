@@ -70,6 +70,7 @@ body {
 .nav-menu {
     display: flex;
     align-items: center;
+    position: relative;
 }
 
 .nav-links {
@@ -762,32 +763,60 @@ body {
 @media (max-width: 800px) {
     .mobile-menu-btn {
         display: block;
+        position: relative; /* Z-index ke liye zaroori */
+        z-index: 1001; /* Nav-links se zyada */
     }
 
     .nav-links {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
+        position: fixed;
+        top: 0;
         right: 0;
+        width: 70%; /* Adjust as needed, e.g., 300px */
+        height: 100%;
         background: white;
         flex-direction: column;
-        padding: 1rem;
+        padding: 2rem 1rem;
         box-shadow: var(--card-shadow);
+        transition: transform 0.4s ease-in-out;
+        transform: translateX(100%); /* Initially hide off-screen to the right */
+        z-index: 1000;
+        justify-content: flex-start; /* Align items to the top */
+        align-items: flex-start; /* Align items to the left */
     }
 
     .nav-links.active {
-        display: flex;
+        transform: translateX(0); /* Slide into view */
     }
 
     .nav-links li {
         width: 100%;
-        text-align: center;
+        text-align: left; /* Align text to the left for side menu */
+        margin-bottom: 1rem; /* Add more spacing between items */
+    }
+
+    .nav-links li:last-child {
+        margin-bottom: 0;
     }
 
     .nav-links a {
+        padding: 0.8rem 0;
+        font-size: 1.1rem; /* Slightly larger font for readability */
+    }
+
+    /* Overlay for side menu */
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5); /* Dim background */
+        z-index: 999; /* Below the nav-links */
+        display: none; /* Hidden by default */
+    }
+
+    .overlay.active {
         display: block;
-        padding: 0.5rem;
     }
 
     .all-contests-grid {
