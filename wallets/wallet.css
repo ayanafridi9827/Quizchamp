@@ -126,6 +126,10 @@ body {
     font-size: 20px;
 }
 
+.mobile-menu-btn {
+    display: none; /* Default hidden for desktop */
+}
+
 /* Transaction History Styles */
 .history-container {
     max-width: 800px;
