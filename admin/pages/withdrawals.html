@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Withdrawal Requests - QuizArena Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../css/withdrawals.css">
 </head>
 <body>
     <div class="sidebar">
         <h2>Admin Panel</h2>
         <ul>
-            <li><a href="../index.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="../index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
             <li><a href="users.html"><i class="fas fa-users"></i> Users</a></li>
             <li><a href="quizzes.html"><i class="fas fa-question-circle"></i> Quizzes</a></li>
             <li><a href="challenges.html"><i class="fas fa-trophy"></i> Challenges</a></li>
-            <li><a href="withdrawals.html"><i class="fas fa-wallet"></i> Withdrawals</a></li>
+            <li><a href="withdrawals.html" class="active"><i class="fas fa-wallet"></i> Withdrawals</a></li>
             <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </div>
@@ -31,7 +31,7 @@
         </div>
 
         <div class="table-container">
-            <table>
+            <table class="withdrawals-table">
                 <thead>
                     <tr>
                         <th>User</th>
@@ -44,10 +44,13 @@
                     </tr>
                 </thead>
                 <tbody id="withdrawals-table-body">
-                    <!-- Withdrawal requests will be populated here -->
+                    <!-- Withdrawal requests will be populated here by JavaScript -->
                 </tbody>
             </table>
-            <div class="loading-spinner" id="loading-spinner"></div>
+            <div class="loading-spinner" id="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading withdrawal requests...</p>
+            </div>
             <div class="empty-state" id="empty-state" style="display: none;">
                 <i class="fas fa-money-bill-wave"></i>
                 <h3>No Withdrawal Requests</h3>
@@ -55,6 +58,14 @@
             </div>
         </div>
     </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i class="fas fa-info-circle"></i>
+        <span id="toast-message"></span>
+    </div>
+
+    
 
     <script type="module" src="../admin-session.js"></script>
     <script type="module" src="../js/withdrawals.js"></script>

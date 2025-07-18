@@ -26,48 +26,32 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
       allow delete: if isAdmin();
-
-      allow create: if isOwner(userId) &&
-                     request.resource.data.uid == userId &&
-                     request.resource.data.name is string &&
-                     request.resource.data.email == request.auth.token.email &&
-                     request.resource.data.photoURL is string &&
-                     request.resource.data.role == 'user' &&
-                     request.resource.data.contests is list &&
-                     request.resource.data.createdAt == request.time &&
-                     request.resource.data.lastLogin == request.time;
-
-      allow update: if isOwner(userId) &&
-                     request.resource.data.uid == resource.data.uid &&
-                     request.resource.data.email == resource.data.email &&
-                     request.resource.data.role == resource.data.role &&
-                     request.resource.data.createdAt == resource.data.createdAt &&
-                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'photoURL', 'lastLogin', 'contests', 'challengeHistory', 'totalChallengesJoined']);
     }
 
-    match /wallets/{walletId} {
-      allow read: if isOwner(walletId) || isAdmin();
-      allow create: if isOwner(walletId) &&
-                     request.resource.data.balance == 0 &&
-                     request.resource.data.deposits is list &&
-                     request.resource.data.deposits.size() == 0 &&
-                     request.resource.data.withdraws is list &&
-                     request.resource.data.withdraws.size() == 0 &&
-                     request.resource.data.createdAt == request.time;
-      allow update: if isOwner(walletId);
+    match /wallets/{userId} {
+      // INSECURE: This allows any user to read/write any wallet.
+      // Should be replaced with a Cloud Function.
+      allow read, write: if isAuthenticated();
     }
 
-    match /referrals/{referralId} {
-      allow read: if isAuthenticated();
-      allow update: if isOwner(referralId);
-      allow create: if isOwner(referralId) &&
-                     request.resource.data.code is string &&
-                     request.resource.data.referredBy == null &&
-                     request.resource.data.joined is list &&
-                     request.resource.data.joined.size() == 0 &&
-                     request.resource.data.earnings == 0 &&
-                     request.resource.data.createdAt == request.time;
+    // Rules for single referral document access
+    match /referrals/{userId} {
+       // INSECURE: This allows any user to read/write any referral doc.
+      // Should be replaced with a Cloud Function.
+      allow get, create, update: if isAuthenticated();
+    }
+
+    // Rule for referral collection queries
+    match /referrals {
+      // Allows users to query the collection to find a referral code.
+      allow list: if isAuthenticated();
+    }
+
+    match /referrals {
+        allow list: if isAuthenticated() || isAdmin();
     }
 
     // =====================================================================

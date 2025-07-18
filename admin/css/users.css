@@ -139,106 +139,49 @@ main {
     font-size: 1.2rem;
 }
 
-/* User Cards Container */
-.user-cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 1rem;
-}
-
-/* User Card */
-.user-card {
-    background: var(--light-bg);
+/* User Table */
+.users-table-container {
+    margin-top: 2rem;
+    background-color: var(--light-bg);
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    transition: var(--transition);
+    overflow: hidden;
 }
 
-.user-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-.user-card-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
+.users-table th,
+.users-table td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.user-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background-color: var(--accent-color);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.users-table th {
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
     font-weight: 600;
-    font-size: 1.5rem;
-    margin-right: 15px;
-    flex-shrink: 0; /* Prevent shrinking */
+    text-transform: uppercase;
 }
 
-.user-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.user-name {
-    font-weight: 600;
-    color: var(--text-color);
-    font-size: 1.1rem;
-}
-
-.user-email {
-    color: var(--light-text);
-    font-size: 0.9rem;
-    margin-top: 2px;
-}
-
-.user-card-body {
-    flex-grow: 1;
-    margin-bottom: 15px;
-}
-
-.info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
-}
-
-.info-item:last-child {
+.users-table tbody tr:last-child td {
     border-bottom: none;
+}
+
+.users-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
 }
 
 .wallet-balance {
     font-weight: 600;
     color: #27ae60; /* Green for positive balance */
-    font-size: 1rem;
-}
-
-.challenges-count {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 0.4rem 0.8rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.user-card-actions {
-    text-align: right;
 }
 
 .action-btn {
-    padding: 0.8rem 1.5rem;
+    padding: 0.6rem 1.2rem;
     border-radius: var(--border-radius);
     border: none;
     cursor: pointer;
@@ -254,6 +197,90 @@ main {
 .action-btn:hover {
     background-color: #C62828;
     transform: translateY(-2px);
+}
+
+/* Edit Wallet Modal */
+#edit-wallet-modal .modal-content {
+    max-width: 450px;
+    background: linear-gradient(145deg, var(--light-bg), var(--secondary-color));
+}
+
+.user-info-modal {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    background-color: rgba(0,0,0,0.2);
+}
+
+#wallet-user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-right: 1.5rem;
+}
+
+#wallet-user-name {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+#wallet-user-email {
+    font-size: 1rem;
+    color: var(--light-text);
+}
+
+#edit-wallet-form {
+    padding: 1.5rem;
+}
+
+#edit-wallet-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+#edit-wallet-form label {
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+#new-balance {
+    font-size: 2rem;
+    text-align: center;
+    font-weight: 700;
+    padding: 1rem;
+    background-color: var(--background);
+    border: 2px solid var(--secondary-color);
+    color: var(--text-color);
+    border-radius: var(--border-radius);
+    width: 100%;
+}
+
+#new-balance:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 15px rgba(229, 57, 53, 0.3);
+}
+
+.primary-btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 1.2rem;
+    padding: 1rem;
+    background: linear-gradient(45deg, var(--primary-color), #C62828);
+    box-shadow: 0 4px 15px rgba(229, 57, 53, 0.4);
+}
+
+.primary-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(229, 57, 53, 0.6);
 }
 
 /* Challenge History Modal */

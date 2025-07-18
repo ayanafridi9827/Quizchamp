@@ -43,18 +43,22 @@ async function fetchWithdrawals() {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${user.name || 'N/A'}</td>
-                    <td>₹${withdrawal.amount}</td>
-                    <td>${withdrawal.fullName}</td>
-                    <td>${withdrawal.phoneNumber}</td>
-                    <td>${withdrawal.upiId}</td>
-                    <td><span class="status-pending">${withdrawal.status}</span></td>
+                    <td>₹${withdrawal.amount || 0}</td>
+                    <td>${withdrawal.fullName || 'N/A'}</td>
+                    <td>${withdrawal.phoneNumber || 'N/A'}</td>
+                    <td>${withdrawal.upiId || 'N/A'}</td>
+                    <td><span class="status-${(withdrawal.status || 'unknown').toLowerCase()}">${withdrawal.status || 'Unknown'}</span></td>
                     <td>
-                        <button class="action-btn approve-btn" data-withdrawal-id="${withdrawalDoc.id}">
-                            <i class="fas fa-check"></i> Approve
-                        </button>
-                        <button class="action-btn reject-btn" data-withdrawal-id="${withdrawalDoc.id}">
-                            <i class="fas fa-times"></i> Reject
-                        </button>
+                        <div class="action-buttons-container">
+                            ${withdrawal.status === 'pending' ? `
+                                <button class="action-btn approve-btn" data-withdrawal-id="${withdrawalDoc.id}">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="action-btn reject-btn" data-withdrawal-id="${withdrawalDoc.id}">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            ` : ''}
+                        </div>
                     </td>
                 `;
                 withdrawalsTableBody.appendChild(row);

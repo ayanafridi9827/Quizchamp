@@ -460,6 +460,32 @@ a {
     color: white;
 }
 
+.modal-footer {
+    padding: 1.5rem;
+    border-top: 2px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.primary-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: var(--border-radius);
+    font-size: 1em;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.primary-btn:hover {
+    background-color: #C62828;
+    transform: translateY(-2px);
+}
+
 /* Participants Modal */
 .participants-content {
     padding: 20px;

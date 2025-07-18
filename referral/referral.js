@@ -60,16 +60,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function submitFriendReferralCode() {
+        // Disable the button to prevent multiple clicks
+        ui.submitFriendReferralBtn.disabled = true;
+
         displayError('', ui.friendReferralErrorMessageDiv); // Clear previous errors
         const code = ui.friendReferralCodeInput.value.trim().toUpperCase();
 
         if (!code) {
             displayError("Please enter a referral code.", ui.friendReferralErrorMessageDiv);
+            ui.submitFriendReferralBtn.disabled = false; // Re-enable on error
             return;
         }
 
         if (!currentUser) {
             showNotification("You must be logged in to submit a referral code.", 'error');
+            ui.submitFriendReferralBtn.disabled = false; // Re-enable on error
             return;
         }
 
@@ -81,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentUserReferralSnap = await currentUserReferralRef.get();
         if (currentUserReferralSnap.exists && currentUserReferralSnap.data().code === code) {
             displayError("You cannot refer yourself.", ui.friendReferralErrorMessageDiv);
+            ui.submitFriendReferralBtn.disabled = false; // Re-enable on error
             return;
         }
 
@@ -109,7 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     await currentUserReferralRef.update({ referredBy: referrerUid });
                 }
 
-                // Add current user to referrer's 'joined' array and update earnings in a transaction
                 const referrerRef = db.collection('referrals').doc(referrerUid);
                 const referrerWalletRef = db.collection('wallets').doc(referrerUid);
 
@@ -124,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (currentReferrerDoc.exists) {
                         transaction.update(referrerRef, { 
                             joined: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
-                            earnings: firebase.firestore.FieldValue.increment(REFERRAL_BONUS_AMOUNT_REFERRER) // Referrer gets 20rs
+                            earnings: firebase.firestore.FieldValue.increment(15) // Referrer gets 15rs
                         });
                     }
 
@@ -132,11 +137,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (referrerWalletDoc.exists) {
                         currentReferrerBalance = referrerWalletDoc.data().balance || 0;
                     }
-                    const newReferrerBalance = currentReferrerBalance + REFERRAL_BONUS_AMOUNT_REFERRER;
+                    const newReferrerBalance = currentReferrerBalance + 15;
                     transaction.set(referrerWalletRef, {
                         balance: newReferrerBalance,
                         deposits: firebase.firestore.FieldValue.arrayUnion({
-                            amount: REFERRAL_BONUS_AMOUNT_REFERRER,
+                            amount: 15,
                             timestamp: new Date(),
                             type: 'Referral Bonus Earned'
                         }),
@@ -148,11 +153,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (currentUserWalletDoc.exists) {
                         currentUserBalance = currentUserWalletDoc.data().balance || 0;
                     }
-                    const newCurrentUserBalance = currentUserBalance + REFERRAL_BONUS_AMOUNT_PASTER;
+                    const newCurrentUserBalance = currentUserBalance + 10;
                     transaction.set(currentUserWalletRef, {
                         balance: newCurrentUserBalance,
                         deposits: firebase.firestore.FieldValue.arrayUnion({
-                            amount: REFERRAL_BONUS_AMOUNT_PASTER,
+                            amount: 10,
                             timestamp: new Date(),
                             type: 'Referral Bonus Received'
                         }),
@@ -165,10 +170,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } else {
                 displayError("Invalid referral code. Please check and try again.", ui.friendReferralErrorMessageDiv);
+                ui.submitFriendReferralBtn.disabled = false; // Re-enable on error
             }
         } catch (error) {
             console.error("Error submitting friend's referral code:", error);
             displayError("An error occurred. Please try again.", ui.friendReferralErrorMessageDiv);
+            ui.submitFriendReferralBtn.disabled = false; // Re-enable on error
         }
     }
 
@@ -180,6 +187,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const referralDoc = await referralRef.get();
             if (referralDoc.exists) {
                 const referralData = referralDoc.data();
+
+                // Check if the user has already been referred by someone
+                if (referralData.referredBy) {
+                    // Hide the section for entering a friend's code
+                    const enterCodeSection = document.getElementById('enter-code-section');
+                    if (enterCodeSection) {
+                        enterCodeSection.style.display = 'none';
+                    }
+                } else {
+                    // Show the section if they haven't been referred yet
+                    const enterCodeSection = document.getElementById('enter-code-section');
+                    if (enterCodeSection) {
+                        enterCodeSection.style.display = 'block';
+                    }
+                }
+
                 userReferralCode = referralData.code || '';
                 const referralsCount = referralData.joined ? referralData.joined.length : 0;
                 const referralEarnings = referralData.earnings || 0;

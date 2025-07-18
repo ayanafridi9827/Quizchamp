@@ -10,7 +10,8 @@ import {
     query,
     orderBy,
     doc,
-    getDoc
+    getDoc,
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -28,7 +29,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // DOM Elements
-const usersContainer = document.getElementById('users-container');
+const usersTableBody = document.getElementById('users-table-body');
 const searchInput = document.getElementById('search-input');
 const logoutBtn = document.getElementById('logout-btn');
 const challengeHistoryModal = document.getElementById('challenge-history-modal');
@@ -41,47 +42,106 @@ async function fetchUsers() {
         const usersQuery = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(usersQuery);
         
-        usersContainer.innerHTML = '';
+        usersTableBody.innerHTML = '';
         
-        querySnapshot.forEach((doc) => {
-            const user = doc.data();
-            const userCard = document.createElement('div');
-            userCard.classList.add('user-card');
-            userCard.dataset.userId = doc.id; // Store user ID for search and actions
+        for (const userDoc of querySnapshot.docs) {
+            const user = userDoc.data();
+            const userId = userDoc.id;
+
+            // Fetch wallet balance from the wallets collection
+            let walletBalance = 0;
+            try {
+                const walletDoc = await getDoc(doc(db, 'wallets', userId));
+                if (walletDoc.exists()) {
+                    walletBalance = walletDoc.data().balance || 0;
+                }
+            } catch (error) {
+                console.error(`Error fetching wallet for user ${userId}:`, error);
+            }
+
+            const userRow = document.createElement('tr');
+            userRow.dataset.userId = userId;
             
-            userCard.innerHTML = `
-                <div class="user-card-header">
-                    <div class="user-avatar">${user.name ? user.name.charAt(0).toUpperCase() : 'N/A'}</div>
-                    <div class="user-info">
-                        <div class="user-name">${user.name || 'N/A'}</div>
-                        <div class="user-email">${user.email}</div>
-                    </div>
-                </div>
-                <div class="user-card-body">
-                    <div class="info-item">
-                        <strong>Wallet Balance:</strong> <span class="wallet-balance">₹${user.walletBalance || 0}</span>
-                    </div>
-                    <div class="info-item">
-                        <strong>Challenges Participated:</strong> <span class="challenges-count">${user.challengeHistory ? user.challengeHistory.length : 0}</span>
-                    </div>
-                </div>
-                <div class="user-card-actions">
-                    <button class="action-btn view-history" data-user-id="${doc.id}">
+            userRow.innerHTML = `
+                <td>${user.name || 'N/A'}</td>
+                <td>${user.email}</td>
+                <td class="wallet-balance">₹${walletBalance}</td>
+                <td>
+                    <button class="action-btn edit-wallet" data-user-id="${userId}" data-current-balance="${walletBalance}">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="action-btn view-history" data-user-id="${userId}">
                         <i class="fas fa-history"></i> View History
                     </button>
-                </div>
+                </td>
             `;
             
-            usersContainer.appendChild(userCard);
-        });
+            usersTableBody.appendChild(userRow);
+        }
 
         // Add event listeners to view history buttons
         document.querySelectorAll('.view-history').forEach(button => {
             button.addEventListener('click', () => showChallengeHistory(button.dataset.userId));
         });
+
+        // Add event listeners to edit wallet buttons
+        document.querySelectorAll('.edit-wallet').forEach(button => {
+            button.addEventListener('click', () => {
+                const userId = button.dataset.userId;
+                const currentBalance = button.dataset.currentBalance;
+                showEditWalletModal(userId, currentBalance);
+            });
+        });
     } catch (error) {
         console.error('Error fetching users:', error);
     }
+}
+
+function showEditWalletModal(userId, currentBalance) {
+    const editWalletModal = document.getElementById('edit-wallet-modal');
+    const closeWalletModalBtn = document.getElementById('close-wallet-modal');
+    const editWalletForm = document.getElementById('edit-wallet-form');
+    const newBalanceInput = document.getElementById('new-balance');
+    const userNameEl = document.getElementById('wallet-user-name');
+    const userEmailEl = document.getElementById('wallet-user-email');
+    const userAvatarEl = document.getElementById('wallet-user-avatar');
+
+    // Fetch user details to display in the modal
+    const userRow = usersTableBody.querySelector(`tr[data-user-id="${userId}"]`);
+    const name = userRow.cells[0].textContent;
+    const email = userRow.cells[1].textContent;
+
+    userNameEl.textContent = name;
+    userEmailEl.textContent = email;
+    userAvatarEl.textContent = name.charAt(0).toUpperCase();
+    newBalanceInput.value = currentBalance;
+
+    editWalletModal.classList.add('active');
+
+    closeWalletModalBtn.addEventListener('click', () => {
+        editWalletModal.classList.remove('active');
+    });
+
+    editWalletForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const newBalance = parseFloat(newBalanceInput.value);
+
+        if (isNaN(newBalance) || newBalance < 0) {
+            alert('Please enter a valid balance.');
+            return;
+        }
+
+        try {
+            const walletRef = doc(db, 'wallets', userId);
+            await updateDoc(walletRef, { balance: newBalance });
+            alert('Wallet balance updated successfully!');
+            editWalletModal.classList.remove('active');
+            fetchUsers(); // Refresh the user list
+        } catch (error) {
+            console.error('Error updating wallet balance:', error);
+            alert('Failed to update wallet balance.');
+        }
+    };
 }
 
 // Show challenge history modal
@@ -118,19 +178,16 @@ async function showChallengeHistory(userId) {
 // Search functionality
 searchInput.addEventListener('input', (e) => {
     const searchTerm = e.target.value.toLowerCase();
-    const userCards = usersContainer.getElementsByClassName('user-card');
+    const userRows = usersTableBody.getElementsByTagName('tr');
     
-    Array.from(userCards).forEach(card => {
-        const nameElement = card.querySelector('.user-name');
-        const emailElement = card.querySelector('.user-email');
-
-        const name = nameElement ? nameElement.textContent.toLowerCase() : '';
-        const email = emailElement ? emailElement.textContent.toLowerCase() : '';
+    Array.from(userRows).forEach(row => {
+        const name = row.cells[0].textContent.toLowerCase();
+        const email = row.cells[1].textContent.toLowerCase();
         
         if (name.includes(searchTerm) || email.includes(searchTerm)) {
-            card.style.display = '';
+            row.style.display = '';
         } else {
-            card.style.display = 'none';
+            row.style.display = 'none';
         }
     });
 });

@@ -168,6 +168,17 @@ document.addEventListener('DOMContentLoaded', () => {
                             filledSpots: newFilledSpots
                         });
                         logFirestoreOperation('write');
+
+                        // User document update karein: contest ko 'joined' ke roop mein add karein
+                        const userRef = db.collection("users").doc(currentUser.uid);
+                        transaction.update(userRef, {
+                            contests: firebase.firestore.FieldValue.arrayUnion({
+                                contestId: contestId,
+                                joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                isCompleted: false
+                            })
+                        });
+                        logFirestoreOperation('write');
                     });
 
                     showNotification('Contest Joined Sucessfully', 'success');
@@ -302,27 +313,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // User ke login status ko check kar rahe hain
     auth.onAuthStateChanged(async (user) => {
         if (user) {
-            currentUser = user; // Set the current user object
-            // Agar user logged in hai aur user data abhi tak fetch nahi hua hai
+            currentUser = user;
+
             if (!userDataFetched) {
-                // Fetch wallet balance
-                const walletDocRef = db.collection("wallets").doc(user.uid);
-                try {
-                    const walletDocSnap = await walletDocRef.get();
-                    logFirestoreOperation('read');
-
-                    if (walletDocSnap.exists) {
-                        const walletData = walletDocSnap.data();
-                        userWalletBalance = walletData.balance || 0; // Get balance from wallet document
-                    } else {
-                        userWalletBalance = 0; // Wallet document not found, balance 0
-                    }
-                } catch (error) {
-                    console.error("Error fetching wallet data:", error);
-                    userWalletBalance = 0; // Error, set balance to 0
-                }
-
-                // Fetch user completed contests and results
                 const userDocRef = db.collection("users").doc(user.uid);
                 try {
                     const userDocSnap = await userDocRef.get();
@@ -330,36 +323,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (userDocSnap.exists) {
                         const userData = userDocSnap.data();
+                        
+                        // Wallet balance aur completed contests ki jaankari ek hi jagah se
+                        userWalletBalance = userData.wallet ? userData.wallet.balance : 0;
                         if (userData.contests && Array.isArray(userData.contests)) {
-                            for (const contestResult of userData.contests) {
-                                if (contestResult.contestId && contestResult.isCompleted === true) {
-                                    userCompletedContests.add(contestResult.contestId);
-                                    // Fetch user's specific result for this contest
-                                    const resultDocRef = db.collection("contests").doc(contestResult.contestId).collection("results").doc(user.uid);
-                                    const resultDocSnap = await resultDocRef.get();
-                                    logFirestoreOperation('read');
-                                    if (resultDocSnap.exists) {
-                                        userContestResults.set(contestResult.contestId, resultDocSnap.data());
-                                    }
+                            for (const contest of userData.contests) {
+                                if (contest.contestId && contest.isCompleted) {
+                                    userCompletedContests.add(contest.contestId);
                                 }
                             }
                         }
+                    } else {
+                        // Agar user document nahi hai, toh logout karke login page par bhej do
+                        // Kyunki login process mein document ban jana chahiye tha.
+                        auth.signOut();
+                        return;
                     }
-                    console.log('User completed contests:', userCompletedContests);
-                    console.log('User contest results:', userContestResults);
                 } catch (error) {
-                    console.error("Error fetching user data and completed contests:", error);
+                    console.error("Error fetching user data:", error);
                 }
 
-                userDataFetched = true; // Set flag to true after fetching
+                userDataFetched = true;
             }
-            // Sirf tabhi contests load karein jab woh pehle se loaded na hon
+
             if (!contestsLoaded) {
-                contestsLoaded = true; // Prevent multiple loads
+                contestsLoaded = true;
                 loadContests();
             }
         } else {
-            // Agar nahi, to login page par bhej do
             window.location.href = '/auth/login.html';
         }
     });

@@ -54,17 +54,11 @@ async function handleGoogleSignIn() {
         const redirectUrl = urlParams.get('redirect');
         const referrerCode = urlParams.get('ref'); // Get referral code from URL
         
-        // Create/update user profile and handle challenge joining if needed
+        // Create/update user profile (write-only)
         await createOrUpdateUserProfile(result.user, challengeId, referrerCode);
         
-        // After successful login/signup, check if user needs to enter a referral code
-        const userDoc = await getDoc(doc(db, 'users', result.user.uid));
-        const userData = userDoc.data();
-
-        if (!userData.referredBy && !referrerCode) {
-            // User is new and was not referred via URL, redirect to referral entry page
-            window.location.href = '/auth/enter-referral-code.html';
-        } else if (challengeId) {
+        // Sidha home page par redirect karein. Baki logic home page par hai.
+        if (challengeId) {
             window.location.href = `/Home/home.html?challengeId=${challengeId}`;
         } else if (redirectUrl) {
             window.location.href = `/Home/${redirectUrl}.html`;
@@ -94,127 +88,56 @@ function generateReferralCode(uid) {
 async function createOrUpdateUserProfile(user, challengeId = null, referrerCode = null) {
     try {
         const userRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
 
-        const userData = {
+        // User ki saari jaankari ek hi object mein
+        const initialUserData = {
             uid: user.uid,
             name: user.displayName || "No Name",
             email: user.email,
             photoURL: user.photoURL || '',
             lastLogin: serverTimestamp(),
-            role: 'user'
+            createdAt: serverTimestamp(),
+            role: 'user',
+            contests: [],
+            
+            // Wallet aur Referral data ko user document ke andar hi daal rahe hain
+            wallet: {
+                balance: 0,
+                deposits: [],
+                withdraws: []
+            },
+            referral: {
+                code: generateReferralCode(user.uid),
+                referredBy: null,
+                joined: [],
+                earnings: 0
+            }
         };
 
-        if (!userSnap.exists()) {
-            // Create new user profile with all required fields
-            const initialData = {
-                ...userData,
-                createdAt: serverTimestamp(),
-                
-                // Arrays and collections
-                contests: [],
-            };
+        // setDoc with { merge: true } istemal karenge. 
+        // Yeh document create karega, ya agar pehle se hai toh sirf lastLogin update karega.
+        // Isse naye aur purane users, dono handle ho jayenge.
+        await setDoc(userRef, {
+            lastLogin: serverTimestamp(),
+            name: user.displayName || "No Name",
+            photoURL: user.photoURL || ''
+        }, { merge: true });
 
-            // If there's a challenge ID, add it to history
-            if (challengeId) {
-                initialData.challengeHistory.push({
-                    challengeId: challengeId,
-                    joinedAt: new Date().toISOString(),
-                    status: 'joined',
-                    score: 0,
-                    rewardEarned: 0
-                });
-                initialData.totalChallengesJoined = 1;
-            }
-
-            await setDoc(userRef, initialData);
-            console.log('New user profile created successfully with all required fields');
-            
-            // Ensure wallet and referral entry are created for new users
-            await createWalletAndReferralEntry(user);
-
-            // Handle referrer if code is present
-            if (referrerCode) {
-                try {
-                    const referrerQuery = await db.collection('referrals').where('code', '==', referrerCode).limit(1).get();
-                    if (!referrerQuery.empty) {
-                        const referrerDoc = referrerQuery.docs[0];
-                        const referrerUid = referrerDoc.id;
-                        
-                        // Update referrer's joined array
-                        const referrerRef = doc(db, 'referrals', referrerUid);
-                        await runTransaction(db, async (transaction) => {
-                            const currentReferrerDoc = await transaction.get(referrerRef);
-                            if (currentReferrerDoc.exists) {
-                                transaction.update(referrerRef, { joined: arrayUnion(user.uid) });
-                            }
-                        });
-                        console.log(`Referral count incremented for referrer: ${referrerUid}`);
-                    } else {
-                        console.warn(`Referrer code ${referrerCode} not found in referrals collection.`);
-                    }
-                } catch (error) {
-                    console.error("Error handling referrer:", error);
-                }
-            }
-
-        } else {
-            // Update existing user profile with only the necessary fields
-            await setDoc(userRef, userData, { merge: true });
-            console.log('Existing user profile updated successfully');
-            
-            // Ensure wallet and referral entry exist for existing users too
-            await createWalletAndReferralEntry(user);
+        // Check if the document was just created to set initial data
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.data().createdAt) {
+             await setDoc(userRef, initialUserData, { merge: true });
         }
+
+        console.log('User profile, wallet, and referral upserted successfully in a single document.');
+
     } catch (error) {
-        console.error('Error creating/updating user profile:', error);
+        console.error('Error in consolidated user profile creation:', error);
         throw error;
     }
 }
 
-// New function to create wallet and referral entry if they don't exist
-async function createWalletAndReferralEntry(user) {
-    // Create initial wallet for the user if it doesn't exist
-    const walletRef = doc(db, 'wallets', user.uid);
-    const walletSnap = await getDoc(walletRef);
-    if (!walletSnap.exists()) {
-        await setDoc(walletRef, {
-            balance: 0,
-            deposits: [],
-            withdraws: [],
-            createdAt: serverTimestamp()
-        });
-        console.log('Initial wallet created for user.');
-    }
 
-    // Create initial referral entry for the user if it doesn't exist
-    const referralRef = doc(db, 'referrals', user.uid);
-    const referralSnap = await getDoc(referralRef);
-    if (!referralSnap.exists()) {
-        const newReferralCode = generateReferralCode(user.uid);
-        await setDoc(referralRef, {
-            code: newReferralCode,
-            referredBy: null,
-            joined: [],
-            earnings: 0,
-            createdAt: serverTimestamp()
-        });
-        console.log('Initial referral entry created for user.');
-    }
-}
-
-// Listen for auth state changes
-onAuthStateChanged(auth, async (user) => {
-    // If a sign-in process is not active, then update the user profile
-    if (user && !isSigningIn) {
-        try {
-            // Update last login time and ensure wallet/referral exist
-            await createOrUpdateUserProfile(user);
-        } catch (error) {
-            console.error('Error updating user profile:', error);
-        }
-    }
-});
 
 // Add click event listener to the sign-in button
 googleSignInButton.addEventListener('click', handleGoogleSignIn);

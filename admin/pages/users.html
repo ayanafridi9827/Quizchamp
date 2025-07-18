@@ -26,8 +26,20 @@
             <input type="text" class="search-input" id="search-input" placeholder="Search users by name or email...">
         </div>
 
-        <div class="user-cards-container" id="users-container">
-            <!-- User cards will be populated here -->
+        <div class="users-table-container">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Wallet Balance</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    <!-- User rows will be populated here -->
+                </tbody>
+            </table>
         </div>
         <div class="loading-spinner" id="loading-spinner"></div>
         <div class="empty-state" id="empty-state" style="display: none;">
@@ -47,6 +59,35 @@
             <div class="challenge-history" id="challenge-history">
                 <!-- Challenge history will be populated here -->
             </div>
+        </div>
+    </div>
+
+    <!-- Edit Wallet Balance Modal -->
+    <div class="modal" id="edit-wallet-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Wallet Balance</h2>
+                <button class="close-btn" id="close-wallet-modal">&times;</button>
+            </div>
+            <div class="user-info-modal">
+                <div class="user-avatar" id="wallet-user-avatar"></div>
+                <div class="user-details">
+                    <div class="user-name" id="wallet-user-name"></div>
+                    <div class="user-email" id="wallet-user-email"></div>
+                </div>
+            </div>
+            <form id="edit-wallet-form">
+                <div class="form-group">
+                    <label for="new-balance">New Balance (₹)</label>
+                    <input type="number" id="new-balance" name="new-balance" min="0" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="primary-btn">
+                        <i class="fas fa-save"></i>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 

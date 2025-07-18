@@ -1,21 +1,6 @@
-// Initialize Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyBgCHdqzcsiB9VBTsv4O1fU2R88GVoOOyA",
-    authDomain: "quizarena-c222d.firebaseapp.com",
-    projectId: "quizarena-c222d",
-    storageBucket: "quizarena-c222d.firebasestorage.app",
-    messagingSenderId: "892135666693",
-    appId: "1:892135666693:web:4f8bf849019603a937586c"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+import { db, auth } from '../../../firebase-config.js';
+import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc, addDoc, serverTimestamp, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
 // DOM Elements
 const challengesGrid = document.getElementById('challenges-grid');
@@ -31,33 +16,41 @@ const prizeInputForm = document.getElementById('prize-input-form');
 const toast = document.getElementById('toast');
 const toastMessage = document.getElementById('toast-message');
 const filterButtons = document.querySelectorAll('.filter-btn');
+const editChallengeModal = document.getElementById('edit-challenge-modal');
+const closeEditModalBtn = document.getElementById('close-edit-modal');
+const editChallengeForm = document.getElementById('edit-challenge-form');
 
 // Global variables
 let currentContestId = null;
 let currentUserId = null;
 let currentContestData = null;
 
-// Check authentication state
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        loadChallenges();
-    } else {
-        window.location.href = '../index.html';
-    }
-});
+// Helper function to show toasts
+function showToast(message, type = 'success') {
+    toast.className = `toast ${type} show`;
+    toastMessage.textContent = message;
+    
+    setTimeout(() => {
+        toast.className = 'toast';
+    }, 3000);
+}
 
-// Load challenges
+// Helper function to get challenge status
+function getChallengeStatus(challenge) {
+    return challenge.status;
+}
+
+// Load challenges from Firestore
 async function loadChallenges() {
+    challengesGrid.innerHTML = ''; // Clear existing challenges
     try {
-        const challengesRef = collection(db, 'contests');
-        const q = query(challengesRef, orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(q);
-        
-        challengesGrid.innerHTML = '';
-        
+        const querySnapshot = await getDocs(collection(db, 'contests'));
+        if (querySnapshot.empty) {
+            challengesGrid.innerHTML = '<p class="no-challenges">No challenges found.</p>';
+            return;
+        }
         querySnapshot.forEach((doc) => {
-            const challenge = doc.data();
-            createChallengeCard(doc.id, challenge);
+            createChallengeCard(doc.id, doc.data());
         });
     } catch (error) {
         console.error('Error loading challenges:', error);
@@ -65,13 +58,12 @@ async function loadChallenges() {
     }
 }
 
-// Create challenge card
 function createChallengeCard(id, challenge) {
     const card = document.createElement('div');
     card.className = 'challenge-card';
     
     const status = getChallengeStatus(challenge);
-    const statusClass = status.toLowerCase();
+    const statusClass = status ? status.toLowerCase() : 'unknown';
     
     card.innerHTML = `
         <div class="challenge-header">
@@ -144,20 +136,11 @@ async function viewParticipants(contestId) {
         const noParticipantsState = document.getElementById('no-participants-state');
         const retryParticipantsBtn = document.getElementById('retry-participants-btn');
 
-        // Log to see if elements are found
-        console.log('participantsList:', participantsList);
-        console.log('participantsLoadingState:', participantsLoadingState);
-        console.log('participantsErrorState:', participantsErrorState);
-        console.log('noParticipantsState:', noParticipantsState);
-        console.log('retryParticipantsBtn:', retryParticipantsBtn);
-
-        // Show loading state, hide others
         if (participantsLoadingState) participantsLoadingState.style.display = 'flex';
         if (participantsErrorState) participantsErrorState.style.display = 'none';
         if (noParticipantsState) noParticipantsState.style.display = 'none';
-        if (participantsList) participantsList.innerHTML = ''; // Clear previous participants
+        if (participantsList) participantsList.innerHTML = '';
 
-        // Attach retry listener
         if (retryParticipantsBtn) {
             retryParticipantsBtn.onclick = () => viewParticipants(contestId);
         }
@@ -187,13 +170,8 @@ async function viewParticipants(contestId) {
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
                     const isWinner = currentContestData.winners?.some(w => w.userId === participantId);
-
                     const userContests = userData.contests || [];
-                    console.log('User Data:', userData);
-                    console.log('User Contests for user:', userData.contests);
-                    console.log('Contest ID being searched:', contestId);
                     const contestStats = userContests.find(c => c.contestId === contestId);
-                    console.log('Found Contest Stats:', contestStats);
 
                     const stats = {
                         score: contestStats?.score || 0,
@@ -215,14 +193,13 @@ async function viewParticipants(contestId) {
             }
         }
 
-        participantsLoadingState.style.display = 'none';
+        if(participantsLoadingState) participantsLoadingState.style.display = 'none';
 
         if (loadedParticipants.length === 0) {
-            noParticipantsState.style.display = 'flex';
+            if(noParticipantsState) noParticipantsState.style.display = 'flex';
             return;
         }
 
-        // Sort participants by score (descending) then time taken (ascending)
         loadedParticipants.sort((a, b) => {
             if (b.stats.score !== a.stats.score) {
                 return b.stats.score - a.stats.score;
@@ -233,7 +210,6 @@ async function viewParticipants(contestId) {
         loadedParticipants.forEach((participant, index) => {
             const participantRow = document.createElement('div');
             participantRow.className = 'participant-row';
-            // Add rank-specific class for styling
             if (index === 0) participantRow.classList.add('rank-1');
             else if (index === 1) participantRow.classList.add('rank-2');
             else if (index === 2) participantRow.classList.add('rank-3');
@@ -260,13 +236,12 @@ async function viewParticipants(contestId) {
                     </button>
                 </div>
             `;
-            participantsList.appendChild(participantRow);
+            if(participantsList) participantsList.appendChild(participantRow);
         });
 
     } catch (error) {
         console.error('Error viewing participants:', error);
         showToast('Error loading participants', 'error');
-        // Ensure these elements are correctly referenced even in error state
         document.getElementById('participants-loading-state').style.display = 'none';
         document.getElementById('participants-error-state').style.display = 'flex';
     }
@@ -290,7 +265,6 @@ async function deleteParticipant(contestId, userId) {
                 participants: updatedParticipants
             });
 
-            // Optionally, remove from winners if they were a winner
             const currentWinners = contestDoc.data().winners || [];
             const updatedWinners = currentWinners.filter(winner => winner.userId !== userId);
             await updateDoc(contestRef, {
@@ -298,7 +272,7 @@ async function deleteParticipant(contestId, userId) {
             });
 
             showToast('Participant removed successfully', 'success');
-            viewParticipants(contestId); // Refresh the list
+            viewParticipants(contestId);
         } catch (error) {
             console.error('Error removing participant:', error);
             showToast('Error removing participant', 'error');
@@ -306,58 +280,45 @@ async function deleteParticipant(contestId, userId) {
     }
 }
 
-// Make winner
 async function makeWinner(userId) {
     try {
         currentUserId = userId;
-        console.log('makeWinner called for userId:', userId);
         prizeInputModal.classList.add('active');
         prizeInputForm.reset();
-        console.log('prizeInputModal should be active now.');
     } catch (error) {
         console.error('Error preparing winner form:', error);
         showToast('Error preparing winner form', 'error');
     }
 }
 
-// Handle prize form submission
-prizeInputForm.addEventListener('submit', async (e) => {
+async function handlePrizeInputFormSubmit(e) {
     e.preventDefault();
-    console.log('Prize form submitted.');
     
     try {
         const prizeAmount = parseFloat(document.getElementById('prizeAmount').value);
         const rank = parseInt(document.getElementById('rank').value);
-        console.log('Prize Amount:', prizeAmount, 'Rank:', rank);
         
         if (!currentContestId || !currentUserId || !currentContestData) {
-            console.error('Missing contest or user data', { currentContestId, currentUserId, currentContestData });
             throw new Error('Missing contest or user data');
         }
         
-        // Check if rank is already assigned
         const winnersRef = collection(db, `contests/${currentContestId}/winners`);
         const winnersSnapshot = await getDocs(winnersRef);
         const existingRank = winnersSnapshot.docs.find(doc => doc.data().rank === rank);
         
         if (existingRank) {
-            console.warn('This rank is already assigned to another winner', existingRank.data());
             throw new Error('This rank is already assigned to another winner');
         }
         
-        // Get user data
         const userRef = doc(db, 'users', currentUserId);
         const userDoc = await getDoc(userRef);
         
         if (!userDoc.exists()) {
-            console.error('User not found for userId:', currentUserId);
             throw new Error('User not found');
         }
         
         const userData = userDoc.data();
-        console.log('User Data for winner:', userData);
         
-        // Create winner data
         const winnerData = {
             userId: currentUserId,
             name: userData.name,
@@ -376,7 +337,6 @@ prizeInputForm.addEventListener('submit', async (e) => {
             timeTaken: userData.timeTaken || 0
         };
         
-        // Update contest document
         const contestRef = doc(db, 'contests', currentContestId);
         await updateDoc(contestRef, {
             winners: [...(currentContestData.winners || []), {
@@ -385,12 +345,10 @@ prizeInputForm.addEventListener('submit', async (e) => {
                 prize: prizeAmount,
                 rank: rank
             }],
-            status: 'ended', // Mark contest as ended
-            winnerDeclared: true // Add a flag for winner declaration
+            status: 'ended',
+            winnerDeclared: true
         });
-        console.log('Contest document updated with new winner and status.');
         
-        // Update user's contest history with winner status
         const userContestRef = doc(db, `users/${currentUserId}/contests/${currentContestId}`);
         await setDoc(userContestRef, {
             status: 'winner',
@@ -398,24 +356,20 @@ prizeInputForm.addEventListener('submit', async (e) => {
             rank: rank,
             updatedAt: serverTimestamp()
         }, { merge: true });
-        console.log('User contest history updated with winner status.');
         
         showToast('Winner marked successfully', 'success');
         prizeInputModal.classList.remove('active');
         
-        // Refresh participants view
         viewParticipants(currentContestId);
         
     } catch (error) {
         console.error('Error marking winner:', error);
         showToast(error.message || 'Error marking winner', 'error');
     }
-});
+}
 
-// View winners
 async function viewWinners(contestId) {
     try {
-        // Fetch the contest document to get the winners array
         const contestRef = doc(db, 'contests', contestId);
         const contestDoc = await getDoc(contestRef);
 
@@ -427,10 +381,8 @@ async function viewWinners(contestId) {
         const contestData = contestDoc.data();
         const winners = contestData.winners || [];
         
-        // Sort winners by rank
         winners.sort((a, b) => a.rank - b.rank);
         
-        // Create winners modal content
         const winnersModal = document.createElement('div');
         winnersModal.className = 'winners-modal active';
         winnersModal.innerHTML = `
@@ -484,135 +436,163 @@ async function viewWinners(contestId) {
     }
 }
 
-// Helper functions
-function getChallengeStatus(challenge) {
-    const now = new Date();
-    let startTime = challenge.startTime;
-    let endTime = challenge.endTime;
+document.addEventListener('DOMContentLoaded', () => {
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            loadChallenges();
+        } else {
+            window.location.href = '../index.html';
+        }
+    });
 
-    // Convert to Date objects if they are Firestore Timestamps
-    if (startTime && typeof startTime.toDate === 'function') {
-        startTime = startTime.toDate();
-    } else if (startTime) {
-        // Attempt to parse if it's a string or other format
-        startTime = new Date(startTime);
-    }
+    addChallengeBtn.addEventListener('click', () => {
+        addChallengeModal.classList.add('active');
+    });
 
-    if (endTime && typeof endTime.toDate === 'function') {
-        endTime = endTime.toDate();
-    } else if (endTime) {
-        // Attempt to parse if it's a string or other format
-        endTime = new Date(endTime);
-    }
-    
-    if (!startTime || !endTime || isNaN(startTime.getTime()) || isNaN(endTime.getTime())) return 'Unknown';
-    
-    if (now < startTime) return 'Upcoming';
-    if (now > endTime) return 'Ended';
-    return 'Active';
-}
+    closeModalBtn.addEventListener('click', () => {
+        addChallengeModal.classList.remove('active');
+    });
 
-function showToast(message, type = 'success') {
-    toast.className = `toast ${type} show`;
-    toastMessage.textContent = message;
-    
-    setTimeout(() => {
-        toast.className = 'toast';
-    }, 3000);
-}
+    closeEditModalBtn.addEventListener('click', () => {
+        editChallengeModal.classList.remove('active');
+    });
 
-// Event listeners
-addChallengeBtn.addEventListener('click', () => {
-    addChallengeModal.classList.add('active');
-});
+    closeParticipantsModal.addEventListener('click', () => {
+        participantsModal.classList.remove('active');
+    });
 
-closeModalBtn.addEventListener('click', () => {
-    addChallengeModal.classList.remove('active');
-});
+    closePrizeModal.addEventListener('click', () => {
+        prizeInputModal.classList.remove('active');
+    });
 
-closeParticipantsModal.addEventListener('click', () => {
-    participantsModal.classList.remove('active');
-});
-
-closePrizeModal.addEventListener('click', () => {
-    prizeInputModal.classList.remove('active');
-});
-
-// Filter buttons
-filterButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        filterButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        
-        const filter = button.dataset.filter;
-        const cards = document.querySelectorAll('.challenge-card');
-        
-        cards.forEach(card => {
-            const status = card.querySelector('.challenge-status').textContent.toLowerCase();
-            if (filter === 'all' || status === filter) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            const filter = button.dataset.filter;
+            const cards = document.querySelectorAll('.challenge-card');
+            
+            cards.forEach(card => {
+                const status = card.querySelector('.challenge-status').textContent.toLowerCase();
+                if (filter === 'all' || status === filter) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
         });
     });
+
+    addChallengeForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const title = document.getElementById('title').value;
+        const entryFee = parseFloat(document.getElementById('entryFee').value);
+        const prize = parseFloat(document.getElementById('prize').value);
+        const maxSpots = parseInt(document.getElementById('maxSpots').value);
+        const totalWinners = parseInt(document.getElementById('totalWinners').value);
+        const contestStatus = document.querySelector('input[name="contestStatus"]:checked').value;
+
+        if (!title || isNaN(entryFee) || isNaN(prize) || isNaN(maxSpots) || isNaN(totalWinners)) {
+            showToast('Please fill all fields correctly', 'error');
+            return;
+        }
+
+        try {
+            await addDoc(collection(db, 'contests'), {
+                title,
+                entryFee,
+                prize,
+                maxSpots,
+                filledSpots: 0,
+                totalWinners,
+                winners: [],
+                participants: [],
+                status: contestStatus,
+                createdAt: serverTimestamp()
+            });
+            showToast('Challenge added successfully', 'success');
+            addChallengeModal.classList.remove('active');
+            addChallengeForm.reset();
+            loadChallenges();
+        } catch (error) {
+            console.error('Error adding challenge:', error);
+            showToast('Error adding challenge', 'error');
+        }
+    });
+
+    prizeInputForm.addEventListener('submit', handlePrizeInputFormSubmit);
 });
 
-addChallengeForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const title = document.getElementById('challenge-title').value;
-    const entryFee = parseFloat(document.getElementById('challenge-entry-fee').value);
-    const prize = parseFloat(document.getElementById('challenge-prize').value);
-    const maxSpots = parseInt(document.getElementById('challenge-max-spots').value);
-    const startTime = new Date(document.getElementById('challenge-start-time').value); // Get as Date object
-    const endTime = new Date(document.getElementById('challenge-end-time').value);     // Get as Date object
-    const totalWinners = parseInt(document.getElementById('challenge-total-winners').value);
-
-    // Basic validation
-    if (!title || isNaN(entryFee) || isNaN(prize) || isNaN(maxSpots) || isNaN(totalWinners) || !startTime || !endTime) {
-        showToast('Please fill all fields correctly', 'error');
-        return;
-    }
-
-    if (startTime >= endTime) {
-        showToast('Start time must be before end time', 'error');
-        return;
-    }
-
-    try {
-        await addDoc(collection(db, 'contests'), {
-            title,
-            entryFee,
-            prize,
-            maxSpots,
-            filledSpots: 0,
-            startTime: startTime, // Store as Date object, Firestore will convert to Timestamp
-            endTime: endTime,     // Store as Date object, Firestore will convert to Timestamp
-            totalWinners,
-            winners: [],
-            participants: [],
-            status: 'upcoming', // Default status
-            createdAt: serverTimestamp()
-        });
-        showToast('Challenge added successfully', 'success');
-        addChallengeModal.classList.remove('active');
-        addChallengeForm.reset();
-        loadChallenges();
-    } catch (error) {
-        console.error('Error adding challenge:', error);
-        showToast('Error adding challenge', 'error');
-    }
-});
-
-// Make functions available globally
 window.viewParticipants = viewParticipants;
 window.makeWinner = makeWinner;
 window.viewWinners = viewWinners;
-window.editChallenge = (id) => {
-    // Implement edit functionality
-    showToast('Edit functionality coming soon', 'info');
+
+window.editChallenge = async (id) => {
+    try {
+        currentContestId = id;
+        const contestRef = doc(db, 'contests', id);
+        const contestDoc = await getDoc(contestRef);
+
+        if (!contestDoc.exists()) {
+            showToast('Contest not found', 'error');
+            return;
+        }
+
+        const challenge = contestDoc.data();
+
+        document.getElementById('edit-title').value = challenge.title;
+        document.getElementById('edit-entryFee').value = challenge.entryFee;
+        document.getElementById('edit-prize').value = challenge.prize;
+        document.getElementById('edit-maxSpots').value = challenge.maxSpots;
+        document.getElementById('edit-totalWinners').value = challenge.totalWinners;
+        
+        const statusRadio = document.querySelector(`input[name="edit-contestStatus"][value="${challenge.status}"]`);
+        if (statusRadio) {
+            statusRadio.checked = true;
+        }
+
+        editChallengeModal.classList.add('active');
+
+        editChallengeForm.onsubmit = async (e) => {
+            e.preventDefault();
+
+            const updatedTitle = document.getElementById('edit-title').value;
+            const updatedEntryFee = parseFloat(document.getElementById('edit-entryFee').value);
+            const updatedPrize = parseFloat(document.getElementById('edit-prize').value);
+            const updatedMaxSpots = parseInt(document.getElementById('edit-maxSpots').value);
+            const updatedTotalWinners = parseInt(document.getElementById('edit-totalWinners').value);
+            const updatedStatus = document.querySelector('input[name="edit-contestStatus"]:checked').value;
+
+            if (!updatedTitle || isNaN(updatedEntryFee) || isNaN(updatedPrize) || isNaN(updatedMaxSpots) || isNaN(updatedTotalWinners)) {
+                showToast('Please fill all fields correctly', 'error');
+                return;
+            }
+
+            try {
+                await updateDoc(contestRef, {
+                    title: updatedTitle,
+                    entryFee: updatedEntryFee,
+                    prize: updatedPrize,
+                    maxSpots: updatedMaxSpots,
+                    totalWinners: updatedTotalWinners,
+                    status: updatedStatus
+                });
+                showToast('Challenge updated successfully', 'success');
+                editChallengeModal.classList.remove('active');
+                loadChallenges();
+            } catch (error) {
+                console.error('Error updating challenge:', error);
+                showToast('Error updating challenge', 'error');
+            }
+        };
+    } catch (error) {
+        console.error('Error opening edit modal:', error);
+        showToast('Error opening edit modal', 'error');
+    }
 };
+
 window.deleteChallenge = async (id) => {
     if (confirm('Are you sure you want to delete this challenge?')) {
         try {
