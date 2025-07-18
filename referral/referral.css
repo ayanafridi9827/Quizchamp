@@ -477,7 +477,7 @@ body {
     .nav-links li {
         width: 100%;
         text-align: left;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem; /* Increased spacing */
     }
 
     .nav-links li:last-child {
@@ -485,8 +485,8 @@ body {
     }
 
     .nav-links a {
-        padding: 0.8rem 0;
-        font-size: 1.1rem;
+        padding: 1rem 0; /* Increased padding */
+        font-size: 1.2rem; /* Slightly larger font */
     }
 
     .overlay {
