@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Contest ka status (Live, Ended, etc.) set kar rahe hain
         const statusBadge = card.querySelector('.status-badge');
-        if (contestData.status === 'Active') {
+        if (contestData.status === 'active') {
             statusBadge.textContent = 'Live';
             statusBadge.classList.add('live');
         } else if (contestData.status === 'upcoming') {
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         transaction.update(userRef, {
                             contests: firebase.firestore.FieldValue.arrayUnion({
                                 contestId: contestId,
-                                joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                joinedAt: new Date(),
                                 isCompleted: false
                             })
                         });
@@ -265,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
         contestsGrid.innerHTML = ''; // Clear existing contests before loading new ones
 
         try {
-            let contestsQuery = db.collection("contests").orderBy("createdAt").limit(pageSize);
+            let contestsQuery = db.collection("contests").where("status", "in", ["active", "upcoming"]).limit(pageSize);
             if (lastVisible) {
                 contestsQuery = contestsQuery.startAfter(lastVisible);
             }
@@ -324,8 +324,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (userDocSnap.exists) {
                         const userData = userDocSnap.data();
                         
-                        // Wallet balance aur completed contests ki jaankari ek hi jagah se
-                        userWalletBalance = userData.wallet ? userData.wallet.balance : 0;
+                        // Wallet balance aur completed contests ki jaankari ab wallets collection se
+                        const walletDocRef = db.collection("wallets").doc(user.uid);
+                        const walletDocSnap = await walletDocRef.get();
+                        logFirestoreOperation('read');
+
+                        if (walletDocSnap.exists) {
+                            userWalletBalance = walletDocSnap.data().balance || 0;
+                        } else {
+                            console.warn("Wallet document not found for user:", user.uid);
+                            userWalletBalance = 0; // Default to 0 if wallet not found
+                        }
                         if (userData.contests && Array.isArray(userData.contests)) {
                             for (const contest of userData.contests) {
                                 if (contest.contestId && contest.isCompleted) {

@@ -565,6 +565,8 @@ window.editChallenge = async (id) => {
             const updatedTotalWinners = parseInt(document.getElementById('edit-totalWinners').value);
             const updatedStatus = document.querySelector('input[name="edit-contestStatus"]:checked').value;
 
+            console.log('Attempting to update contest:', currentContestId, 'with status:', updatedStatus);
+
             if (!updatedTitle || isNaN(updatedEntryFee) || isNaN(updatedPrize) || isNaN(updatedMaxSpots) || isNaN(updatedTotalWinners)) {
                 showToast('Please fill all fields correctly', 'error');
                 return;

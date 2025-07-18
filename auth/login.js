@@ -8,7 +8,12 @@ import {
     setDoc, 
     getDoc,
     arrayUnion,
-    serverTimestamp
+    serverTimestamp,
+    updateDoc,
+    collection,
+    query,
+    where,
+    getDocs
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Get Firebase services from window object
@@ -100,18 +105,7 @@ async function createOrUpdateUserProfile(user, challengeId = null, referrerCode 
             role: 'user',
             contests: [],
             
-            // Wallet aur Referral data ko user document ke andar hi daal rahe hain
-            wallet: {
-                balance: 0,
-                deposits: [],
-                withdraws: []
-            },
-            referral: {
-                code: generateReferralCode(user.uid),
-                referredBy: null,
-                joined: [],
-                earnings: 0
-            }
+            
         };
 
         // setDoc with { merge: true } istemal karenge. 
@@ -125,11 +119,54 @@ async function createOrUpdateUserProfile(user, challengeId = null, referrerCode 
 
         // Check if the document was just created to set initial data
         const userSnap = await getDoc(userRef);
-        if (!userSnap.data().createdAt) {
-             await setDoc(userRef, initialUserData, { merge: true });
+        if (!userSnap.exists || !userSnap.data().createdAt) {
+            await setDoc(userRef, initialUserData, { merge: true });
+
+            // Create initial wallet document
+            const walletRef = doc(db, 'wallets', user.uid);
+            await setDoc(walletRef, {
+                userId: user.uid,
+                balance: 0,
+                deposits: [],
+                withdraws: [],
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            });
+            console.log('Initial wallet created successfully.');
+
+            // Create initial referral document
+            const referralRef = doc(db, 'referrals', user.uid);
+            const newReferralCode = generateReferralCode(user.uid);
+            await setDoc(referralRef, {
+                userId: user.uid,
+                code: newReferralCode,
+                referredBy: referrerCode || null, // Set referredBy if a referrerCode exists
+                joined: [],
+                earnings: 0,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            });
+            console.log('Initial referral document created successfully.');
+
+            // If there's a referrer, update their 'joined' list
+            if (referrerCode) {
+                const referrerQuery = query(collection(db, 'referrals'), where('code', '==', referrerCode));
+                const referrerSnapshot = await getDocs(referrerQuery);
+                if (!referrerSnapshot.empty) {
+                    const referrerDoc = referrerSnapshot.docs[0];
+                    const referrerDocRef = doc(db, 'referrals', referrerDoc.id);
+                    await updateDoc(referrerDocRef, {
+                        joined: arrayUnion(user.uid),
+                        updatedAt: serverTimestamp()
+                    });
+                    console.log(`Referrer ${referrerCode} updated with new joined user.`);
+                } else {
+                    console.warn(`Referrer with code ${referrerCode} not found.`);
+                }
+            }
         }
 
-        console.log('User profile, wallet, and referral upserted successfully in a single document.');
+        console.log('User profile upserted successfully. Wallet and referral handled separately.');
 
     } catch (error) {
         console.error('Error in consolidated user profile creation:', error);
