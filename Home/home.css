@@ -799,6 +799,30 @@ body {
     animation: congrats-animation 2s infinite;
 }
 
+.won-contest-card .prize-section {
+    background: linear-gradient(135deg, #28a745 0%, #2dc26b 100%);
+    border: none;
+    box-shadow: 0 8px 30px rgba(40, 167, 69, 0.4);
+}
+
+.won-contest-card .prize-content {
+    background: none;
+    box-shadow: none;
+    border: none;
+}
+
+.won-contest-card .prize-label {
+    color: #fff;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.won-contest-card .prize-amount {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
 .won-contest-card .stat-icon {
     font-size: 1.5rem;
     color: #6a82fb;
