@@ -213,23 +213,50 @@ document.addEventListener('DOMContentLoaded', () => {
         const userResult = userContestResults.get(contestId); // Get user's specific result
 
         // If contest has ended and user has a result, display it
-        if (contestData.status === 'ended' && userResult) {
-            card.classList.add('contest-ended-card'); // Add class for styling
-            card.querySelector('.entry-fee-text').style.display = 'none'; // Hide entry fee
-            card.querySelector('.spots-info').style.display = 'none'; // Hide spots info
-            card.querySelector('.progress-bar').style.display = 'none'; // Hide progress bar
+        // If contest has ended and user has a result, display it
+        if (contestData.winnerDeclared && userResult) {
+            card.classList.add('won-contest-card'); // Add class for styling
+
+            // Hide unnecessary details
+            card.querySelector('.contest-details').style.display = 'none';
+            card.querySelector('.progress-section').style.display = 'none';
+            card.querySelector('.contest-header').style.display = 'none'; // Hide original header
 
             // Update prize display to show user's prize
-            prizeTextElement.innerHTML = `<span class="prize-label">YOUR PRIZE</span><span class="prize-amount winner-declared-prize">₹${userResult.prizeWon || 0}</span>`;
+            prizeTextElement.innerHTML = `<span class="prize-label">Won</span><span class="prize-amount winner-declared-prize">₹${userResult.prize || 0}</span>`;
 
-            // Display rank
-            const rankElement = document.createElement('p');
-            rankElement.classList.add('user-rank');
-            rankElement.textContent = `Your Rank: ${userResult.rank || 'N/A'}`;
-            card.querySelector('.contest-details').appendChild(rankElement);
+            // Populate the new user-stats section
+            const userStats = card.querySelector('.user-stats');
+            userStats.innerHTML = `
+                <div class="stat-item">
+                    <i class="fas fa-trophy stat-icon"></i>
+                    <div class="stat-info">
+                        <span class="stat-label">Rank</span>
+                        <span class="stat-value">#${userResult.rank || 'N/A'}</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-star stat-icon"></i>
+                    <div class="stat-info">
+                        <span class="stat-label">Score</span>
+                        <span class="stat-value">${userResult.score || 0}</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-clock stat-icon"></i>
+                    <div class="stat-info">
+                        <span class="stat-label">Time</span>
+                        <span class="stat-value">${userResult.timeTaken ? (userResult.timeTaken / 1000).toFixed(2) + 's' : 'N/A'}</span>
+                    </div>
+                </div>
+            `;
+            userStats.style.display = 'flex'; // Make sure it's visible
 
-            joinTextSpan.textContent = 'View Details';
-            joinBtn.classList.add('view-details-btn');
+            const congratsMessage = card.querySelector('.congrats-message');
+            congratsMessage.textContent = 'Congratulations!';
+
+            joinTextSpan.textContent = 'View Result';
+            joinBtn.classList.add('view-result-btn');
             joinBtn.removeEventListener('click', joinButtonClickHandler); // Remove existing handler
             joinBtn.addEventListener('click', () => {
                 window.location.href = `/Home/quiz/results.html?contestId=${contestId}`;
@@ -339,6 +366,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             for (const contest of userData.contests) {
                                 if (contest.contestId && contest.isCompleted) {
                                     userCompletedContests.add(contest.contestId);
+                                }
+                                if (contest.contestId && contest.status === 'winner') {
+                                    userContestResults.set(contest.contestId, {
+                                        rank: contest.rank,
+                                        prize: contest.prize,
+                                        score: contest.score, // Assuming score is also stored here
+                                        timeTaken: contest.timeTaken // Add timeTaken here
+                                    });
                                 }
                             }
                         }

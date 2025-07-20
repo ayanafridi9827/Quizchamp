@@ -223,18 +223,19 @@ body {
 }
 
 /* Contest Grid */
-.contest-grid {
+.all-contests-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Updated for wider cards */
     gap: 2rem;
-    margin-bottom: 2rem;
+    max-width: 1200px; /* Added max-width for better layout on large screens */
+    margin: 0 auto; /* Center the grid */
 }
 
 /* Contest Card */
 .contest-card {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 20px;
-    padding: 0.4rem; /* Padding aur kam ki */
+    padding: 1rem; /* Adjusted padding */
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -245,7 +246,8 @@ body {
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-    gap: 0.8rem;
+    gap: 1rem; /* Adjusted gap */
+    min-height: 380px; /* Set a fixed height for consistency */
 }
 
 .card-glow {
@@ -327,7 +329,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 15px rgba(255, 59, 59, 0.3);
+    box-shadow: 0 44px 15px rgba(255, 59, 59, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -379,12 +381,13 @@ body {
     flex-grow: 1;
     margin-left: 10px;
     margin-right: 10px;
+    padding-top: 0.2rem; /* Further reduced top padding */
 }
 
 .contest-title {
     font-size: 1.5rem; /* Font size badhaya */
     font-weight: 800;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.1rem; /* Further reduced bottom margin */
     color: var(--secondary-color); /* Solid color */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2); /* Behtar shadow */
     -webkit-background-clip: unset; /* Hata diya */
@@ -396,9 +399,10 @@ body {
     width: fit-content;
     margin: 0 auto 1rem auto;
     padding: 0.8rem 1rem; /* Left aur Right padding thodi badhai */
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 16px;
+    background: #ffffff; /* Solid white background */
+    border: 2px solid #FFD700; /* Gold border to signify win */
+    box-shadow: 0 8px 30px rgba(255, 215, 0, 0.6); /* Stronger, golden shadow */
+    border-radius: 20px;
     overflow: hidden;
     display: flex;
     justify-content: center;
@@ -708,12 +712,9 @@ body {
     box-shadow: 0 8px 25px rgba(255, 59, 59, 0.3);
 }
 
-.join-btn:hover i {
-    transform: translateX(8px) scale(1.2);
-}
-
-.join-btn:active {
-    transform: translateY(-1px);
+.join-btn.joined {
+    background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);
+    color: #000;
 }
 
 .view-result-btn {
@@ -739,8 +740,59 @@ body {
     box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
-.view-result-btn:active {
-    transform: translateY(-1px);
+.won-contest-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border: 2px solid #6a82fb;
+    box-shadow: 0 10px 40px rgba(106, 130, 251, 0.4);
+}
+
+.won-contest-card .user-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem; /* Increased gap */
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+}
+
+.won-contest-card .congrats-message {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #28a745;
+    margin-top: 1rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.won-contest-card .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.won-contest-card .stat-icon {
+    font-size: 1.5rem;
+    color: #6a82fb;
+}
+
+.won-contest-card .stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.won-contest-card .stat-label {
+    font-size: 0.8rem;
+    color: #555;
+}
+
+.won-contest-card .stat-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.won-contest-card .view-result-btn {
+    background: linear-gradient(135deg, #6a82fb 0%, #fc5c7d 100%);
 }
 
 /* Add animation classes */
@@ -819,11 +871,12 @@ body {
         display: block;
     }
 
-    .all-contests-grid {
-        grid-template-columns: 1fr; /* Ek column */
-        gap: 1.5rem;
-        max-width: 100%; /* Poori width lega */
-        padding: 0 1rem; /* Side padding */
+    .all-contests-grid{
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
     }
 
     .main-content {
@@ -891,439 +944,3 @@ body {
     }
 }
 
-/* Utility Classes */
-.hidden {
-    display: none;
-}
-
-/* Animations */
-@keyframes slideDown {
-    from {
-        transform: translateY(-100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-/* Footer */
-.footer {
-    background: var(--secondary-color);
-    color: white;
-    padding: 3rem 5%;
-}
-
-.footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    text-align: center;
-}
-
-.footer-links {
-    margin-bottom: 2rem;
-}
-
-.footer-links a {
-    color: white;
-    text-decoration: none;
-    margin: 0 1rem;
-    transition: color 0.3s ease;
-}
-
-.footer-links a:hover {
-    color: var(--primary-color);
-}
-
-.social-icons {
-    margin-bottom: 2rem;
-}
-
-.social-icons a {
-    color: white;
-    font-size: 1.5rem;
-    margin: 0 1rem;
-    transition: color 0.3s ease;
-}
-
-.social-icons a:hover {
-    color: var(--primary-color);
-}
-
-.copyright {
-    color: #888;
-}
-
-/* Additional styles for spacing and alignment */
-.all-contests-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.detail-item.entry-fee {
-    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%);
-    border: 1px solid rgba(76, 175, 80, 0.2);
-}
-
-.detail-item.entry-fee i {
-    color: #4CAF50;
-    background: rgba(76, 175, 80, 0.15);
-}
-
-.detail-item.entry-fee span {
-    color: #000;
-    font-weight: 600;
-}
-
-.detail-item.entry-fee:hover {
-    background: linear-gradient(135deg, rgba(76, 175, 80, 0.15) 0%, rgba(76, 175, 80, 0.1) 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
-}
-
-/* Update the icon for winners */
-.detail-item.entry-fee i::before {
-    content: "\f0c0"; /* Font Awesome users icon */
-}
-
-/* Toast Notifications */
-.toast {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 1rem 2rem;
-    border-radius: 8px;
-    color: white;
-    font-weight: 500;
-    z-index: 1000;
-    transform: translateY(100px);
-    opacity: 0;
-    transition: all 0.3s ease;
-}
-
-.toast.show {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.toast-success {
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-}
-
-.toast-error {
-    background: linear-gradient(135deg, #ff3b3b 0%, #ff6b6b 100%);
-    box-shadow: 0 4px 15px rgba(255, 59, 59, 0.3);
-}
-
-/* Joined Button State */
-.join-btn.joined {
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-    cursor: default;
-    transform: none;
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
-}
-
-.join-btn.joined:hover {
-    transform: none;
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
-}
-
-.join-btn.joined i {
-    transform: none;
-}
-
-.join-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.8;
-}
-
-/* Progress Bar Animation */
-.progress-fill {
-    transition: width 0.5s ease-in-out;
-}
-
-/* Mobile Styles for Toast */
-@media (max-width: 768px) {
-    .toast {
-        left: 20px;
-        right: 20px;
-        text-align: center;
-        bottom: 20px;
-    }
-    .all-contests-grid{
-        display: grid;
-        grid-template-columns: repeat(1, 1fr);
-        gap: 2rem;
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-    .detail-item.entry-fee{
-        font-weight: bold;
-    }
-}
-
-/* Sticky My Challenges Button */
-.sticky-challenges-btn {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background: blue;
-    color: white;
-    text-decoration: none;
-    padding: 1rem 1.5rem;
-    border-radius: 50px;
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    font-weight: 600;
-    box-shadow: 0 4px 20px rgba(255, 59, 59, 0.3);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1000;
-    overflow: hidden;
-}
-
-.sticky-challenges-btn i {
-    font-size: 1.2rem;
-    transition: transform 0.3s ease;
-}
-
-.sticky-challenges-btn span {
-    font-size: 1rem;
-}
-
-.sticky-challenges-btn .btn-glow {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transform: translateX(-100%);
-    transition: transform 0.5s ease;
-}
-
-.sticky-challenges-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 25px rgba(255, 59, 59, 0.4);
-}
-
-.sticky-challenges-btn:hover i {
-    transform: scale(1.1);
-}
-
-.sticky-challenges-btn:hover .btn-glow {
-    transform: translateX(100%);
-}
-
-.sticky-challenges-btn:active {
-    transform: translateY(-1px);
-}
-
-/* Mobile Styles for Sticky Button */
-@media (max-width: 768px) {
-    .sticky-challenges-btn {
-        bottom: 20px;
-        right: 20px;
-        padding: 0.8rem 1.2rem;
-    }
-
-    .sticky-challenges-btn span {
-        font-size: 0.9rem;
-    }
-
-    .sticky-challenges-btn i {
-        font-size: 1.1rem;
-    }
-}
-
-/* Index Building Message */
-.index-building-message {
-    text-align: center;
-    padding: 2rem;
-    background: var(--card-bg);
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-    margin: 2rem auto;
-    max-width: 500px;
-}
-
-.index-building-message i {
-    font-size: 3rem;
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-}
-
-.index-building-message h3 {
-    color: var(--text-primary);
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
-}
-
-.index-building-message p {
-    color: var(--text-secondary);
-    margin-bottom: 0.5rem;
-}
-
-/* Error Message */
-.error-message {
-    text-align: center;
-    padding: 2rem;
-    background: var(--card-bg);
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-    margin: 2rem auto;
-    max-width: 500px;
-}
-
-.error-message i {
-    font-size: 3rem;
-    color: var(--error-color);
-    margin-bottom: 1rem;
-}
-
-.error-message h3 {
-    color: var(--text-primary);
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
-}
-
-.error-message p {
-    color: var(--text-secondary);
-    margin-bottom: 1.5rem;
-}
-
-/* Retry Button */
-.retry-btn {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-}
-
-.retry-btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-}
-
-.retry-btn i {
-    font-size: 1rem;
-    margin: 0;
-}
-
-/* Loading State */
-.loading-state {
-    text-align: center;
-    padding: 2rem;
-}
-
-.loading-state i {
-    font-size: 2rem;
-    color: var(--primary-color);
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Hidden State */
-.hidden {
-    display: none;
-}
-
-/* No Contests Message */
-.no-contests-message {
-    text-align: center;
-    padding: 3rem;
-    background: var(--card-bg);
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-    margin: 2rem auto;
-    max-width: 500px;
-}
-
-.no-contests-message i {
-    font-size: 4rem;
-    color: var(--primary-color);
-    margin-bottom: 1.5rem;
-    opacity: 0.8;
-}
-
-.no-contests-message h3 {
-    color: var(--text-primary);
-    margin-bottom: 1rem;
-    font-size: 1.8rem;
-}
-
-.no-contests-message p {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-}
-
-/* Active Contests Section */
-.active-contests .contest-card {
-    border: 1px solid rgba(255, 59, 59, 0.2);
-}
-
-.active-contests .contest-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(255, 59, 59, 0.15);
-}
-
-/* Upcoming Contests Section */
-.upcoming-contests .contest-card {
-    border: 1px solid rgba(76, 175, 80, 0.2);
-    opacity: 0.9;
-}
-
-.upcoming-contests .contest-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.15);
-    opacity: 1;
-}
-
-/* Animated Live Badge */
-.status-badge.live {
-    background-color: #28a745; /* Green background */
-    color: white; /* White text */
-    border: 1px solid #28a745;
-    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5); /* Green glow */
-    animation: pulse-live 1.5s infinite;
-}
-
-@keyframes pulse-live {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
-    }
-    50% {
-        transform: scale(1.05);
-        box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
-    }
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
-    }
-}

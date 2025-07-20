@@ -143,19 +143,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const userRef = db.collection('users').doc(state.currentUser.uid);
+            const userDoc = await userRef.get();
 
-            // User ke document mein 'contests' array mein naya result jodein
+            if (!userDoc.exists) {
+                console.error("User document not found.");
+                // Handle this case - maybe create the document or show an error
+                return;
+            }
+
+            const userData = userDoc.data();
+            let contests = userData.contests || [];
+
+            // Find the index of the contest to update
+            const contestIndex = contests.findIndex(
+                c => c.contestId === state.contestId && c.isCompleted === false
+            );
+
+            if (contestIndex > -1) {
+                // Update the existing contest entry
+                contests[contestIndex] = {
+                    ...contests[contestIndex], // Keep existing properties like joinedAt
+                    ...userContestResult      // Overwrite with new results
+                };
+            } else {
+                // If no incomplete contest is found, add the new result.
+                // This might happen in some edge cases.
+                contests.push(userContestResult);
+            }
+
+            // Update the entire contests array in Firestore
             await userRef.update({
-                contests: firebase.firestore.FieldValue.arrayUnion(userContestResult)
+                contests: contests
             });
 
-            console.log("Quiz result safaltapoorvak user ke document mein save ho gaya!");
+            console.log("Quiz result successfully updated in the user's document!");
 
         } catch (error) {
-            console.error("Quiz result save karne mein error:", error);
-            // Yahan aap fallback logic daal sakte hain, jaise local storage mein save karna
+            console.error("Error updating quiz result:", error);
+            // Fallback logic can be added here
         } finally {
-            // Result page par redirect karein
+            // Redirect to the results page
             window.location.href = `results.html?contestId=${state.contestId}`;
         }
     };

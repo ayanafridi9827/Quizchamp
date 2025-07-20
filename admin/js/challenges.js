@@ -302,11 +302,9 @@ async function handlePrizeInputFormSubmit(e) {
             throw new Error('Missing contest or user data');
         }
         
-        const winnersRef = collection(db, `contests/${currentContestId}/winners`);
-        const winnersSnapshot = await getDocs(winnersRef);
-        const existingRank = winnersSnapshot.docs.find(doc => doc.data().rank === rank);
-        
-        if (existingRank) {
+        // Check if the rank is already assigned
+        const existingWinner = currentContestData.winners?.find(w => w.rank === rank);
+        if (existingWinner) {
             throw new Error('This rank is already assigned to another winner');
         }
         
@@ -319,24 +317,6 @@ async function handlePrizeInputFormSubmit(e) {
         
         const userData = userDoc.data();
         
-        const winnerData = {
-            userId: currentUserId,
-            name: userData.name,
-            email: userData.email,
-            contestId: currentContestId,
-            contestTitle: currentContestData.title,
-            prize: prizeAmount,
-            rank: rank,
-            timestamp: serverTimestamp(),
-            entryFee: currentContestData.entryFee,
-            totalParticipants: currentContestData.participants?.length || 0,
-            contestType: currentContestData.type || 'quiz',
-            score: userData.score || 0,
-            correctAnswers: userData.correctAnswers || 0,
-            wrongAnswers: userData.wrongAnswers || 0,
-            timeTaken: userData.timeTaken || 0
-        };
-        
         const contestRef = doc(db, 'contests', currentContestId);
         await updateDoc(contestRef, {
             winners: [...(currentContestData.winners || []), {
@@ -345,18 +325,53 @@ async function handlePrizeInputFormSubmit(e) {
                 prize: prizeAmount,
                 rank: rank
             }],
-            status: 'ended',
             winnerDeclared: true
         });
         
-        const userContestRef = doc(db, `users/${currentUserId}/contests/${currentContestId}`);
-        await setDoc(userContestRef, {
-            status: 'winner',
-            prize: prizeAmount,
-            rank: rank,
-            updatedAt: serverTimestamp()
-        }, { merge: true });
+        // Update the user's contest data
+        const userContests = userData.contests || [];
+        const contestIndex = userContests.findIndex(c => c.contestId === currentContestId);
+
+        if (contestIndex > -1) {
+            userContests[contestIndex].status = 'winner';
+            userContests[contestIndex].prize = prizeAmount;
+            userContests[contestIndex].rank = rank;
+            userContests[contestIndex].updatedAt = new Date();
+
+            await updateDoc(userRef, {
+                contests: userContests
+            });
+        }
         
+        // Update the user's wallet
+        const walletRef = doc(db, 'wallets', currentUserId);
+        const walletDoc = await getDoc(walletRef);
+        let newBalance = prizeAmount;
+
+        if (walletDoc.exists()) {
+            const walletData = walletDoc.data();
+            newBalance += walletData.balance || 0;
+            await updateDoc(walletRef, {
+                balance: newBalance,
+                deposits: [...(walletData.deposits || []), {
+                    amount: prizeAmount,
+                    timestamp: new Date(),
+                    type: 'Contest Prize',
+                    description: currentContestData.title
+                }]
+            });
+        } else {
+            await setDoc(walletRef, {
+                balance: newBalance,
+                deposits: [{
+                    amount: prizeAmount,
+                    timestamp: new Date(),
+                    type: 'Contest Prize',
+                    description: currentContestData.title
+                }]
+            });
+        }
+
         showToast('Winner marked successfully', 'success');
         prizeInputModal.classList.remove('active');
         

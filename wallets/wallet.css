@@ -177,6 +177,10 @@ body {
     border-left-color: #e43f5a; /* Red for deposits */
 }
 
+.transaction-item.contest-prize-item {
+    border-left-color: #ffc107; /* A nice gold for contest prizes */
+}
+
 .transaction-item.withdrawal-item {
     border-left-color: #28a745; /* Green for withdrawals */
 }

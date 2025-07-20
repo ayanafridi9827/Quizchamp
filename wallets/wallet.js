@@ -49,7 +49,10 @@ document.addEventListener('DOMContentLoaded', () => {
         deposits.forEach(deposit => {
             let type = 'Deposit';
             let description = 'Deposit';
-            if (deposit.type && (deposit.type === 'Referral Bonus' || deposit.type === 'Referral Bonus Received')) {
+            if (deposit.type === 'Contest Prize') {
+                type = 'Contest Prize';
+                description = deposit.description || 'Contest Prize';
+            } else if (deposit.type && (deposit.type === 'Referral Bonus' || deposit.type === 'Referral Bonus Received')) {
                 type = 'Referral';
                 description = 'Referral Bonus';
             }
@@ -90,7 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
         allTransactions.forEach(transaction => {
             const transactionItem = document.createElement('div');
             transactionItem.classList.add('transaction-item');
-            if (transaction.type === 'Referral') {
+            if (transaction.type === 'Contest Prize') {
+                transactionItem.classList.add('contest-prize-item');
+            } else if (transaction.type === 'Referral') {
                 transactionItem.classList.add('referral');
             } else if (transaction.type === 'Deposit') {
                 transactionItem.classList.add('deposit-item');

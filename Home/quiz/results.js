@@ -34,12 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- UI FUNCTIONS ---
     const renderResults = (results) => {
-        const wrongAnswers = results.totalQuestions - results.correct;
-
         ui.title.textContent = `Results for Contest`; // Generic title
         ui.score.textContent = results.score;
         ui.correct.textContent = results.correct;
-        ui.wrong.textContent = wrongAnswers > 0 ? wrongAnswers : 0;
+        ui.wrong.textContent = results.wrong;
         ui.time.textContent = `${results.timeTaken}s`;
 
         // Detailed answers section ko hata dein kyunki hum ab use save nahi kar rahe hain
@@ -73,19 +71,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const userData = userDoc.data();
             const contestResults = userData.contests || [];
 
-            // Sahi contest ka result dhoondhein
-            const resultData = contestResults.find(result => result.contestId === state.contestId);
+            // Find the completed contest result
+            const resultData = contestResults.find(result => 
+                result.contestId === state.contestId && result.isCompleted === true
+            );
 
             if (!resultData) {
-                return showError('No results found for this specific contest.');
+                return showError('No completed results found for this contest.');
             }
 
-            // resultData mein pehle se hi totalQuestions, score, etc. hain.
-            // Seedhe renderResults ko call karein, lekin property names match karein.
+            // Render the results using the data from Firestore
             renderResults({
                 score: resultData.score,
-                correct: resultData.correctQuestions, // 'correct' property ke liye 'correctQuestions' use karein
-                totalQuestions: resultData.totalQuestions,
+                correct: resultData.correctQuestions,
+                wrong: resultData.wrongQuestions, // Use the value from the database
                 timeTaken: resultData.timeTaken
             });
 

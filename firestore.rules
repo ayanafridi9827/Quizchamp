@@ -32,26 +32,21 @@ service cloud.firestore {
     }
 
     match /wallets/{userId} {
-      // INSECURE: This allows any user to read/write any wallet.
-      // Should be replaced with a Cloud Function.
+      // Any authenticated user can read/write any wallet.
+      // This is insecure and should be replaced with a Cloud Function.
       allow read, write: if isAuthenticated();
     }
 
-    // Rules for single referral document access
     match /referrals/{userId} {
-       // INSECURE: This allows any user to read/write any referral doc.
-      // Should be replaced with a Cloud Function.
-      allow get, create, update: if isAuthenticated();
+      // Any authenticated user can read/write any referral doc.
+      // This is insecure and should be replaced with a Cloud Function.
+      allow read, write: if isAuthenticated();
     }
 
     // Rule for referral collection queries
     match /referrals {
       // Allows users to query the collection to find a referral code.
       allow list: if isAuthenticated();
-    }
-
-    match /referrals {
-        allow list: if isAuthenticated() || isAdmin();
     }
 
     // =====================================================================
@@ -65,14 +60,16 @@ service cloud.firestore {
     match /contests/{contestId} {
       allow read: if isAuthenticated();
       allow create: if isAdmin();
-      allow update: if isAdmin() || (
-        isAuthenticated() &&
+      // Admins can update any field on a contest
+      allow update: if isAdmin();
+
+      // Authenticated users can join a contest if they meet the criteria
+      allow update: if isAuthenticated() &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants', 'filledSpots']) &&
         request.resource.data.participants.hasAny([request.auth.uid]) &&
         !resource.data.participants.hasAny([request.auth.uid]) &&
         request.resource.data.filledSpots == resource.data.filledSpots + 1 &&
-        request.resource.data.filledSpots <= resource.data.maxSpots
-      );
+        request.resource.data.filledSpots <= resource.data.maxSpots;
       allow delete: if isAdmin();
 
       match /participants/{participantId} {
