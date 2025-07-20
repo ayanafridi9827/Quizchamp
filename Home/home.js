@@ -246,11 +246,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <i class="fas fa-clock stat-icon"></i>
                     <div class="stat-info">
                         <span class="stat-label">Time</span>
-                        <span class="stat-value">${userResult.timeTaken ? (userResult.timeTaken / 1000).toFixed(2) + 's' : 'N/A'}</span>
+                        <span class="stat-value">${formatTime(userResult.timeTaken)}</span>
                     </div>
                 </div>
             `;
             userStats.style.display = 'flex'; // Make sure it's visible
+            console.log('timeTaken value in createContestCard:', userResult.timeTaken);
 
             const congratsMessage = card.querySelector('.congrats-message');
             congratsMessage.textContent = 'Congratulations!';
@@ -285,6 +286,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return card;
     };
 
+    // Function to format time (seconds to minutes and seconds)
+    function formatTime(totalSeconds) {
+        if (typeof totalSeconds !== 'number' || isNaN(totalSeconds)) {
+            return 'N/A';
+        }
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        if (minutes > 0) {
+            return `${minutes}m ${seconds}s`;
+        } else {
+            return `${seconds}s`;
+        }
+    }
+
     // Yeh function contests ko load karta hai, pagination ke saath
     const loadContests = async () => {
         loadingState.style.display = 'block';
@@ -299,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             console.log('Firestore Read: Fetching contests with pagination');
             const querySnapshot = await contestsQuery.get();
-            logFirestoreOperation('read', querySnapshot.size);
+            logFirestoreOperation('read');
             
             loadingState.style.display = 'none';
 
@@ -368,11 +383,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                     userCompletedContests.add(contest.contestId);
                                 }
                                 if (contest.contestId && contest.status === 'winner') {
+                                    console.log('Raw timeTaken from user data:', contest.timeTaken);
                                     userContestResults.set(contest.contestId, {
                                         rank: contest.rank,
                                         prize: contest.prize,
                                         score: contest.score, // Assuming score is also stored here
-                                        timeTaken: contest.timeTaken // Add timeTaken here
+                                        timeTaken: contest.timeTaken ? contest.timeTaken : 'N/A' // No conversion needed, already in seconds
                                     });
                                 }
                             }

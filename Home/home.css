@@ -329,7 +329,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 44px 15px rgba(255, 59, 59, 0.3);
+    box-shadow: 0 444px 15px rgba(255, 59, 59, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -591,7 +591,7 @@ body {
 .detail-item:hover {
     transform: translateY(-3px);
     background: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 44px 15px rgba(0, 0, 0, 0.15);
 }
 
 .detail-item i {
@@ -800,27 +800,46 @@ body {
 }
 
 .won-contest-card .prize-section {
-    background: linear-gradient(135deg, #28a745 0%, #2dc26b 100%);
-    border: none;
-    box-shadow: 0 8px 30px rgba(40, 167, 69, 0.4);
+    /* Simplified and attractive prize section */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    margin: 0 auto 1rem auto;
+    background: none; /* Remove background */
+    border: none; /* Remove border */
+    box-shadow: none; /* Remove shadow */
 }
 
 .won-contest-card .prize-content {
     background: none;
     box-shadow: none;
     border: none;
+    padding: 0; /* Remove padding */
+    gap: 0.5rem; /* Slightly increased gap for better spacing */
+}
+
+.won-contest-card .prize-content i {
+    font-size: 3rem; /* Even larger icon size */
+    color: #FFD700; /* Gold color for the icon */
+    filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.9)); /* Stronger gold glow for the icon */
 }
 
 .won-contest-card .prize-label {
-    color: #fff;
-    font-size: 1rem;
+    color: #28a745; /* Green color */
+    font-size: 1.5rem; /* Larger font size */
     font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .won-contest-card .prize-amount {
-    color: #fff;
-    font-size: 2rem;
-    font-weight: bold;
+    color: #28a745; /* Green color */
+    font-size: 3.5rem; /* Much larger font size for prize amount */
+    font-weight: 900;
+    text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4); /* Very prominent shadow */
 }
 
 .won-contest-card .stat-icon {
