@@ -748,11 +748,46 @@ body {
 
 .won-contest-card .user-stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem; /* Increased gap */
+    grid-template-columns: repeat(3, auto);
+    gap: 1.5rem;
     padding: 1rem;
     background-color: rgba(255, 255, 255, 0.5);
     border-radius: 10px;
+    justify-content: center;
+}
+
+.won-contest-card .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative; /* For the vertical line */
+    padding-right: 1rem; /* Space for the line */
+}
+
+.won-contest-card .stat-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 70%; /* Adjust height of the line */
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+@keyframes congrats-animation {
+    0% {
+        transform: scale(1);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+        transform: scale(1.1);
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    100% {
+        transform: scale(1);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    }
 }
 
 .won-contest-card .congrats-message {
@@ -761,13 +796,7 @@ body {
     font-weight: bold;
     color: #28a745;
     margin-top: 1rem;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.won-contest-card .stat-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    animation: congrats-animation 2s infinite;
 }
 
 .won-contest-card .stat-icon {
@@ -943,4 +972,3 @@ body {
         font-size: 0.9rem;
     }
 }
-

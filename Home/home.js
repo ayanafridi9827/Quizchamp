@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.querySelector('.contest-header').style.display = 'none'; // Hide original header
 
             // Update prize display to show user's prize
-            prizeTextElement.innerHTML = `<span class="prize-label">Won</span><span class="prize-amount winner-declared-prize">₹${userResult.prize || 0}</span>`;
+            prizeTextElement.innerHTML = `<span class="prize-label">You Won</span><span class="prize-amount winner-declared-prize">₹${userResult.prize || 0}</span>`;
 
             // Populate the new user-stats section
             const userStats = card.querySelector('.user-stats');
