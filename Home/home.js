@@ -302,8 +302,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Yeh function contests ko load karta hai, pagination ke saath
     const loadContests = async () => {
-        loadingState.style.display = 'block';
-        errorState.style.display = 'none';
+        loadingState.style.display = 'flex'; // Show loading state
+        errorState.style.display = 'none'; // Hide error state
         contestsGrid.innerHTML = ''; // Clear existing contests before loading new ones
 
         try {
@@ -314,9 +314,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             console.log('Firestore Read: Fetching contests with pagination');
             const querySnapshot = await contestsQuery.get();
-            logFirestoreOperation('read');
+            logFirestoreOperation('read', querySnapshot.size);
             
-            loadingState.style.display = 'none';
+            loadingState.style.display = 'none'; // Hide loading state after data is fetched
 
             if (querySnapshot.empty && !contestsLoaded) {
                 contestsGrid.innerHTML = '<p>No contests available right now. Check back later!</p>';
@@ -346,8 +346,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         catch (error) {
             console.error("Error loading contests: ", error);
-            loadingState.style.display = 'none';
-            errorState.style.display = 'block';
+            loadingState.style.display = 'none'; // Hide loading state on error
+            errorState.style.display = 'block'; // Show error state
             contestsLoaded = false; // Allow retry
         }
     };
