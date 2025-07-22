@@ -32,15 +32,39 @@ service cloud.firestore {
     }
 
     match /wallets/{userId} {
-      // Any authenticated user can read/write any wallet.
-      // This is insecure and should be replaced with a Cloud Function.
-      allow read, write: if isAuthenticated();
+      allow read, create, delete: if isOwner(userId);
+      // Allow another authenticated user to update this wallet ONLY for a referral bonus
+      allow update: if isOwner(userId) || (
+        isAuthenticated() &&
+        request.auth.uid != userId && // Must not be the owner
+        // Check that only the expected fields are being changed
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['balance', 'deposits', 'lastTransaction']) &&
+        // Check that the balance is being incremented by exactly 15
+        request.resource.data.balance == resource.data.balance + 15 &&
+        // Check that only one item is being added to the deposits array
+        request.resource.data.deposits.size() == resource.data.deposits.size() + 1 &&
+        // Check the content of the newly added deposit item
+        request.resource.data.deposits[request.resource.data.deposits.size() - 1].type == 'Referral' &&
+        request.resource.data.deposits[request.resource.data.deposits.size() - 1].amount == 15
+      );
     }
 
     match /referrals/{userId} {
-      // Any authenticated user can read/write any referral doc.
-      // This is insecure and should be replaced with a Cloud Function.
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow create, delete: if isOwner(userId);
+      // Allow another authenticated user to update this referral doc ONLY to add themselves
+      allow update: if isOwner(userId) || (
+        isAuthenticated() &&
+        request.auth.uid != userId && // Must not be the owner
+        // Check that only the expected fields are being changed
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joined', 'earnings']) &&
+        // Check that earnings are being incremented by exactly 15
+        request.resource.data.earnings == resource.data.earnings + 15 &&
+        // Check that only one user is being added to the 'joined' list
+        request.resource.data.joined.size() == resource.data.joined.size() + 1 &&
+        // Check that the user being added is the one making the request
+        request.auth.uid in request.resource.data.joined
+      );
     }
 
     // Rule for referral collection queries
@@ -141,13 +165,13 @@ service cloud.firestore {
 
     match /withdrawalRequests/{withdrawalId} {
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow read: if isAdmin();
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
 
     match /withdrawalRequests {
-      allow list: if isAdmin();
+      allow list: if isAdmin() || (isAuthenticated() && request.query.where.userId == request.auth.uid);
     }
   }
 }

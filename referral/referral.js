@@ -119,47 +119,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 const referrerWalletRef = db.collection('wallets').doc(referrerUid);
 
                 await db.runTransaction(async (transaction) => {
-                    // All reads first
+                    // Read documents
                     const currentReferrerDoc = await transaction.get(referrerRef);
-                    const referrerWalletDoc = await transaction.get(referrerWalletRef);
-                    const currentUserWalletRef = db.collection('wallets').doc(currentUser.uid); // Current user's wallet
+                    const currentUserWalletRef = db.collection('wallets').doc(currentUser.uid);
                     const currentUserWalletDoc = await transaction.get(currentUserWalletRef);
 
-                    // Then all writes
-                    if (currentReferrerDoc.exists) {
-                        transaction.update(referrerRef, { 
-                            joined: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
-                            earnings: firebase.firestore.FieldValue.increment(15) // Referrer gets 15rs
-                        });
+                    // Verify referrer document exists before proceeding
+                    if (!currentReferrerDoc.exists) {
+                        throw "Referrer document not found.";
                     }
 
-                    let currentReferrerBalance = 0;
-                    if (referrerWalletDoc.exists) {
-                        currentReferrerBalance = referrerWalletDoc.data().balance || 0;
-                    }
-                    const newReferrerBalance = currentReferrerBalance + 15;
-                    transaction.set(referrerWalletRef, {
-                        balance: newReferrerBalance,
+                    // --- Perform all writes ---
+
+                    // 1. Update referrer's referral document
+                    transaction.update(referrerRef, {
+                        joined: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+                        earnings: firebase.firestore.FieldValue.increment(15) // Referrer gets 15 INR
+                    });
+
+                    // 2. Update referrer's wallet using server-side increment (more secure)
+                    transaction.update(referrerWalletRef, {
+                        balance: firebase.firestore.FieldValue.increment(15),
                         deposits: firebase.firestore.FieldValue.arrayUnion({
                             amount: 15,
                             timestamp: new Date(),
-                            type: 'Referral Bonus Earned'
+                            type: 'Referral',
+                            description: 'Referral Bonus Earned'
                         }),
                         lastTransaction: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
+                    });
 
-                    // Update current user's wallet with bonus
+                    // 3. Update current user's wallet with their bonus
                     let currentUserBalance = 0;
                     if (currentUserWalletDoc.exists) {
                         currentUserBalance = currentUserWalletDoc.data().balance || 0;
                     }
-                    const newCurrentUserBalance = currentUserBalance + 10;
+                    const newCurrentUserBalance = currentUserBalance + REFERRAL_BONUS_AMOUNT_PASTER; // User gets 10 INR
                     transaction.set(currentUserWalletRef, {
                         balance: newCurrentUserBalance,
                         deposits: firebase.firestore.FieldValue.arrayUnion({
-                            amount: 10,
+                            amount: REFERRAL_BONUS_AMOUNT_PASTER,
                             timestamp: new Date(),
-                            type: 'Referral Bonus Received'
+                            type: 'Referral',
+                            description: 'Referral Bonus Received'
                         }),
                         lastTransaction: firebase.firestore.FieldValue.serverTimestamp()
                     }, { merge: true });

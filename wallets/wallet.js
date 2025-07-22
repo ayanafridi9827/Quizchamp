@@ -40,30 +40,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Function to render transaction history
-    async function renderTransactionHistory(deposits) {
+    async function renderTransactionHistory(deposits, withdraws) {
         const transactionList = document.getElementById('transaction-list');
         transactionList.innerHTML = ''; // Clear existing rows
 
         const allTransactions = [];
 
-        deposits.forEach(deposit => {
-            let type = 'Deposit';
-            let description = 'Deposit';
-            if (deposit.type === 'Contest Prize') {
-                type = 'Contest Prize';
-                description = deposit.description || 'Contest Prize';
-            } else if (deposit.type && (deposit.type === 'Referral Bonus' || deposit.type === 'Referral Bonus Received')) {
-                type = 'Referral';
-                description = 'Referral Bonus';
-            }
-            allTransactions.push({
-                date: deposit.timestamp ? new Date(deposit.timestamp.seconds * 1000) : new Date(),
-                description: description,
-                type: type,
-                amount: deposit.amount,
-                status: 'Completed'
+        if (deposits) {
+            deposits.forEach(deposit => {
+                let type = deposit.type || 'Deposit';
+                let description = deposit.description || (type === 'Referral' ? 'Referral Bonus' : 'Deposit');
+
+                allTransactions.push({
+                    date: deposit.timestamp ? new Date(deposit.timestamp.seconds * 1000) : new Date(),
+                    description: description,
+                    type: type,
+                    amount: deposit.amount,
+                    status: 'Completed'
+                });
             });
-        });
+        }
 
         // Fetch withdrawal requests
         const withdrawalRequestsCollection = collection(db, 'withdrawalRequests');
@@ -244,7 +240,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             balance: newBalance,
                             deposits: arrayUnion({
                                 amount: amount,
-                                timestamp: new Date()
+                                timestamp: new Date(),
+                                type: 'Deposit',
+                                description: 'Deposit'
                             }),
                             lastTransaction: serverTimestamp()
                         }, { merge: true });
