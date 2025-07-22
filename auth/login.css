@@ -11,17 +11,18 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 .login-container {
     width: 100%;
     max-width: 400px;
-    padding: 2rem;
+    padding: 2vw; /* Use viewport width for padding */
 }
 
 .login-box {
     background: white;
-    padding: 2.5rem;
+    padding: 5vw; /* Use viewport width for padding */
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     text-align: center;
@@ -121,11 +122,28 @@ body {
     }
 
     .login-box {
-        padding: 2rem;
+        padding: 1.5rem;
     }
 
     .logo h1 {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
+    }
+
+    .welcome-text h2 {
+        font-size: 1.3rem;
+    }
+
+    .welcome-text p {
+        font-size: 0.8rem;
+    }
+
+    .google-btn {
+        font-size: 0.9rem;
+        padding: 0.7rem;
+    }
+
+    .terms {
+        font-size: 0.7rem;
     }
 }
 
@@ -149,4 +167,4 @@ body {
         transform: translateY(0);
         opacity: 1;
     }
-} 
+}
