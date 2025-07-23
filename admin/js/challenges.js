@@ -225,12 +225,25 @@ async function viewParticipants(contestId) {
                 <div class="participant-cell wrong">${participant.stats.wrong}</div>
                 <div class="participant-cell time">${participant.stats.timeTaken}s</div>
                 <div class="participant-cell action-buttons">
-                    ${!participant.isWinner ? `
+                    ${participant.isWinner
+                        ? `
+                        <button class="edit-winner-btn" onclick="editWinner('${contestId}', '${participant.id}')" title="Edit Winner" style="background: transparent; border: none; cursor: pointer; color: #3498db; font-size: 1.1em; vertical-align: middle; margin-right: 8px;">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="remove-winner-btn" onclick="removeWinner('${contestId}', '${participant.id}')" title="Remove Winner" style="background: transparent; border: none; cursor: pointer; color: #c0392b; font-size: 1.1em; vertical-align: middle; margin-right: 8px;">
+                            <i class="fas fa-user-times"></i>
+                        </button>
+                        `
+                        : `
                         <button class="winner-btn" onclick="makeWinner('${participant.id}')">
                             <i class="fas fa-trophy"></i>
                             Mark as Winner
                         </button>
-                    ` : ''}
+                        <button class="loser-btn" onclick="markAsLoser('${contestId}', '${participant.id}')" title="Mark as Loser" style="background: transparent; border: none; cursor: pointer; color: #e74c3c; font-size: 1.1em; vertical-align: middle; margin-left: 8px;">
+                            <i class="fas fa-times-circle"></i>
+                        </button>
+                        `
+                    }
                     <button class="delete-participant-btn" onclick="deleteParticipant('${contestId}', '${participant.id}')">
                         <i class="fas fa-trash"></i>
                     </button>
@@ -294,17 +307,19 @@ async function makeWinner(userId) {
 async function handlePrizeInputFormSubmit(e) {
     e.preventDefault();
     
+    const isEditing = prizeInputForm.dataset.editing === 'true';
+
     try {
-        const prizeAmount = parseFloat(document.getElementById('prizeAmount').value);
-        const rank = parseInt(document.getElementById('rank').value);
+        const newPrizeAmount = parseFloat(document.getElementById('prizeAmount').value);
+        const newRank = parseInt(document.getElementById('rank').value);
         
         if (!currentContestId || !currentUserId || !currentContestData) {
             throw new Error('Missing contest or user data');
         }
         
-        // Check if the rank is already assigned
-        const existingWinner = currentContestData.winners?.find(w => w.rank === rank);
-        if (existingWinner) {
+        // Check if the rank is already assigned to a *different* user
+        const existingWinnerWithRank = currentContestData.winners?.find(w => w.rank === newRank);
+        if (existingWinnerWithRank && existingWinnerWithRank.userId !== currentUserId) {
             throw new Error('This rank is already assigned to another winner');
         }
         
@@ -316,15 +331,32 @@ async function handlePrizeInputFormSubmit(e) {
         }
         
         const userData = userDoc.data();
-        
         const contestRef = doc(db, 'contests', currentContestId);
-        await updateDoc(contestRef, {
-            winners: [...(currentContestData.winners || []), {
+        
+        let oldPrizeAmount = 0;
+        let updatedWinnersArray;
+
+        if (isEditing) {
+            const winnerToEdit = currentContestData.winners.find(w => w.userId === currentUserId);
+            oldPrizeAmount = winnerToEdit ? winnerToEdit.prize : 0;
+            
+            updatedWinnersArray = currentContestData.winners.map(w => {
+                if (w.userId === currentUserId) {
+                    return { ...w, prize: newPrizeAmount, rank: newRank };
+                }
+                return w;
+            });
+        } else {
+            updatedWinnersArray = [...(currentContestData.winners || []), {
                 userId: currentUserId,
                 name: userData.name,
-                prize: prizeAmount,
-                rank: rank
-            }],
+                prize: newPrizeAmount,
+                rank: newRank
+            }];
+        }
+
+        await updateDoc(contestRef, {
+            winners: updatedWinnersArray,
             winnerDeclared: true
         });
         
@@ -334,37 +366,39 @@ async function handlePrizeInputFormSubmit(e) {
 
         if (contestIndex > -1) {
             userContests[contestIndex].status = 'winner';
-            userContests[contestIndex].prize = prizeAmount;
-            userContests[contestIndex].rank = rank;
+            userContests[contestIndex].prize = newPrizeAmount;
+            userContests[contestIndex].rank = newRank;
             userContests[contestIndex].updatedAt = new Date();
-
-            await updateDoc(userRef, {
-                contests: userContests
-            });
+            await updateDoc(userRef, { contests: userContests });
         }
         
         // Update the user's wallet
         const walletRef = doc(db, 'wallets', currentUserId);
         const walletDoc = await getDoc(walletRef);
-        let newBalance = prizeAmount;
+        const prizeDifference = newPrizeAmount - oldPrizeAmount;
 
         if (walletDoc.exists()) {
             const walletData = walletDoc.data();
-            newBalance += walletData.balance || 0;
+            const newBalance = (walletData.balance || 0) + prizeDifference;
+            const transactionType = isEditing ? 'Prize Adjusted' : 'Contest Prize';
+            const transactionDescription = isEditing 
+                ? `Prize for ${currentContestData.title} adjusted by admin`
+                : currentContestData.title;
+
             await updateDoc(walletRef, {
                 balance: newBalance,
                 deposits: [...(walletData.deposits || []), {
-                    amount: prizeAmount,
+                    amount: prizeDifference,
                     timestamp: new Date(),
-                    type: 'Contest Prize',
-                    description: currentContestData.title
+                    type: transactionType,
+                    description: transactionDescription
                 }]
             });
-        } else {
+        } else if (!isEditing) { // Only create a new wallet if it's a new winner
             await setDoc(walletRef, {
-                balance: newBalance,
+                balance: newPrizeAmount,
                 deposits: [{
-                    amount: prizeAmount,
+                    amount: newPrizeAmount,
                     timestamp: new Date(),
                     type: 'Contest Prize',
                     description: currentContestData.title
@@ -372,14 +406,15 @@ async function handlePrizeInputFormSubmit(e) {
             });
         }
 
-        showToast('Winner marked successfully', 'success');
+        showToast(isEditing ? 'Winner updated successfully' : 'Winner marked successfully', 'success');
         prizeInputModal.classList.remove('active');
+        delete prizeInputForm.dataset.editing; // Clean up the flag
         
         viewParticipants(currentContestId);
         
     } catch (error) {
-        console.error('Error marking winner:', error);
-        showToast(error.message || 'Error marking winner', 'error');
+        console.error('Error marking/updating winner:', error);
+        showToast(error.message || 'An error occurred', 'error');
     }
 }
 
@@ -544,6 +579,88 @@ window.viewParticipants = viewParticipants;
 window.makeWinner = makeWinner;
 window.viewWinners = viewWinners;
 
+window.editWinner = (contestId, userId) => {
+    currentContestId = contestId;
+    currentUserId = userId;
+
+    const winnerData = currentContestData.winners?.find(w => w.userId === userId);
+    if (!winnerData) {
+        showToast('Winner data not found', 'error');
+        return;
+    }
+
+    document.getElementById('prizeAmount').value = winnerData.prize;
+    document.getElementById('rank').value = winnerData.rank;
+    
+    prizeInputForm.dataset.editing = 'true'; // Set a flag to indicate editing
+    prizeInputModal.classList.add('active');
+};
+
+window.removeWinner = async (contestId, userId) => {
+    if (confirm('Are you sure you want to remove this winner? This will reverse the prize transaction.')) {
+        try {
+            const contestRef = doc(db, 'contests', contestId);
+            const userRef = doc(db, 'users', userId);
+            const walletRef = doc(db, 'wallets', userId);
+
+            const contestDoc = await getDoc(contestRef);
+            const userDoc = await getDoc(userRef);
+            const walletDoc = await getDoc(walletRef);
+
+            if (!contestDoc.exists() || !userDoc.exists()) {
+                throw new Error('Contest or user data not found.');
+            }
+
+            const contestData = contestDoc.data();
+            const userData = userDoc.data();
+
+            const winnerToRemove = contestData.winners?.find(w => w.userId === userId);
+            if (!winnerToRemove) {
+                throw new Error('Winner not found in contest data.');
+            }
+
+            const prizeToReverse = winnerToRemove.prize;
+
+            // Remove winner from contest
+            const updatedWinners = contestData.winners.filter(w => w.userId !== userId);
+            await updateDoc(contestRef, { winners: updatedWinners });
+
+            // Update user's contest status
+            const userContests = userData.contests || [];
+            const contestIndex = userContests.findIndex(c => c.contestId === contestId);
+            if (contestIndex > -1) {
+                userContests[contestIndex].status = 'loser'; // Or 'played'
+                delete userContests[contestIndex].prize;
+                delete userContests[contestIndex].rank;
+                userContests[contestIndex].updatedAt = new Date();
+                await updateDoc(userRef, { contests: userContests });
+            }
+
+            // Reverse wallet transaction
+            if (walletDoc.exists()) {
+                const walletData = walletDoc.data();
+                const newBalance = (walletData.balance || 0) - prizeToReverse;
+                await updateDoc(walletRef, {
+                    balance: newBalance,
+                    deposits: [...(walletData.deposits || []), {
+                        amount: -prizeToReverse,
+                        timestamp: new Date(),
+                        type: 'Prize Reversed',
+                        description: `Prize for ${contestData.title} reversed by admin`
+                    }]
+                });
+            }
+
+            showToast('Winner removed successfully', 'success');
+            viewParticipants(contestId);
+
+        } catch (error) {
+            console.error('Error removing winner:', error);
+            showToast(error.message || 'Could not remove winner', 'error');
+        }
+    }
+};
+
 window.editChallenge = async (id) => {
     try {
         currentContestId = id;
@@ -623,3 +740,39 @@ window.deleteChallenge = async (id) => {
     }
 };
 window.deleteParticipant = deleteParticipant;
+
+window.markAsLoser = async (contestId, userId) => {
+    if (confirm('Are you sure you want to mark this participant as a loser? This cannot be undone.')) {
+        try {
+            const userRef = doc(db, 'users', userId);
+            const userDoc = await getDoc(userRef);
+
+            if (!userDoc.exists()) {
+                showToast('User not found', 'error');
+                return;
+            }
+
+            const userData = userDoc.data();
+            const userContests = userData.contests || [];
+            const contestIndex = userContests.findIndex(c => c.contestId === contestId);
+
+            if (contestIndex > -1) {
+                userContests[contestIndex].status = 'loser';
+                userContests[contestIndex].updatedAt = new Date();
+
+                await updateDoc(userRef, {
+                    contests: userContests
+                });
+            }
+
+            const contestRef = doc(db, 'contests', contestId);
+            await updateDoc(contestRef, { winnerDeclared: true });
+
+            showToast('Participant marked as a loser.', 'success');
+            viewParticipants(contestId); // Refresh the list
+        } catch (error) {
+            console.error('Error marking as loser:', error);
+            showToast('Error marking as loser', 'error');
+        }
+    }
+};

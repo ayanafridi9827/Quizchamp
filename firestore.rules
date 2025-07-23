@@ -27,26 +27,15 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
     }
 
     match /wallets/{userId} {
-      allow read, create, delete: if isOwner(userId);
-      // Allow another authenticated user to update this wallet ONLY for a referral bonus
-      allow update: if isOwner(userId) || (
-        isAuthenticated() &&
-        request.auth.uid != userId && // Must not be the owner
-        // Check that only the expected fields are being changed
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['balance', 'deposits', 'lastTransaction']) &&
-        // Check that the balance is being incremented by exactly 15
-        request.resource.data.balance == resource.data.balance + 15 &&
-        // Check that only one item is being added to the deposits array
-        request.resource.data.deposits.size() == resource.data.deposits.size() + 1 &&
-        // Check the content of the newly added deposit item
-        request.resource.data.deposits[request.resource.data.deposits.size() - 1].type == 'Referral' &&
-        request.resource.data.deposits[request.resource.data.deposits.size() - 1].amount == 15
-      );
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isOwner(userId) || isAdmin();
     }
 
     match /referrals/{userId} {
@@ -172,6 +161,14 @@ service cloud.firestore {
 
     match /withdrawalRequests {
       allow list: if isAdmin() || (isAuthenticated() && request.query.where.userId == request.auth.uid);
+    }
+
+    match /challenges/{challengeId} {
+      allow read, write, create, delete: if isAdmin();
+
+      match /participants/{participantId} {
+        allow read, write, create, delete: if isAdmin();
+      }
     }
   }
 }
