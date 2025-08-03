@@ -217,54 +217,90 @@ async function viewParticipants(contestId) {
             const participantRow = document.createElement('div');
             participantRow.className = 'participant-row';
 
-            // Apply ranking classes
+            // Apply special styling for rank and loser status
             if (index === 0) participantRow.classList.add('rank-1');
             else if (index === 1) participantRow.classList.add('rank-2');
             else if (index === 2) participantRow.classList.add('rank-3');
             
-            // **CRITICAL FIX**: Apply loser class for styling
             if (participant.isLoser) {
                 participantRow.classList.add('loser-row');
             }
 
-            // **CRITICAL FIX**: Build the name cell with loser emoji
-            let nameHtml = participant.name;
+            // --- Create cells one by one for reliability ---
+
+            // Rank Cell
+            const rankCell = document.createElement('div');
+            rankCell.className = 'participant-cell';
+            rankCell.textContent = index + 1;
+            participantRow.appendChild(rankCell);
+
+            // Name Cell (with icons)
+            const nameCell = document.createElement('div');
+            nameCell.className = 'participant-cell name';
+            let nameContent = '';
             if (participant.isWinner) {
-                nameHtml = `<i class="fas fa-trophy participant-trophy-icon"></i> ${nameHtml}`;
+                nameContent += `<i class="fas fa-trophy participant-trophy-icon"></i> `;
             }
             if (participant.isLoser) {
-                nameHtml = `👎 ${nameHtml}`;
+                nameContent += '👎 ';
             }
+            nameContent += participant.name;
+            nameCell.innerHTML = nameContent;
+            participantRow.appendChild(nameCell);
 
-            let actionButtonsHtml = '';
+            // Stats Cells
+            const scoreCell = document.createElement('div');
+            scoreCell.className = 'participant-cell score';
+            scoreCell.textContent = participant.stats.score;
+            participantRow.appendChild(scoreCell);
+
+            const correctCell = document.createElement('div');
+            correctCell.className = 'participant-cell correct';
+            correctCell.textContent = participant.stats.correct;
+            participantRow.appendChild(correctCell);
+
+            const wrongCell = document.createElement('div');
+            wrongCell.className = 'participant-cell wrong';
+            wrongCell.textContent = participant.stats.wrong;
+            participantRow.appendChild(wrongCell);
+
+            const timeCell = document.createElement('div');
+            timeCell.className = 'participant-cell time';
+            timeCell.textContent = `${participant.stats.timeTaken}s`;
+            participantRow.appendChild(timeCell);
+
+            // Action Buttons Cell (with corrected styles)
+            const actionsCell = document.createElement('div');
+            actionsCell.className = 'participant-cell action-buttons';
+            
+            let buttonsHtml = '';
             if (participant.isWinner) {
-                actionButtonsHtml = `
-                    <button class="edit-winner-btn" onclick="editWinner('${contestId}', '${participant.id}')" title="Edit Winner"><i class="fas fa-edit"></i></button>
-                    <button class="remove-winner-btn" onclick="removeWinner('${contestId}', '${participant.id}')" title="Remove Winner"><i class="fas fa-user-times"></i></button>
+                buttonsHtml = `
+                    <button class="edit-winner-btn" onclick="editWinner('${contestId}', '${participant.id}')" title="Edit Winner" style="background: transparent; border: none; cursor: pointer; color: #3498db; font-size: 1.1em; vertical-align: middle; margin-right: 8px;">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="remove-winner-btn" onclick="removeWinner('${contestId}', '${participant.id}')" title="Remove Winner" style="background: transparent; border: none; cursor: pointer; color: #c0392b; font-size: 1.1em; vertical-align: middle; margin-right: 8px;">
+                        <i class="fas fa-user-times"></i>
+                    </button>
                 `;
-            } else if (participant.isLoser) {
-                // No action buttons for losers
-                actionButtonsHtml = '';
-            } else {
-                actionButtonsHtml = `
-                    <button class="winner-btn" onclick="makeWinner('${participant.id}')"><i class="fas fa-trophy"></i> Mark as Winner</button>
-                    <button class="loser-btn" onclick="markAsLoser('${contestId}', '${participant.id}')" title="Mark as Loser"><i class="fas fa-times-circle"></i></button>
+            } else if (!participant.isLoser) {
+                buttonsHtml = `
+                    <button class="winner-btn" onclick="makeWinner('${participant.id}')">
+                        <i class="fas fa-trophy"></i>
+                        Mark as Winner
+                    </button>
+                    <button class="loser-btn" onclick="markAsLoser('${contestId}', '${participant.id}')" title="Mark as Loser" style="background: transparent; border: none; cursor: pointer; color: #e74c3c; font-size: 1.1em; vertical-align: middle; margin-left: 8px;">
+                        <i class="fas fa-times-circle"></i>
+                    </button>
                 `;
             }
             // Always add the delete button
-            actionButtonsHtml += ` <button class="delete-participant-btn" onclick="deleteParticipant('${contestId}', '${participant.id}')"><i class="fas fa-trash"></i></button>`;
-
-            // Set the final HTML for the row
-            participantRow.innerHTML = `
-                <div class="participant-cell">${index + 1}</div>
-                <div class="participant-cell name">${nameHtml}</div>
-                <div class="participant-cell score">${participant.stats.score}</div>
-                <div class="participant-cell correct">${participant.stats.correct}</div>
-                <div class="participant-cell wrong">${participant.stats.wrong}</div>
-                <div class="participant-cell time">${participant.stats.timeTaken}s</div>
-                <div class="participant-cell action-buttons">${actionButtonsHtml}</div>
-            `;
+            buttonsHtml += ` <button class="delete-participant-btn" onclick="deleteParticipant('${contestId}', '${participant.id}')"><i class="fas fa-trash"></i></button>`;
             
+            actionsCell.innerHTML = buttonsHtml;
+            participantRow.appendChild(actionsCell);
+
+            // Add the completed row to the list
             participantsList.appendChild(participantRow);
         });
 
