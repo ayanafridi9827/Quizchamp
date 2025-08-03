@@ -283,7 +283,14 @@ async function viewParticipants(contestId) {
                         <i class="fas fa-user-times"></i>
                     </button>
                 `;
-            } else if (!participant.isLoser) {
+            } else if (participant.isLoser) {
+                buttonsHtml = `
+                    <button class="winner-btn" onclick="makeWinner('${participant.id}')">
+                        <i class="fas fa-trophy"></i>
+                        Mark as Winner
+                    </button>
+                `;
+            } else {
                 buttonsHtml = `
                     <button class="winner-btn" onclick="makeWinner('${participant.id}')">
                         <i class="fas fa-trophy"></i>
