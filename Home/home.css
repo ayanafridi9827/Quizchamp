@@ -873,6 +873,134 @@ body {
     background: linear-gradient(135deg, #6a82fb 0%, #fc5c7d 100%);
 }
 
+/* Loser Contest Card Styles */
+.loser-contest-card {
+    background: linear-gradient(135deg, #fce4e4 0%, #f4a7a7 100%); /* Lighter red gradient */
+    border: 2px solid #dc3545; /* Darker red border */
+    box-shadow: 0 10px 40px rgba(220, 53, 69, 0.4); /* Red shadow */
+}
+
+.loser-contest-card .prize-section {
+    /* Similar to winner, but with loser colors */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    margin: 0 auto 1rem auto;
+    background: none;
+    border: none;
+    box-shadow: none;
+}
+
+.loser-contest-card .prize-content {
+    background: none;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+    gap: 0.5rem;
+}
+
+.loser-contest-card .prize-content i {
+    font-size: 3rem;
+    color: #dc3545; /* Red color for the icon */
+    filter: drop-shadow(0 0 15px rgba(220, 53, 69, 0.9)); /* Stronger red glow for the icon */
+}
+
+.loser-contest-card .prize-label {
+    color: #dc3545; /* Red color */
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.loser-contest-card .prize-amount {
+    color: #dc3545; /* Red color */
+    font-size: 3.5rem;
+    font-weight: 900;
+    text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+.loser-contest-card .user-stats {
+    display: grid;
+    grid-template-columns: repeat(2, auto); /* Only score and time for loser */
+    gap: 1.5rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    justify-content: center;
+}
+
+.loser-contest-card .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    padding-right: 1rem;
+}
+
+.loser-contest-card .stat-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 70%;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.loser-contest-card .stat-icon {
+    font-size: 1.5rem;
+    color: #dc3545; /* Red color for icons */
+}
+
+.loser-contest-card .stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.loser-contest-card .stat-label {
+    font-size: 0.8rem;
+    color: #555;
+}
+
+.loser-contest-card .stat-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.loser-message {
+    text-align: center;
+    font-style: italic;
+    color: #666; /* Darker text for quotes */
+    margin-top: 1rem;
+    padding: 0 1rem;
+}
+
+.loser-message .quote-text {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.loser-message .quote-author {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #444;
+}
+
+.loser-contest-card .view-result-btn {
+    background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%); /* Red gradient for button */
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
+}
+
+.loser-contest-card .view-result-btn:hover {
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+
 /* Add animation classes */
 @keyframes cardAppear {
     from {

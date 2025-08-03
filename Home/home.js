@@ -213,8 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const userResult = userContestResults.get(contestId); // Get user's specific result
 
         // If contest has ended and user has a result, display it
-        // If contest has ended and user has a result, display it
-        if (contestData.winnerDeclared && userResult) {
+        if (contestData.winnerDeclared && userResult && userResult.status === 'winner') {
             card.classList.add('won-contest-card'); // Add class for styling
 
             // Hide unnecessary details
@@ -255,6 +254,102 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const congratsMessage = card.querySelector('.congrats-message');
             congratsMessage.textContent = 'Congratulations!';
+
+            joinTextSpan.textContent = 'View Result';
+            joinBtn.classList.add('view-result-btn');
+            joinBtn.removeEventListener('click', joinButtonClickHandler); // Remove existing handler
+            joinBtn.addEventListener('click', () => {
+                window.location.href = `/Home/quiz/results.html?contestId=${contestId}`;
+            });
+        } else if (contestData.winnerDeclared && userResult && userResult.status === 'loser') {
+            card.classList.add('loser-contest-card'); // Add class for styling
+
+            // Hide unnecessary details
+            card.querySelector('.contest-details').style.display = 'none';
+            card.querySelector('.progress-section').style.display = 'none';
+            card.querySelector('.contest-header').style.display = 'none'; // Hide original header
+
+            // Update prize display to show 0 prize
+            prizeTextElement.innerHTML = `<span class="prize-label">You Lost</span><span class="prize-amount loser-declared-prize">₹0.00</span>`;
+
+            // Populate the new user-stats section
+            const userStats = card.querySelector('.user-stats');
+            userStats.innerHTML = `
+                <div class="stat-item">
+                    <i class="fas fa-star stat-icon"></i>
+                    <div class="stat-info">
+                        <span class="stat-label">Score</span>
+                        <span class="stat-value">${userResult.score || 0}</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-clock stat-icon"></i>
+                    <div class="stat-info">
+                        <span class="stat-label">Time</span>
+                        <span class="stat-value">${formatTime(userResult.timeTaken)}</span>
+                    </div>
+                </div>
+            `;
+            userStats.style.display = 'flex'; // Make sure it's visible
+
+            const loserMessage = card.querySelector('.loser-message');
+            const quotes = [
+                { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "- Winston Churchill" },
+                { text: "Our greatest glory is not in never falling, but in rising every time we fall.", author: "- Confucius" },
+                { text: "I have not failed. I've just found 10,000 ways that won't work.", author: "- Thomas A. Edison" },
+                { text: "It's fine to celebrate success but it is more important to heed the lessons of failure.", author: "- Bill Gates" }
+            ];
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            loserMessage.innerHTML = `<p class="quote-text">"${randomQuote.text}"</p><p class="quote-author">${randomQuote.author}</p>`;
+            loserMessage.style.display = 'block';
+
+            joinTextSpan.textContent = 'View Result';
+            joinBtn.classList.add('view-result-btn');
+            joinBtn.removeEventListener('click', joinButtonClickHandler); // Remove existing handler
+            joinBtn.addEventListener('click', () => {
+                window.location.href = `/Home/quiz/results.html?contestId=${contestId}`;
+            });
+        } else if (contestData.winnerDeclared && userResult && userResult.status === 'loser') {
+            card.classList.add('loser-contest-card'); // Add class for styling
+
+            // Hide unnecessary details
+            card.querySelector('.contest-details').style.display = 'none';
+            card.querySelector('.progress-section').style.display = 'none';
+            card.querySelector('.contest-header').style.display = 'none'; // Hide original header
+
+            // Update prize display to show 0 prize
+            prizeTextElement.innerHTML = `<span class="prize-label">You Lost</span><span class="prize-amount loser-declared-prize">₹0.00</span>`;
+
+            // Populate the new user-stats section
+            const userStats = card.querySelector('.user-stats');
+            userStats.innerHTML = `
+                <div class="stat-item">
+                    <i class="fas fa-star stat-icon"></i>
+                    <div class="stat-info">
+                        <span class="stat-label">Score</span>
+                        <span class="stat-value">${userResult.score || 0}</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-clock stat-icon"></i>
+                    <div class="stat-info">
+                        <span class="stat-label">Time</span>
+                        <span class="stat-value">${formatTime(userResult.timeTaken)}</span>
+                    </div>
+                </div>
+            `;
+            userStats.style.display = 'flex'; // Make sure it's visible
+
+            const loserMessage = card.querySelector('.loser-message');
+            const quotes = [
+                { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "- Winston Churchill" },
+                { text: "Our greatest glory is not in never falling, but in rising every time we fall.", author: "- Confucius" },
+                { text: "I have not failed. I've just found 10,000 ways that won't work.", author: "- Thomas A. Edison" },
+                { text: "It's fine to celebrate success but it is more important to heed the lessons of failure.", author: "- Bill Gates" }
+            ];
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            loserMessage.innerHTML = `<p class="quote-text">"${randomQuote.text}"</p><p class="quote-author">${randomQuote.author}</p>`;
+            loserMessage.style.display = 'block';
 
             joinTextSpan.textContent = 'View Result';
             joinBtn.classList.add('view-result-btn');
@@ -382,13 +477,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (contest.contestId && contest.isCompleted) {
                                     userCompletedContests.add(contest.contestId);
                                 }
-                                if (contest.contestId && contest.status === 'winner') {
+                                if (contest.contestId && (contest.status === 'winner' || contest.status === 'loser')) {
                                     console.log('Raw timeTaken from user data:', contest.timeTaken);
                                     userContestResults.set(contest.contestId, {
                                         rank: contest.rank,
                                         prize: contest.prize,
                                         score: contest.score, // Assuming score is also stored here
-                                        timeTaken: contest.timeTaken ? contest.timeTaken : 'N/A' // No conversion needed, already in seconds
+                                        timeTaken: contest.timeTaken ? contest.timeTaken : 'N/A',
+                                        status: contest.status // Store the status
                                     });
                                 }
                             }

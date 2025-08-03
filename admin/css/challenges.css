@@ -520,6 +520,11 @@ a {
     border-bottom: none;
 }
 
+.loser-row {
+    background-color: rgba(229, 57, 53, 0.1);
+    border-left: 3px solid var(--primary-color);
+}
+
 .participant-cell {
     white-space: nowrap;
     overflow: hidden;

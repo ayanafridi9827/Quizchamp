@@ -172,6 +172,7 @@ async function viewParticipants(contestId) {
                     const isWinner = currentContestData.winners?.some(w => w.userId === participantId);
                     const userContests = userData.contests || [];
                     const contestStats = userContests.find(c => c.contestId === contestId);
+                    const isLoser = contestStats?.status === 'loser';
 
                     const stats = {
                         score: contestStats?.score || 0,
@@ -185,6 +186,7 @@ async function viewParticipants(contestId) {
                         name: userData.name,
                         email: userData.email,
                         isWinner: isWinner,
+                        isLoser: isLoser, // Explicitly add isLoser here
                         stats: stats
                     });
                 }
@@ -207,49 +209,63 @@ async function viewParticipants(contestId) {
             return a.stats.timeTaken - b.stats.timeTaken;
         });
 
+        // Clear the list before rendering
+        participantsList.innerHTML = '';
+
+        // Render each participant using the corrected logic
         loadedParticipants.forEach((participant, index) => {
             const participantRow = document.createElement('div');
             participantRow.className = 'participant-row';
+
+            // Apply ranking classes
             if (index === 0) participantRow.classList.add('rank-1');
             else if (index === 1) participantRow.classList.add('rank-2');
             else if (index === 2) participantRow.classList.add('rank-3');
+            
+            // **CRITICAL FIX**: Apply loser class for styling
+            if (participant.isLoser) {
+                participantRow.classList.add('loser-row');
+            }
 
+            // **CRITICAL FIX**: Build the name cell with loser emoji
+            let nameHtml = participant.name;
+            if (participant.isWinner) {
+                nameHtml = `<i class="fas fa-trophy participant-trophy-icon"></i> ${nameHtml}`;
+            }
+            if (participant.isLoser) {
+                nameHtml = `👎 ${nameHtml}`;
+            }
+
+            let actionButtonsHtml = '';
+            if (participant.isWinner) {
+                actionButtonsHtml = `
+                    <button class="edit-winner-btn" onclick="editWinner('${contestId}', '${participant.id}')" title="Edit Winner"><i class="fas fa-edit"></i></button>
+                    <button class="remove-winner-btn" onclick="removeWinner('${contestId}', '${participant.id}')" title="Remove Winner"><i class="fas fa-user-times"></i></button>
+                `;
+            } else if (participant.isLoser) {
+                // No action buttons for losers
+                actionButtonsHtml = '';
+            } else {
+                actionButtonsHtml = `
+                    <button class="winner-btn" onclick="makeWinner('${participant.id}')"><i class="fas fa-trophy"></i> Mark as Winner</button>
+                    <button class="loser-btn" onclick="markAsLoser('${contestId}', '${participant.id}')" title="Mark as Loser"><i class="fas fa-times-circle"></i></button>
+                `;
+            }
+            // Always add the delete button
+            actionButtonsHtml += ` <button class="delete-participant-btn" onclick="deleteParticipant('${contestId}', '${participant.id}')"><i class="fas fa-trash"></i></button>`;
+
+            // Set the final HTML for the row
             participantRow.innerHTML = `
                 <div class="participant-cell">${index + 1}</div>
-                <div class="participant-cell name">
-                    ${participant.isWinner ? '<i class="fas fa-trophy participant-trophy-icon"></i>' : ''}
-                    ${participant.name}
-                </div>
+                <div class="participant-cell name">${nameHtml}</div>
                 <div class="participant-cell score">${participant.stats.score}</div>
                 <div class="participant-cell correct">${participant.stats.correct}</div>
                 <div class="participant-cell wrong">${participant.stats.wrong}</div>
                 <div class="participant-cell time">${participant.stats.timeTaken}s</div>
-                <div class="participant-cell action-buttons">
-                    ${participant.isWinner
-                        ? `
-                        <button class="edit-winner-btn" onclick="editWinner('${contestId}', '${participant.id}')" title="Edit Winner" style="background: transparent; border: none; cursor: pointer; color: #3498db; font-size: 1.1em; vertical-align: middle; margin-right: 8px;">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="remove-winner-btn" onclick="removeWinner('${contestId}', '${participant.id}')" title="Remove Winner" style="background: transparent; border: none; cursor: pointer; color: #c0392b; font-size: 1.1em; vertical-align: middle; margin-right: 8px;">
-                            <i class="fas fa-user-times"></i>
-                        </button>
-                        `
-                        : `
-                        <button class="winner-btn" onclick="makeWinner('${participant.id}')">
-                            <i class="fas fa-trophy"></i>
-                            Mark as Winner
-                        </button>
-                        <button class="loser-btn" onclick="markAsLoser('${contestId}', '${participant.id}')" title="Mark as Loser" style="background: transparent; border: none; cursor: pointer; color: #e74c3c; font-size: 1.1em; vertical-align: middle; margin-left: 8px;">
-                            <i class="fas fa-times-circle"></i>
-                        </button>
-                        `
-                    }
-                    <button class="delete-participant-btn" onclick="deleteParticipant('${contestId}', '${participant.id}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
+                <div class="participant-cell action-buttons">${actionButtonsHtml}</div>
             `;
-            if(participantsList) participantsList.appendChild(participantRow);
+            
+            participantsList.appendChild(participantRow);
         });
 
     } catch (error) {
@@ -331,23 +347,32 @@ async function handlePrizeInputFormSubmit(e) {
         }
         
         const userData = userDoc.data();
+        // This block runs when a winner is being set or edited
         const contestRef = doc(db, 'contests', currentContestId);
         
+        // We need the most up-to-date contest data for this operation
+        const contestDocForUpdate = await getDoc(contestRef);
+        if (!contestDocForUpdate.exists()) {
+            throw new Error("Contest data could not be re-fetched for update.");
+        }
+        const contestDataForUpdate = contestDocForUpdate.data();
+
         let oldPrizeAmount = 0;
         let updatedWinnersArray;
 
         if (isEditing) {
-            const winnerToEdit = currentContestData.winners.find(w => w.userId === currentUserId);
+            const winnerToEdit = contestDataForUpdate.winners.find(w => w.userId === currentUserId);
             oldPrizeAmount = winnerToEdit ? winnerToEdit.prize : 0;
             
-            updatedWinnersArray = currentContestData.winners.map(w => {
+            updatedWinnersArray = contestDataForUpdate.winners.map(w => {
                 if (w.userId === currentUserId) {
                     return { ...w, prize: newPrizeAmount, rank: newRank };
                 }
                 return w;
             });
         } else {
-            updatedWinnersArray = [...(currentContestData.winners || []), {
+            // This is a new winner being added
+            updatedWinnersArray = [...(contestDataForUpdate.winners || []), {
                 userId: currentUserId,
                 name: userData.name,
                 prize: newPrizeAmount,
@@ -355,12 +380,38 @@ async function handlePrizeInputFormSubmit(e) {
             }];
         }
 
+        // Update the contest with the new winner list and set winnerDeclared to true
         await updateDoc(contestRef, {
             winners: updatedWinnersArray,
             winnerDeclared: true
         });
+
+        // --- AUTOMATICALLY MARK NON-WINNERS AS LOSERS ---
+        const allParticipantIds = contestDataForUpdate.participants || [];
+        const winnerIds = updatedWinnersArray.map(w => w.userId);
+
+        for (const participantId of allParticipantIds) {
+            // If a participant is not in the winners list, mark them as a loser
+            if (!winnerIds.includes(participantId)) {
+                const participantUserRef = doc(db, 'users', participantId);
+                const participantUserDoc = await getDoc(participantUserRef);
+
+                if (participantUserDoc.exists()) {
+                    const participantUserData = participantUserDoc.data();
+                    const participantContests = participantUserData.contests || [];
+                    const pContestIndex = participantContests.findIndex(c => c.contestId === currentContestId);
+
+                    // Update the user's contest status to 'loser'
+                    if (pContestIndex > -1 && participantContests[pContestIndex].status !== 'winner') {
+                        participantContests[pContestIndex].status = 'loser';
+                        participantContests[pContestIndex].updatedAt = new Date();
+                        await updateDoc(participantUserRef, { contests: participantContests });
+                    }
+                }
+            }
+        }
         
-        // Update the user's contest data
+        // Update the winner's own contest data
         const userContests = userData.contests || [];
         const contestIndex = userContests.findIndex(c => c.contestId === currentContestId);
 
