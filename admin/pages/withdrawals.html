@@ -24,6 +24,12 @@
     <div class="main-content">
         <div class="header">
             <h1>Withdrawal Requests</h1>
+            <div class="filter-container">
+                <button class="filter-btn active" data-status="pending">Pending</button>
+                <button class="filter-btn" data-status="approved">Approved</button>
+                <button class="filter-btn" data-status="rejected">Rejected</button>
+                <button class="filter-btn" data-status="all">All</button>
+            </div>
             <button class="primary-btn" id="refresh-btn">
                 <i class="fas fa-sync-alt"></i>
                 Refresh
@@ -34,7 +40,7 @@
             <table class="withdrawals-table">
                 <thead>
                     <tr>
-                        <th>User</th>
+                        <th>No.</th>
                         <th>Amount</th>
                         <th>Full Name</th>
                         <th>Phone Number</th>
