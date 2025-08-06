@@ -140,6 +140,57 @@ a {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
+/* Filter Buttons */
+.filter-container {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-btn {
+    background-color: var(--light-bg);
+    color: var(--text-color);
+    border: 1px solid var(--secondary-color);
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.filter-btn:hover {
+    opacity: 0.9;
+}
+
+.filter-btn.active {
+    font-weight: bold;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.filter-btn[data-status="pending"].active {
+    background-color: var(--accent-color);
+    color: #000;
+    border-color: var(--accent-color);
+}
+
+.filter-btn[data-status="approved"].active {
+    background-color: #2ecc71;
+    color: #fff;
+    border-color: #2ecc71;
+}
+
+.filter-btn[data-status="rejected"].active {
+    background-color: #e74c3c;
+    color: #fff;
+    border-color: #e74c3c;
+}
+
+.filter-btn[data-status="all"].active {
+    background-color: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+
 /* Withdrawals Table */
 .table-container {
     margin-top: 2rem;
