@@ -220,13 +220,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // --- END PRE-QUIZ CHECK ---
 
+        // --- LOAD QUIZ AND SESSION DATA ---
         try {
             const quizDoc = await db.collection('quiz').doc(state.contestId).get();
             if (!quizDoc.exists) return showError('Quiz data not found.');
-            
             state.quizData = quizDoc.data();
+
+            // Load time from session storage if it exists
+            const savedTime = sessionStorage.getItem(`timeElapsed_${state.contestId}`);
+            if (savedTime) {
+                state.timeElapsed = parseInt(savedTime, 10);
+            }
+
             ui.title.textContent = state.quizData.title;
-            
             ui.loader.classList.add('hidden');
             ui.content.classList.remove('hidden');
             ui.nextBtn.classList.remove('hidden');
@@ -241,6 +247,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- EVENT LISTENERS & BOOTSTRAP ---
     ui.nextBtn.addEventListener('click', advanceQuiz);
+
+    window.addEventListener('beforeunload', () => {
+        // Stop the timer and save the current time before the page is unloaded
+        if(state.timerInterval) {
+            clearInterval(state.timerInterval);
+            sessionStorage.setItem(`timeElapsed_${state.contestId}`, state.timeElapsed);
+        }
+    });
 
     auth.onAuthStateChanged(user => {
         if (user) {

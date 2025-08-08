@@ -148,9 +148,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const loadContests = async () => {
-        loadingState.style.display = 'flex';
-        errorState.style.display = 'none';
-        contestsGrid.innerHTML = '';
+        loadingState.style.display = 'flex'; // Show loading state
+        errorState.style.display = 'none'; // Hide error state
+        contestsGrid.innerHTML = ''; // Clear existing contests before loading new ones
 
         try {
             const contestsQuery = db.collection("contests").where("status", "in", ["active", "upcoming"]).limit(10);
