@@ -590,28 +590,25 @@ body {
     background: rgba(255, 255, 255, 0.15); /* Halki transparent background */
     border-radius: 12px;
     transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.3); /* Halki border */
+    border: 1px solid #333; /* Thinner, less dark outline */
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Halki shadow */
 }
 
 .detail-item:hover {
-    transform: translateY(-3px);
-    background: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 44px 15px rgba(0, 0, 0, 0.15);
+    /* No hover effect */
 }
 
 .detail-item i {
     font-size: 1.2rem; /* Icon size badhaya */
-    color: var(--primary-color); /* Primary color */
-    background: rgba(255, 59, 59, 0.1); /* Halki transparent background */
+    color: #2ecc71; /* Green color */
+    background: rgba(46, 204, 113, 0.1); /* Halki transparent background */
     padding: 0.8rem; /* Padding badhai */
     border-radius: 10px;
     transition: all 0.3s ease;
 }
 
 .detail-item:hover i {
-    transform: scale(1.15);
-    background: rgba(255, 59, 59, 0.2);
+    transform: scale(1.05);
 }
 
 .detail-item span {
