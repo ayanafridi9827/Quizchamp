@@ -60,124 +60,84 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function submitFriendReferralCode() {
-        // Disable the button to prevent multiple clicks
         ui.submitFriendReferralBtn.disabled = true;
-
-        displayError('', ui.friendReferralErrorMessageDiv); // Clear previous errors
+        displayError('', ui.friendReferralErrorMessageDiv);
         const code = ui.friendReferralCodeInput.value.trim().toUpperCase();
 
-        if (!code) {
-            displayError("Please enter a referral code.", ui.friendReferralErrorMessageDiv);
-            ui.submitFriendReferralBtn.disabled = false; // Re-enable on error
+        if (!code || !currentUser) {
+            displayError("Please enter a code and ensure you are logged in.", ui.friendReferralErrorMessageDiv);
+            ui.submitFriendReferralBtn.disabled = false;
             return;
         }
 
-        if (!currentUser) {
-            showNotification("You must be logged in to submit a referral code.", 'error');
-            ui.submitFriendReferralBtn.disabled = false; // Re-enable on error
+        const userRef = db.collection('users').doc(currentUser.uid);
+        const userDoc = await userRef.get();
+
+        if (userDoc.exists && userDoc.data().hasJoinedContest === true) {
+            displayError("You cannot use a referral code after joining a contest.", ui.friendReferralErrorMessageDiv);
+            ui.submitFriendReferralBtn.disabled = false;
             return;
         }
 
-        // Force refresh of ID token to ensure it's current
-        await currentUser.getIdToken(true);
-
-        // Prevent self-referral
         const currentUserReferralRef = db.collection('referrals').doc(currentUser.uid);
-        const currentUserReferralSnap = await currentUserReferralRef.get();
-        if (currentUserReferralSnap.exists && currentUserReferralSnap.data().code === code) {
+        const currentUserReferralDoc = await currentUserReferralRef.get();
+
+        if (currentUserReferralDoc.exists && currentUserReferralDoc.data().referredBy) {
+            displayError("You have already received a referral bonus.", ui.friendReferralErrorMessageDiv);
+            ui.submitFriendReferralBtn.disabled = false;
+            return;
+        }
+
+        const referrerQuery = await db.collection('referrals').where('code', '==', code).limit(1).get();
+
+        if (referrerQuery.empty) {
+            displayError("Invalid referral code.", ui.friendReferralErrorMessageDiv);
+            ui.submitFriendReferralBtn.disabled = false;
+            return;
+        }
+
+        const referrerDoc = referrerQuery.docs[0];
+        const referrerId = referrerDoc.id;
+
+        if (referrerId === currentUser.uid) {
             displayError("You cannot refer yourself.", ui.friendReferralErrorMessageDiv);
-            ui.submitFriendReferralBtn.disabled = false; // Re-enable on error
+            ui.submitFriendReferralBtn.disabled = false;
             return;
         }
 
         try {
-            // Find the referrer's UID by their referral code in the 'referrals' collection
-            const referrerQuery = await db.collection('referrals').where('code', '==', code).limit(1).get();
+            await db.runTransaction(async (transaction) => {
+                const referrerRef = db.collection('referrals').doc(referrerId);
+                const currentUserWalletRef = db.collection('wallets').doc(currentUser.uid);
+                const currentUserReferralRef = db.collection('referrals').doc(currentUser.uid);
 
-            if (!referrerQuery.empty) {
-                const referrerDoc = referrerQuery.docs[0];
-                const referrerUid = referrerDoc.id;
-
-                // Ensure current user's referral document exists before updating
-                if (!currentUserReferralSnap.exists) {
-                    // This case should ideally not happen if login.js works correctly
-                    // But as a fallback, create the referral doc for the current user
-                    const newReferralCode = btoa(currentUser.uid).slice(0, 6).replace(/=/g, '').toUpperCase();
-                    await currentUserReferralRef.set({
-                        code: newReferralCode,
-                        referredBy: referrerUid,
-                        joined: [],
-                        earnings: 0,
-                        createdAt: new Date().toISOString()
-                    });
-                } else {
-                    // Update current user's referral document with referredBy
-                    await currentUserReferralRef.update({ referredBy: referrerUid });
-                }
-
-                const referrerRef = db.collection('referrals').doc(referrerUid);
-                const referrerWalletRef = db.collection('wallets').doc(referrerUid);
-
-                await db.runTransaction(async (transaction) => {
-                    // Read documents
-                    const currentReferrerDoc = await transaction.get(referrerRef);
-                    const currentUserWalletRef = db.collection('wallets').doc(currentUser.uid);
-                    const currentUserWalletDoc = await transaction.get(currentUserWalletRef);
-
-                    // Verify referrer document exists before proceeding
-                    if (!currentReferrerDoc.exists) {
-                        throw "Referrer document not found.";
-                    }
-
-                    // --- Perform all writes ---
-
-                    // 1. Update referrer's referral document
-                    transaction.update(referrerRef, {
-                        joined: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
-                        earnings: firebase.firestore.FieldValue.increment(15) // Referrer gets 15 INR
-                    });
-
-                    // 2. Update referrer's wallet using server-side increment (more secure)
-                    transaction.update(referrerWalletRef, {
-                        balance: firebase.firestore.FieldValue.increment(15),
+                // Atomically update the wallet, creating it if it doesn't exist
+                transaction.set(currentUserWalletRef, 
+                    { 
+                        balance: firebase.firestore.FieldValue.increment(10),
                         deposits: firebase.firestore.FieldValue.arrayUnion({
-                            amount: 15,
+                            amount: 10,
                             timestamp: new Date(),
-                            type: 'Referral',
-                            description: 'Referral Bonus Earned'
-                        }),
-                        lastTransaction: firebase.firestore.FieldValue.serverTimestamp()
-                    });
+                            type: 'Referral Bonus',
+                            description: 'Bonus for using a referral code'
+                        })
+                    }, 
+                    { merge: true }
+                );
 
-                    // 3. Update current user's wallet with their bonus
-                    let currentUserBalance = 0;
-                    if (currentUserWalletDoc.exists) {
-                        currentUserBalance = currentUserWalletDoc.data().balance || 0;
-                    }
-                    const newCurrentUserBalance = currentUserBalance + REFERRAL_BONUS_AMOUNT_PASTER; // User gets 10 INR
-                    transaction.set(currentUserWalletRef, {
-                        balance: newCurrentUserBalance,
-                        deposits: firebase.firestore.FieldValue.arrayUnion({
-                            amount: REFERRAL_BONUS_AMOUNT_PASTER,
-                            timestamp: new Date(),
-                            type: 'Referral',
-                            description: 'Referral Bonus Received'
-                        }),
-                        lastTransaction: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
-                });
+                // Update the referral documents
+                transaction.update(currentUserReferralRef, { referredBy: referrerId });
+                transaction.update(referrerRef, { joined: firebase.firestore.FieldValue.arrayUnion(currentUser.uid) });
+            });
 
-                showNotification(`Referral code applied successfully! You received ₹${REFERRAL_BONUS_AMOUNT_PASTER} and your friend received ₹${REFERRAL_BONUS_AMOUNT_REFERRER}!`, 'success');
-                updateReferralUI(); // Refresh UI to show updated earnings
+            showNotification("Code applied! You received ₹10.", 'success');
+            ui.friendReferralCodeInput.disabled = true;
+            ui.submitFriendReferralBtn.style.display = 'none';
 
-            } else {
-                displayError("Invalid referral code. Please check and try again.", ui.friendReferralErrorMessageDiv);
-                ui.submitFriendReferralBtn.disabled = false; // Re-enable on error
-            }
         } catch (error) {
-            console.error("Error submitting friend's referral code:", error);
+            console.error("Error in referral transaction:", error);
             displayError("An error occurred. Please try again.", ui.friendReferralErrorMessageDiv);
-            ui.submitFriendReferralBtn.disabled = false; // Re-enable on error
+            ui.submitFriendReferralBtn.disabled = false;
         }
     }
 

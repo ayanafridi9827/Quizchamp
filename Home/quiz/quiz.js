@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOMContentLoaded fired.');
     // --- CONFIG & INITIALIZATION ---
     const firebaseConfig = {
         apiKey: "AIzaSyBgCHdqzcsiB9VBTsv4O1fU2R88GVoOOyA",
@@ -104,14 +103,20 @@ document.addEventListener('DOMContentLoaded', () => {
             state.currentQuestionIndex++;
             renderQuestion();
         } else {
+            // This is the last question, so stop the timer immediately
+            clearInterval(state.timerInterval);
             finishQuiz();
         }
     };
 
     const finishQuiz = async () => {
+        // --- PREVENT DUPLICATE SUBMISSIONS ---
+        ui.nextBtn.disabled = true;
+        ui.nextBtn.textContent = 'Submitting...';
+        // --- END PREVENT DUPLICATE SUBMISSIONS ---
+
         clearInterval(state.timerInterval);
         if (!state.currentUser) {
-            // Agar user logged in nahi hai, to purane tarike se redirect karein
             const url = `results.html?score=${state.score}&total=${state.quizData.questions.length}`;
             return window.location.href = url;
         }
@@ -130,48 +135,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const finalScore = (correctQuestions * 10) - (wrongQuestions * 10);
 
-        // User ke contest result ka object banayein
         const userContestResult = {
             contestId: state.contestId,
             score: finalScore,
             correctQuestions: correctQuestions,
             wrongQuestions: wrongQuestions,
-            timeTaken: state.timeElapsed, // Liya gaya samay
+            timeTaken: state.timeElapsed,
             completedAt: new Date(),
-            isCompleted: true, // Keep isCompleted for tracking
+            isCompleted: true,
         };
 
         try {
+            // --- Save Quiz Result Logic ---
             const userRef = db.collection('users').doc(state.currentUser.uid);
             const userDoc = await userRef.get();
 
             if (!userDoc.exists) {
-                console.error("User document not found.");
-                // Handle this case - maybe create the document or show an error
-                return;
+                throw new Error("User document not found while trying to save quiz results.");
             }
 
             const userData = userDoc.data();
             let contests = userData.contests || [];
 
-            // Find the index of the contest to update
             const contestIndex = contests.findIndex(
-                c => c.contestId === state.contestId && c.isCompleted === false
+                c => c.contestId === state.contestId && c.isCompleted !== true
             );
 
             if (contestIndex > -1) {
-                // Update the existing contest entry
                 contests[contestIndex] = {
-                    ...contests[contestIndex], // Keep existing properties like joinedAt
-                    ...userContestResult      // Overwrite with new results
+                    ...contests[contestIndex],
+                    ...userContestResult
                 };
             } else {
-                // If no incomplete contest is found, add the new result.
-                // This might happen in some edge cases.
                 contests.push(userContestResult);
             }
 
-            // Update the entire contests array in Firestore
             await userRef.update({
                 contests: contests
             });
@@ -179,10 +177,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Quiz result successfully updated in the user's document!");
 
         } catch (error) {
-            console.error("Error updating quiz result:", error);
-            // Fallback logic can be added here
+            console.error("Error during quiz finalization:", error);
         } finally {
-            // Redirect to the results page
             window.location.href = `results.html?contestId=${state.contestId}`;
         }
     };
@@ -197,11 +193,34 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const initializeQuiz = async () => {
-        console.log('>>> initializeQuiz: Function START <<<'); // DEBUG LOG
-        if (!state.contestId) return showError('No contest specified.');
+        if (!state.contestId || !state.currentUser) {
+            return showError('No contest or user specified.');
+        }
+
+        // --- PRE-QUIZ CHECK ---
+        // Check if the user has already completed this contest.
+        try {
+            const userRef = db.collection('users').doc(state.currentUser.uid);
+            const userDoc = await userRef.get();
+
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                const contestHistory = userData.contests || [];
+                const hasCompleted = contestHistory.some(c => c.contestId === state.contestId && c.isCompleted === true);
+
+                if (hasCompleted) {
+                    console.log("User has already completed this quiz. Redirecting to results.");
+                    window.location.href = `results.html?contestId=${state.contestId}`;
+                    return; // Stop further execution
+                }
+            }
+        } catch (error) {
+            console.error("Error checking contest completion status:", error);
+            // Continue to load the quiz, but log the error.
+        }
+        // --- END PRE-QUIZ CHECK ---
 
         try {
-            console.log('Firestore Read: Fetching quiz data for contest:', state.contestId);
             const quizDoc = await db.collection('quiz').doc(state.contestId).get();
             if (!quizDoc.exists) return showError('Quiz data not found.');
             
@@ -218,27 +237,16 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Error fetching quiz data:", error);
             showError('Failed to load quiz.');
         }
-        console.log('>>> initializeQuiz: Function END <<<'); // DEBUG LOG
     };
 
     // --- EVENT LISTENERS & BOOTSTRAP ---
     ui.nextBtn.addEventListener('click', advanceQuiz);
 
-    let quizInitialized = false; // Flag to prevent re-initialization
     auth.onAuthStateChanged(user => {
-        console.log('onAuthStateChanged fired.');
         if (user) {
             state.currentUser = user;
-            console.log('User is logged in:', user.uid);
-            if (!quizInitialized) {
-                console.log('Initializing quiz...');
-                initializeQuiz();
-                quizInitialized = true;
-            } else {
-                console.log('Quiz already initialized, skipping.');
-            }
+            initializeQuiz();
         } else {
-            console.log('User is not logged in, redirecting.');
             window.location.href = '/auth/login.html';
         }
     });
