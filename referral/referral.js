@@ -195,35 +195,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const referredUserData = referredUserDoc.data();
 
-            console.log(`Debug: referredUserData.hasJoinedContest = ${referredUserData.hasJoinedContest} for user ${referredUserId}`);
-            console.log(`Debug: referredUserData.rewardGiven = ${referredUserData.rewardGiven} for user ${referredUserId}`);
+                // Check if hasJoinedContest is true AND rewardGiven is not true
+                if (referredUserData.hasJoinedContest && !referredUserData.rewardGiven) {
+                    console.log("User has joined contest and reward not yet given, processing reward for: ", referredUserId);
+                    try {
+                        await db.runTransaction(async (transaction) => {
+                            // Update referrer's earnings
+                            transaction.update(referrerRef, {
+                                earnings: firebase.firestore.FieldValue.increment(10)
+                            });
 
-            // Check if hasJoinedContest is true AND rewardGiven is not true
-            if (referredUserData.hasJoinedContest && !referredUserData.rewardGiven) {
-                console.log("User has joined contest and reward not yet given, processing reward for: ", referredUserId);
-                try {
-                    await db.runTransaction(async (transaction) => {
-                        // Update referrer's earnings
-                        transaction.update(referrerRef, {
-                            earnings: firebase.firestore.FieldValue.increment(10)
+                            // Update referrer's wallet
+                            const referrerWalletRef = db.collection('wallets').doc(currentUser.uid);
+                            transaction.update(referrerWalletRef, {
+                                balance: firebase.firestore.FieldValue.increment(10)
+                            });
+
+                            // Mark reward as given in the referred user's document
+                            transaction.update(referredUserRef, { rewardGiven: true });
                         });
-
-                        // Update referrer's wallet
-                        const referrerWalletRef = db.collection('wallets').doc(currentUser.uid);
-                        transaction.update(referrerWalletRef, {
-                            balance: firebase.firestore.FieldValue.increment(10)
-                        });
-
-                        // Mark reward as given in the referred user's document
-                        transaction.update(referredUserRef, { rewardGiven: true });
-                    });
-                    console.log("Reward successfully processed and marked as given for: ", referredUserId);
-                } catch (error) {
-                    console.error("Error processing reward for ", referredUserId, ": ", error);
+                        console.log("Reward successfully processed and marked as given for: ", referredUserId);
+                    } catch (error) {
+                        console.error("Error processing reward for ", referredUserId, ": ", error);
+                    }
+                } else {
+                    console.log("Referred user has not joined contest or reward already given for: ", referredUserId);
                 }
-            } else {
-                console.log("Referred user has not joined contest or reward already given for: ", referredUserId);
-            }
             }
             // After checking and updating, refresh the UI
             updateReferralUI();
