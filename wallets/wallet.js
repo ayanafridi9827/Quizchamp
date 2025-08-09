@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const options = {
-            key: 'rzp_test_UvXAEOO331mKgH',
+            key: 'rzp_live_HjqSvP0nYgJEOE',
             amount: amount * 100,
             currency: 'INR',
             name: 'QuizChamp',
