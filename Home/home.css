@@ -403,7 +403,7 @@ body {
     background-clip: text;
     color: #333; /* Fallback for browsers that don't support background-clip: text */
 
-    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3); /* More pronounced shadow */
+    text-shadow: 1px 1px 8px rgba(0, 0, 0, 0.5); /* More pronounced shadow for better visibility */
 }
 
 .prize-section {
