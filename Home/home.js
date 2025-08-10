@@ -102,10 +102,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 await db.runTransaction(async (transaction) => {
                     const walletRef = db.collection("wallets").doc(currentUser.uid);
                     const contestRef = db.collection("contests").doc(contestId);
+                    const referralRef = db.collection('referrals').doc(currentUser.uid);
 
-                    console.log("Fetching wallet and contest docs...");
                     const walletDoc = await transaction.get(walletRef);
                     const contestDoc = await transaction.get(contestRef);
+                    const referralDoc = await transaction.get(referralRef);
 
                     if (!walletDoc.exists) throw new Error("Wallet not found!");
                     if (!contestDoc.exists) throw new Error("Contest not found!");
@@ -121,7 +122,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         participants: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
                         filledSpots: newFilledSpots
                     });
-                    console.log("Transaction successful in Firestore.");
+
+                    if (referralDoc.exists && referralDoc.data().hasJoinedContest === false) {
+                        transaction.update(referralRef, { hasJoinedContest: true });
+                    }
                 });
 
                 showNotification('Contest Joined Successfully', 'success');
