@@ -114,11 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (currentBalance < entryFee) throw new Error("Insufficient funds!");
 
                     const newBalance = currentBalance - entryFee;
-                    // Get the current participants array
-                    const currentParticipants = contestDoc.data().participants || [];
-                    // Add the new user's UID to a temporary array to get the new count
-                    const updatedParticipants = [...currentParticipants, currentUser.uid];
-                    const newFilledSpots = updatedParticipants.length;
+                    const newFilledSpots = (contestDoc.data().filledSpots || 0) + 1;
 
                     transaction.update(walletRef, { balance: newBalance });
                     transaction.update(contestRef, { 
