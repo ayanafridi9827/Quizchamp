@@ -116,18 +116,7 @@ async function handleGoogleSignIn() {
         
         await createOrUpdateUserProfile(result.user);
         
-        // Redirect after profile creation/update
-        const urlParams = new URLSearchParams(window.location.search);
-        const challengeId = urlParams.get('challengeId');
-        const redirectUrl = urlParams.get('redirect');
-        
-        if (challengeId) {
-            window.location.href = `/Home/home.html?challengeId=${challengeId}`;
-        } else if (redirectUrl) {
-            window.location.href = `/Home/${redirectUrl}.html`;
-        } else {
-            window.location.href = '/Home/home.html';
-        }
+        // No direct redirect here. Redirection will be handled by onAuthStateChanged.
 
     } catch (error) {
         console.error('Error during Google Sign-In:', error);
@@ -141,5 +130,24 @@ async function handleGoogleSignIn() {
         isSigningIn = false;
     }
 }
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        // User is signed in. Handle redirection.
+        const urlParams = new URLSearchParams(window.location.search);
+        const challengeId = urlParams.get('challengeId');
+        const redirectUrl = urlParams.get('redirect');
+        
+        if (challengeId) {
+            window.location.href = `/Home/home.html?challengeId=${challengeId}`;
+        } else if (redirectUrl) {
+            window.location.href = `/Home/${redirectUrl}.html`;
+        } else {
+            window.location.href = '/Home/home.html';
+        }
+    } else {
+        // User is signed out. (No action needed here for login page)
+    }
+});
 
 googleSignInButton.addEventListener('click', handleGoogleSignIn);
