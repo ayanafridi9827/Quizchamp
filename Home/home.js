@@ -98,12 +98,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
+                const walletRef = db.collection("wallets").doc(currentUser.uid);
+                const contestRef = db.collection("contests").doc(contestId);
+                const referralRef = db.collection('referrals').doc(currentUser.uid); // Defined outside transaction
+
                 console.log("Attempting to join contest transaction...");
                 await db.runTransaction(async (transaction) => {
-                    const walletRef = db.collection("wallets").doc(currentUser.uid);
-                    const contestRef = db.collection("contests").doc(contestId);
-                    const referralRef = db.collection('referrals').doc(currentUser.uid);
-
+                    // walletRef, contestRef, referralRef are already defined
                     const walletDoc = await transaction.get(walletRef);
                     const contestDoc = await transaction.get(contestRef);
                     const referralDoc = await transaction.get(referralRef);
