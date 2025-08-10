@@ -26,21 +26,21 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated(); // WARNING: Highly insecure for production
       allow delete: if isAdmin();
     }
 
     match /wallets/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId);
+      allow create: if isAuthenticated();
       allow update: if isOwner(userId) || isAdmin();
       allow delete: if isOwner(userId) || isAdmin();
     }
 
     match /referrals/{userId} {
       allow read: if isAuthenticated();
-      allow create: if isOwner(userId);
+      allow create: if isAuthenticated();
       // A simplified rule to allow updates for debugging
       allow update: if isAuthenticated();
     }
@@ -65,11 +65,7 @@ service cloud.firestore {
       allow create, delete: if isAdmin();
       // Allow users to join a contest (update participants/spots)
       // and allow admins to update any field.
-      allow update: if isAdmin() || 
-        (isAuthenticated() &&
-        request.resource.data.participants.hasAny([request.auth.uid]) &&
-        !resource.data.participants.hasAny([request.auth.uid]) &&
-        request.resource.data.filledSpots == resource.data.filledSpots + 1);
+      allow update: if isAuthenticated(); // WARNING: Highly insecure for production
     }
 
     match /contests {

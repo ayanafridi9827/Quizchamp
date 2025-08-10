@@ -98,21 +98,34 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const walletRef = db.collection("wallets").doc(currentUser.uid);
-                const contestRef = db.collection("contests").doc(contestId);
-
+                console.log("Attempting to join contest transaction...");
                 await db.runTransaction(async (transaction) => {
+                    const walletRef = db.collection("wallets").doc(currentUser.uid);
+                    const contestRef = db.collection("contests").doc(contestId);
+
+                    console.log("Fetching wallet and contest docs...");
                     const walletDoc = await transaction.get(walletRef);
+                    const contestDoc = await transaction.get(contestRef);
+
                     if (!walletDoc.exists) throw new Error("Wallet not found!");
+                    if (!contestDoc.exists) throw new Error("Contest not found!");
 
                     const currentBalance = walletDoc.data().balance || 0;
                     if (currentBalance < entryFee) throw new Error("Insufficient funds!");
 
                     const newBalance = currentBalance - entryFee;
+                    // Get the current participants array
+                    const currentParticipants = contestDoc.data().participants || [];
+                    // Add the new user's UID to a temporary array to get the new count
+                    const updatedParticipants = [...currentParticipants, currentUser.uid];
+                    const newFilledSpots = updatedParticipants.length;
+
                     transaction.update(walletRef, { balance: newBalance });
                     transaction.update(contestRef, { 
-                        participants: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
+                        participants: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+                        filledSpots: newFilledSpots
                     });
+                    console.log("Transaction successful in Firestore.");
                 });
 
                 showNotification('Contest Joined Successfully', 'success');
@@ -123,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 userWalletBalance -= entryFee;
 
             } catch (error) {
-                console.error("Error joining contest:", error);
+                console.error("Error joining contest transaction:", error);
                 showNotification(`Failed to join: ${error.message}`, 'error');
             }
         };
