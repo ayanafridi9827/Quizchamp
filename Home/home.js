@@ -108,6 +108,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.add('won-contest-card');
                 const userStats = card.querySelector('.user-stats');
                 userStats.innerHTML = `
+                    <div class="stat-item"><i class="fas fa-star"></i>Score: ${userResult.score}</div>
+                    <div class="stat-item"><i class="fas fa-clock"></i>Time: ${userResult.timeTaken}s</div>
+                `;
+                userStats.innerHTML = `
                     <div class="stat-item">#Rank:${userResult.rank}</div>
                     <div class="stat-item"><i class="fas fa-star"></i>Score: ${userResult.score}</div>
                     <div class="stat-item"><i class="fas fa-clock"></i>Time: ${userResult.timeTaken}s</div>
@@ -117,12 +121,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 congratsMessage.innerHTML = `Congratulations`;
             } else if (userResult.status === 'loser') {
                 card.classList.add('loser-contest-card');
+                const prizeContent = card.querySelector('.prize-content');
+                prizeContent.innerHTML = `
+                    <i class="fas fa-trophy"></i>
+                    <div class="loser-prize-details">
+                        <span class="loser-prize-label">You lost</span>
+                        <span class="loser-prize-amount">₹0</span>
+                    </div>
+                `;
                 const loserMessage = card.querySelector('.loser-message');
                 loserMessage.classList.remove('hidden');
                 loserMessage.innerHTML = `
                     <i class="fas fa-sad-tear"></i>
                     <h3>Better Luck Next Time!</h3>
                     <p>You didn't win this time. Keep playing!</p>
+                `;
+                const userStats = card.querySelector('.user-stats');
+                userStats.innerHTML = `
+                    <div class="stat-item"><i class="fas fa-star"></i>Score: ${userResult.score}</div>
+                    <div class="stat-item"><i class="fas fa-clock"></i>Time: ${userResult.timeTaken}s</div>
                 `;
             }
         } else {
@@ -277,6 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelector('.nav-links');
     const overlay = document.querySelector('.overlay');
     const logoutBtn = document.getElementById('logout-btn'); // Get the logout button
+    const mobileLogoutBtn = document.getElementById('mobile-logout-btn'); // Get the mobile logout button
 
     if (mobileMenuBtn && navLinks && overlay) {
         mobileMenuBtn.addEventListener('click', () => {
@@ -308,6 +326,20 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error("Error signing out:", error);
                 showNotification("Failed to log out.", 'error');
+            }
+        });
+    }
+
+    // Mobile logout button functionality
+    if (mobileLogoutBtn) {
+        mobileLogoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault(); // Prevent default link behavior
+            try {
+                await auth.signOut();
+                window.location.href = '/auth/login.html'; // Redirect to login page
+            } catch (error) {
+                console.error("Error signing out from mobile:", error);
+                showNotification("Failed to log out from mobile.", 'error');
             }
         });
     }

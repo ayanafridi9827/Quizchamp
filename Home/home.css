@@ -777,9 +777,10 @@ body {
 }
 
 .won-contest-card .stat-item:not(:last-child)::after {
-    content: '|';
+    content: '| '; /* Added space for better separation */
     margin-left: 0.5rem;
-    color: rgba(0, 0, 0, 0.2);
+    color: rgba(0, 0, 0, 0.5); /* Darker color */
+    font-weight: bolder; /* Make it bolder */
 }
 
 @keyframes congrats-animation {
@@ -965,6 +966,24 @@ body {
     text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
 }
 
+.loser-prize-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.loser-prize-label {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.loser-prize-amount {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #dc3545;
+}
+
 .loser-contest-card .user-stats {
     display: grid;
     grid-template-columns: repeat(2, auto); /* Only score and time for loser */
@@ -981,6 +1000,8 @@ body {
     gap: 0.5rem;
     position: relative;
     padding-right: 1rem;
+    color: red; /* Changed to red */
+    font-weight: bold;
 }
 
 .loser-contest-card .stat-item:not(:last-child)::after {
@@ -1096,6 +1117,27 @@ body {
 
     .nav-links li:last-child {
         margin-bottom: 0;
+    }
+
+    .mobile-logout-item {
+        margin-top: auto; /* Pushes it to the bottom */
+        width: 100%;
+        text-align: center;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    #mobile-logout-btn {
+        color: #e43f5a; /* Red color */
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    #mobile-logout-btn i {
+        color: #e43f5a;
     }
 
     .nav-links a {
