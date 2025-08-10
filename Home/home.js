@@ -50,14 +50,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Yeh function contest ka data lekar uska HTML card banata hai
     const createContestCard = (contestData, contestId) => {
         const card = contestCardTemplate.content.cloneNode(true).querySelector('.contest-card');
+        const userResult = userContestResults.get(contestId);
 
         card.querySelector('.contest-title').textContent = contestData.title || 'No Title';
         const prizeTextElement = card.querySelector('.prize-text');
-        prizeTextElement.innerHTML = `<span class="prize-label">PRIZE</span><span class="prize-amount">₹${contestData.prize || 0}</span>`;
 
-        if (contestData.winnerDeclared) {
-            prizeTextElement.querySelector('.prize-amount').classList.add('winner-declared-prize');
+        if (userResult && userResult.status === 'winner') {
+            card.classList.add('won-contest-card');
+            const prizeContent = card.querySelector('.prize-content');
+            prizeContent.innerHTML = `
+                <i class="fas fa-trophy"></i>
+                <div class="won-prize-details">
+                    <span class="won-prize-label">You won</span>
+                    <span class="won-prize-amount">₹${userResult.prize}</span>
+                </div>
+            `;
+        } else {
+            prizeTextElement.innerHTML = `<span class="prize-label">PRIZE</span><span class="prize-amount">₹${contestData.prize || 0}</span>`;
         }
+
+        
 
         card.querySelector('.entry-fee-text').textContent = `Entry: ₹${contestData.entryFee || 0}`;
         
@@ -85,77 +97,108 @@ document.addEventListener('DOMContentLoaded', () => {
         const joinBtn = card.querySelector('.join-btn');
         const joinTextSpan = joinBtn.querySelector('.join-text');
 
-        const joinButtonClickHandler = async () => {
-            if (!currentUser) {
-                showNotification("Please log in to join contest.", 'error');
-                return;
+        if (contestData.winnerDeclared && userResult) {
+            // Winner/Loser card logic
+            card.querySelector('.contest-header').style.display = 'none';
+            card.querySelector('.contest-details').style.display = 'none';
+            card.querySelector('.progress-section').style.display = 'none';
+            joinBtn.style.display = 'none';
+
+            if (userResult.status === 'winner') {
+                card.classList.add('won-contest-card');
+                const userStats = card.querySelector('.user-stats');
+                userStats.innerHTML = `
+                    <div class="stat-item">#Rank:${userResult.rank}</div>
+                    <div class="stat-item"><i class="fas fa-star"></i>Score: ${userResult.score}</div>
+                    <div class="stat-item"><i class="fas fa-clock"></i>Time: ${userResult.timeTaken}s</div>
+                `;
+
+                const congratsMessage = card.querySelector('.congrats-message');
+                congratsMessage.innerHTML = `Congratulations`;
+            } else if (userResult.status === 'loser') {
+                card.classList.add('loser-contest-card');
+                const loserMessage = card.querySelector('.loser-message');
+                loserMessage.classList.remove('hidden');
+                loserMessage.innerHTML = `
+                    <i class="fas fa-sad-tear"></i>
+                    <h3>Better Luck Next Time!</h3>
+                    <p>You didn't win this time. Keep playing!</p>
+                `;
             }
+        } else {
+            // Existing logic for joining/viewing results
+            const joinButtonClickHandler = async () => {
+                if (!currentUser) {
+                    showNotification("Please log in to join contest.", 'error');
+                    return;
+                }
 
-            const entryFee = contestData.entryFee || 0;
-            if (userWalletBalance < entryFee) {
-                showNotification(`Insufficient funds! You need ₹${entryFee - userWalletBalance} more.`, 'error');
-                return;
-            }
+                const entryFee = contestData.entryFee || 0;
+                if (userWalletBalance < entryFee) {
+                    showNotification(`Insufficient funds! You need ₹${entryFee - userWalletBalance} more.`, 'error');
+                    return;
+                }
 
-            try {
-                const walletRef = db.collection("wallets").doc(currentUser.uid);
-                const contestRef = db.collection("contests").doc(contestId);
-                const referralRef = db.collection('referrals').doc(currentUser.uid); // Defined outside transaction
+                try {
+                    const walletRef = db.collection("wallets").doc(currentUser.uid);
+                    const contestRef = db.collection("contests").doc(contestId);
+                    const referralRef = db.collection('referrals').doc(currentUser.uid); // Defined outside transaction
 
-                console.log("Attempting to join contest transaction...");
-                await db.runTransaction(async (transaction) => {
-                    // walletRef, contestRef, referralRef are already defined
-                    const walletDoc = await transaction.get(walletRef);
-                    const contestDoc = await transaction.get(contestRef);
-                    const referralDoc = await transaction.get(referralRef);
+                    console.log("Attempting to join contest transaction...");
+                    await db.runTransaction(async (transaction) => {
+                        // walletRef, contestRef, referralRef are already defined
+                        const walletDoc = await transaction.get(walletRef);
+                        const contestDoc = await transaction.get(contestRef);
+                        const referralDoc = await transaction.get(referralRef);
 
-                    if (!walletDoc.exists) throw new Error("Wallet not found!");
-                    if (!contestDoc.exists) throw new Error("Contest not found!");
+                        if (!walletDoc.exists) throw new Error("Wallet not found!");
+                        if (!contestDoc.exists) throw new Error("Contest not found!");
 
-                    const currentBalance = walletDoc.data().balance || 0;
-                    if (currentBalance < entryFee) throw new Error("Insufficient funds!");
+                        const currentBalance = walletDoc.data().balance || 0;
+                        if (currentBalance < entryFee) throw new Error("Insufficient funds!");
 
-                    const newBalance = currentBalance - entryFee;
-                    const newFilledSpots = (contestDoc.data().filledSpots || 0) + 1;
+                        const newBalance = currentBalance - entryFee;
+                        const newFilledSpots = (contestDoc.data().filledSpots || 0) + 1;
 
-                    transaction.update(walletRef, { balance: newBalance });
-                    transaction.update(contestRef, { 
-                        participants: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
-                        filledSpots: newFilledSpots
+                        transaction.update(walletRef, { balance: newBalance });
+                        transaction.update(contestRef, { 
+                            participants: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+                            filledSpots: newFilledSpots
+                        });
+
+                        if (referralDoc.exists && referralDoc.data().hasJoinedContest === false) {
+                            transaction.update(referralRef, { hasJoinedContest: true });
+                        }
                     });
 
-                    if (referralDoc.exists && referralDoc.data().hasJoinedContest === false) {
-                        transaction.update(referralRef, { hasJoinedContest: true });
-                    }
-                });
+                    showNotification('Contest Joined Successfully', 'success');
+                    joinTextSpan.textContent = 'Continue';
+                    joinBtn.classList.add('joined');
+                    joinBtn.removeEventListener('click', joinButtonClickHandler);
+                    joinBtn.addEventListener('click', () => window.location.href = `/Home/quiz/quiz.html?contestId=${contestId}`);
+                    userWalletBalance -= entryFee;
 
-                showNotification('Contest Joined Successfully', 'success');
+                } catch (error) {
+                    console.error("Error joining contest transaction:", error);
+                    showNotification(`Failed to join: ${error.message}`, 'error');
+                }
+            };
+
+            const hasJoined = contestData.participants && contestData.participants.includes(currentUser.uid);
+            const hasPlayedQuiz = userCompletedContests.has(contestId);
+
+            if (hasPlayedQuiz) {
+                joinTextSpan.textContent = 'View Result';
+                joinBtn.classList.add('view-result-btn');
+                joinBtn.addEventListener('click', () => window.location.href = `/Home/quiz/results.html?contestId=${contestId}`);
+            } else if (hasJoined) {
                 joinTextSpan.textContent = 'Continue';
                 joinBtn.classList.add('joined');
-                joinBtn.removeEventListener('click', joinButtonClickHandler);
                 joinBtn.addEventListener('click', () => window.location.href = `/Home/quiz/quiz.html?contestId=${contestId}`);
-                userWalletBalance -= entryFee;
-
-            } catch (error) {
-                console.error("Error joining contest transaction:", error);
-                showNotification(`Failed to join: ${error.message}`, 'error');
+            } else {
+                joinTextSpan.textContent = `Join for ₹${contestData.entryFee || 0}`;
+                joinBtn.addEventListener('click', joinButtonClickHandler);
             }
-        };
-
-        const hasJoined = contestData.participants && contestData.participants.includes(currentUser.uid);
-        const hasPlayedQuiz = userCompletedContests.has(contestId);
-
-        if (hasPlayedQuiz) {
-            joinTextSpan.textContent = 'View Result';
-            joinBtn.classList.add('view-result-btn');
-            joinBtn.addEventListener('click', () => window.location.href = `/Home/quiz/results.html?contestId=${contestId}`);
-        } else if (hasJoined) {
-            joinTextSpan.textContent = 'Continue';
-            joinBtn.classList.add('joined');
-            joinBtn.addEventListener('click', () => window.location.href = `/Home/quiz/quiz.html?contestId=${contestId}`);
-        } else {
-            joinTextSpan.textContent = `Join for ₹${contestData.entryFee || 0}`;
-            joinBtn.addEventListener('click', joinButtonClickHandler);
         }
 
         return card;
@@ -167,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         contestsGrid.innerHTML = ''; // Clear existing contests before loading new ones
 
         try {
-            const contestsQuery = db.collection("contests").where("status", "in", ["active", "upcoming"]).limit(10);
+            const contestsQuery = db.collection("contests").orderBy("createdAt", "desc");
             const querySnapshot = await contestsQuery.get();
             
             loadingState.style.display = 'none';
@@ -205,8 +248,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         if (userData.contests && Array.isArray(userData.contests)) {
                             userData.contests.forEach(contest => {
-                                if (contest.isCompleted) {
-                                    userCompletedContests.add(contest.contestId);
+                                userCompletedContests.add(contest.contestId);
+                                if(contest.status) {
+                                    userContestResults.set(contest.contestId, {
+                                        status: contest.status,
+                                        prize: contest.prize,
+                                        rank: contest.rank,
+                                        score: contest.score,
+                                        timeTaken: contest.timeTaken
+                                    });
                                 }
                             });
                         }
@@ -226,6 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
     const navLinks = document.querySelector('.nav-links');
     const overlay = document.querySelector('.overlay');
+    const logoutBtn = document.getElementById('logout-btn'); // Get the logout button
 
     if (mobileMenuBtn && navLinks && overlay) {
         mobileMenuBtn.addEventListener('click', () => {
@@ -246,4 +297,28 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    // Logout button functionality
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault(); // Prevent default link behavior
+            try {
+                await auth.signOut();
+                window.location.href = '/auth/login.html'; // Redirect to login page
+            } catch (error) {
+                console.error("Error signing out:", error);
+                showNotification("Failed to log out.", 'error');
+            }
+        });
+    }
+});
+
+// Global error handler for uncaught errors
+window.addEventListener('error', (event) => {
+    console.error('Global error:', event.error);
+});
+
+// Global handler for unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection:', event.reason);
 });

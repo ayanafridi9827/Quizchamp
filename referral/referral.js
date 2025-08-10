@@ -231,6 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
     const navLinks = document.querySelector('.nav-links');
     const overlay = document.querySelector('.overlay');
+    const logoutBtn = document.getElementById('logout-btn'); // Get the logout button
 
     if (mobileMenuBtn && navLinks && overlay) {
         mobileMenuBtn.addEventListener('click', () => {
@@ -249,6 +250,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 navLinks.classList.remove('active');
                 overlay.classList.remove('active');
             });
+        });
+    }
+
+    // Logout button functionality
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault(); // Prevent default link behavior
+            try {
+                await auth.signOut();
+                window.location.href = '/auth/login.html'; // Redirect to login page
+            } catch (error) {
+                console.error("Error signing out:", error);
+                showNotification("Failed to log out.", 'error');
+            }
         });
     }
 });

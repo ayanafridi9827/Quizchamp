@@ -393,8 +393,8 @@ body {
 .contest-title {
     font-size: 1.6rem; /* Slightly increased font size */
     font-weight: 600; /* A bit bolder than 500, but not too heavy */
-    margin-bottom: 0;
-    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    margin-top: 0rem;
     
     /* Gradient Text Effect */
     background: linear-gradient(45deg, #333, #555); /* Darker to lighter gray gradient */
@@ -756,32 +756,30 @@ body {
 }
 
 .won-contest-card .user-stats {
-    display: grid;
-    grid-template-columns: repeat(3, auto);
-    gap: 1.5rem;
-    padding: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem;
     background-color: rgba(255, 255, 255, 0.5);
     border-radius: 10px;
     justify-content: center;
+    margin-top: 1rem;
 }
 
 .won-contest-card .stat-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    position: relative; /* For the vertical line */
-    padding-right: 1rem; /* Space for the line */
+    gap: 0.25rem;
+    position: relative;
+    padding-right: 0.5rem;
+    color: blue;
+    font-weight: bold;
 }
 
 .won-contest-card .stat-item:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 1px;
-    height: 70%; /* Adjust height of the line */
-    background-color: rgba(0, 0, 0, 0.2);
+    content: '|';
+    margin-left: 0.5rem;
+    color: rgba(0, 0, 0, 0.2);
 }
 
 @keyframes congrats-animation {
@@ -801,10 +799,11 @@ body {
 
 .won-contest-card .congrats-message {
     text-align: center;
-    font-size: 1.5rem;
+    font-size: 2.5rem;
     font-weight: bold;
     color: #28a745;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
+    padding: 1rem;
     animation: congrats-animation 2s infinite;
 }
 
@@ -825,19 +824,20 @@ body {
     background: none;
     box-shadow: none;
     border: none;
-    padding: 0; /* Remove padding */
+    padding: 0;
+    margin-top: 1rem; /* Remove padding */
     gap: 0.5rem; /* Slightly increased gap for better spacing */
 }
 
 .won-contest-card .prize-content i {
-    font-size: 3rem; /* Even larger icon size */
+    font-size: 4rem; /* Even larger icon size */
     color: #FFD700; /* Gold color for the icon */
     filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.9)); /* Stronger gold glow for the icon */
 }
 
 .won-contest-card .prize-label {
-    color: #28a745; /* Green color */
-    font-size: 1.5rem; /* Larger font size */
+    color: rgba(0, 0, 0, 0.7); /* Green color */
+    font-size: 0.75rem; /* Larger font size */
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -849,6 +849,41 @@ body {
     font-size: 3.5rem; /* Much larger font size for prize amount */
     font-weight: 900;
     text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4); /* Very prominent shadow */
+}
+
+.won-contest-card .prize-section {
+    /* Simplified and attractive prize section */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    margin: 0 auto 1rem auto;
+    background: none; /* Remove background */
+    border: none; /* Remove border */
+    box-shadow: none; /* Remove shadow */
+}
+
+.won-prize-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align to left */
+}
+
+.won-prize-label {
+    font-size: 1rem;
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.7);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2); /* Horizontal line */
+    padding-bottom: 0.2rem;
+    width: fit-content; /* Adjust width to content */
+}
+
+.won-prize-amount {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #28a745;
+    margin-top: -0.5rem; /* Move up slightly */
 }
 
 .won-contest-card .stat-icon {
@@ -870,6 +905,10 @@ body {
     font-size: 1.2rem;
     font-weight: bold;
     color: #333;
+}
+
+.won-contest-card .stat-item {
+    color: blue;
 }
 
 .won-contest-card .view-result-btn {
