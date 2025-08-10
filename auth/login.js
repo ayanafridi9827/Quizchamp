@@ -86,6 +86,7 @@ async function createOrUpdateUserProfile(user) {
                 joined: [],
                 earnings: 0,
                 referredBy: null,
+                hasJoinedContest: false, // <--- ADD THIS LINE
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()
             });
