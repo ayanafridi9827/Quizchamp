@@ -391,13 +391,19 @@ body {
 }
 
 .contest-title {
-    font-size: 1.5rem; /* Font size badhaya */
-    font-weight: 800;
-    margin-bottom: 0.1rem; /* Further reduced bottom margin */
-    color: var(--secondary-color); /* Solid color */
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2); /* Behtar shadow */
-    -webkit-background-clip: unset; /* Hata diya */
-    -webkit-text-fill-color: unset; /* Hata diya */
+    font-size: 1.6rem; /* Slightly increased font size */
+    font-weight: 600; /* A bit bolder than 500, but not too heavy */
+    margin-bottom: 0;
+    margin-top: 0.5rem;
+    
+    /* Gradient Text Effect */
+    background: linear-gradient(45deg, #333, #555); /* Darker to lighter gray gradient */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: #333; /* Fallback for browsers that don't support background-clip: text */
+
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3); /* More pronounced shadow */
 }
 
 .prize-section {
