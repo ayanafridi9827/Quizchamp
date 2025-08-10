@@ -35,7 +35,7 @@ function setLoading(isLoading) {
 
 // Simple referral code generator
 function generateReferralCode(uid) {
-    return uid.substring(0, 4).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase();
+    return uid.substring(0, 4).toUpperCase() + Math.random().toString(36).substring(2, 4).toUpperCase();
 }
 
 /**
