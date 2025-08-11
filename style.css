@@ -236,7 +236,9 @@ body{
 /* Responsive */
 @media (max-width: 900px){
   .hero-inner{flex-direction:column}
-  .hero-right{width:100%}
+  .hero-content-wrapper{flex-direction:column} /* Stack hero-left and hero-right */
+  .hero-left{margin-top: 0;} /* Remove margin-top when stacked */
+  .hero-right{width:100%; max-width: 100%;} /* Ensure it takes full width and overrides previous max-width */
   .main-nav{display:none}
   .mobile-toggle{display:block}
   .test-track{animation-duration:22s}
@@ -245,7 +247,27 @@ body{
 @media (max-width:520px){
   .hero-title{font-size:1.9rem}
   .hero-card{flex-direction:column}
-  .hero-right{width:100%}
+  .hero-right{width:100%; max-width: 100%;} /* Ensure it takes full width and overrides previous max-width */
   .card-media{height:140px}
   .test-card{min-width:240px}
+}
+
+@media (max-width: 400px) {
+  .hero-title {
+    font-size: 1.6rem; /* Further reduce hero title size */
+  }
+  .hero-sub {
+    font-size: 0.9rem; /* Adjust hero sub font size */
+  }
+  .hero-left {
+    padding: 20px 8px 6px 8px; /* Adjust padding for smaller screens */
+    margin-top: 0; /* Remove margin-top on very small screens */
+  }
+  .hero-right {
+    max-width: 100%; /* Ensure it takes full width */
+    padding: 10px; /* Adjust padding */
+  }
+  .price-chip .value {
+    font-size: 1.5rem; /* Adjust price value size */
+  }
 }
