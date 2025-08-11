@@ -1,234 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuizChamp - Live Quiz Contests</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>QuizChamp — Win Real Money | Live Quizzes</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Meta -->
+  <meta name="description" content="Join live paid quizzes on QuizChamp — pay entry, answer fast & win cash prizes. Secure payouts, fair-play.">
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="logo">
-                <h1>QuizChamp <span class="fire">🔥</span></h1>
-            </div>
-            <nav class="nav-menu">
-                <button class="mobile-menu-btn">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="header-buttons">
-                    <a href="auth/login.html" class="btn btn-primary">Get Started</a>
-                </div>
-            </nav>
-        </div>
-    </header>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="/">Quiz<span>Champ</span></a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="#contests">Contests</a>
+        <a href="#how">How it Works</a>
+        <a href="#features">Features</a>
+        <a href="#testimonials">Testimonials</a>
+        <a class="btn-outline" href="auth/login.html">Get Started</a>
+      </nav>
+      <button class="mobile-toggle" aria-label="Open menu"><i class="fas fa-bars"></i></button>
+    </div>
+  </header>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1>🧠 Live Quiz Contests</h1>
-                <p>Join exciting contests and win real cash prizes!</p>
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <i class="fas fa-users"></i>
-                        <span>10K+ Players</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-trophy"></i>
-                        <span>₹50K+ Prizes</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-gamepad"></i>
-                        <span>100+ Contests</span>
-                    </div>
-                </div>
-                <a href="auth/login.html" class="cta-button">
-                    <button class="Start">Start Earning</button>
-                </a>
-            </div>
-        </div>
-    </section>
-   
-    <!-- Upcoming Contests Section -->
-    <section class="upcoming-contests">
-        <div class="container">
-            <h2 class="section-title">Upcoming Contests</h2>
-            <div class="contest-grid">
-                <div class="contest-card">
-                    <h3>General Knowledge Quiz</h3>
-                    <p>Date: July 15, 2025</p>
-                    <p>Prize Pool: ₹5,000</p>
-                    <button class="btn btn-primary">Join Now</button>
-                </div>
-                <div class="contest-card">
-                    <h3>Science & Tech Challenge</h3>
-                    <p>Date: July 18, 2025</p>
-                    <p>Prize Pool: ₹7,500</p>
-                    <button class="btn btn-primary">Join Now</button>
-                </div>
-                <div class="contest-card">
-                    <h3>History Buff Battle</h3>
-                    <p>Date: July 20, 2025</p>
-                    <p>Prize Pool: ₹3,000</p>
-                    <button class="btn btn-primary">Join Now</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- How It Works -->
-    <section class="how-it-works">
-        <div class="container">
-            <h2 class="section-title">How It Works</h2>
-            <div class="steps">
-                <div class="step" data-aos="fade-up">
-                    <div class="step-icon">✍️</div>
-                    <h3>Join a Challenge</h3>
-                    <p>Select from various quiz categories and join live contests</p>
-                </div>
-                <div class="step" data-aos="fade-up" data-aos-delay="100">
-                    <div class="step-icon">🤔</div>
-                    <h3>Answer Questions</h3>
-                    <p>Test your knowledge with engaging questions</p>
-                </div>
-                <div class="step" data-aos="fade-up" data-aos-delay="200">
-                    <div class="step-icon">🏆</div>
-                    <h3>Win Real Prizes</h3>
-                    <p>Compete and win exciting cash prizes</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features -->
-    <section class="features">
-        <div class="container">
-            <h2 class="section-title">Why Choose Us</h2>
-            <div class="feature-grid">
-                <div class="feature-card" data-aos="fade-up">
-                    <i class="fas fa-shield-alt"></i>
-                    <h3>Fair Play System</h3>
-                    <p>Advanced anti-cheating measures ensure fair competition</p>
-                </div>
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
-                    <i class="fas fa-wallet"></i>
-                    <h3>Instant Withdrawals</h3>
-                    <p>Get your winnings instantly in your wallet</p>
-                </div>
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
-                    <i class="fas fa-calendar-alt"></i>
-                    <h3>Daily Challenges</h3>
-                    <p>New contests every day to keep you engaged</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section class="testimonials">
-        <div class="container">
-            <h2 class="section-title">What Our Users Say</h2>
-            <div class="testimonial-grid">
-                <div class="testimonial-card">
-                    <p class="quote">"QuizChamp is amazing! I've won several contests and the withdrawals are super fast. Highly recommended!"</p>
-                    <p class="author">- Priya S.</p>
-                </div>
-                <div class="testimonial-card">
-                    <p class="quote">"The variety of quizzes and the fair play system make QuizChamp my go-to app for earning while learning."</p>
-                    <p class="author">- Rahul K.</p>
-                </div>
-                <div class="testimonial-card">
-                    <p class="quote">"Finally, a platform where my knowledge pays off! The daily challenges keep me hooked."</p>
-                    <p class="author">- Amit V.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Call to Action Section -->
-    <section class="cta-section">
-        <div class="container">
-            <h2>Ready to Join the QuizChamp Community?</h2>
-            <p>Sign up now and start winning exciting prizes!</p>
-            <a href="auth/login.html" class="btn btn-primary btn-large">Get Started Today</a>
-        </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section class="faq-section">
-        <div class="container">
-            <h2 class="section-title">Frequently Asked Questions</h2>
-            <div class="faq-item">
-                <h3>How do I join a contest?</h3>
-                <p>Simply sign up, browse the upcoming contests, and click 'Join Now' on the contest you wish to participate in.</p>
-            </div>
-            <div class="faq-item">
-                <h3>How are winners determined?</h3>
-                <p>Winners are determined based on their score and the time taken to complete the quiz. Higher score and faster completion lead to higher ranks.</p>
-            </div>
-            <div class="faq-item">
-                <h3>How do I withdraw my winnings?</h3>
-                <p>You can withdraw your winnings instantly to your linked payment methods through your wallet section.</p>
-            </div>
-            <div class="faq-item">
-                <h3>Is there a fee to join contests?</h3>
-                <p>Some contests may have a small entry fee, while others are free to join. Details are provided for each contest.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Quick Links</h3>
-                    <div class="footer-links">
-                        <a href="#">About</a>
-                        <a href="#">Privacy Policy</a>
-                        <a href="#">Contact</a>
-                    </div>
-                </div>
-                <div class="footer-section">
-                    <h3>Connect With Us</h3>
-                    <div class="social-links">
-                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p class="copyright">© 2025 QuizChamp. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Mobile Menu -->
-    <div class="mobile-menu">
-        <div class="mobile-menu-content">
-            <button class="close-menu">
-                <i class="fas fa-times"></i>
-            </button>
-            <nav>
-                <a href="#home">Home</a>
-                <a href="#contests">Contests</a>
-                <a href="#how-it-works">How It Works</a>
-                <a href="#features">Features</a>
-                <a href="auth/login.html" class="btn btn-primary">Get Started</a>
-            </nav>
-        </div>
+  <!-- Hero -->
+  <section id="hero" class="hero">
+    <div class="hero-media" aria-hidden="true">
+      <!-- background image via CSS -->
+      <div class="hero-gradient"></div>
     </div>
 
-    <!-- Wallet Modal -->
-    
+    <div class="wrap hero-inner">
+      <div class="hero-card glass">
+        <div class="hero-content-wrapper">
+          <div class="hero-left">
+            <h1 class="hero-title">Play Quizzes, Win Cash.</h1>
+            <p class="hero-sub">Engage in dynamic live contests, showcase your knowledge, and secure instant cash prizes.</p>
 
-    <script type="module" src="script.js"></script>
+            <ul class="hero-stats">
+              <li><i class="fas fa-user-friends"></i> 12K+ players</li>
+              <li><i class="fas fa-trophy"></i> ₹2,50,000 total prizes</li>
+              <li><i class="fas fa-bolt"></i> Daily live contests</li>
+            </ul>
+
+            <div class="hero-ctas">
+              <a href="auth/login.html" class="cta-primary">Join Now — Entry ₹20</a>
+              <a href="#contests" class="btn-ghost">View Contests</a>
+            </div>
+          </div>
+
+          <div class="hero-right">
+            <div class="price-chip">
+              <div class="chip-row">
+                <span class="label">Entry</span>
+                <span class="value">₹20</span>
+              </div>
+              <div class="chip-row prize-row"> <!-- Added prize-row class -->
+                <span class="label">Total Prize Pool</span>
+                <span class="value">₹1,000</span>
+              </div>
+            </div>
+
+            <p class="small-note">Secure payments • Fair-play verified • Instant withdrawals</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contests -->
+  <section id="contests" class="section contests-section">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Upcoming & Live Contests</h2>
+        <p>Pick a contest, pay the entry fee and compete live — last one standing wins the prize pool.</p>
+      </div>
+
+      <div class="contest-grid">
+        <!-- card 1 -->
+        <article class="contest-card glass">
+          <figure class="card-media">
+            <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=900&auto=format&fit=crop&ixlib=rb-4.0.3&s=1f7b2b6a0b3b0b8b5a1d3a4b0f7f6c6a" alt="General Knowledge">
+            <div class="category">General Knowledge</div>
+          </figure>
+
+          <div class="card-body">
+            <h3 class="card-title">GK Rapid — ₹20 Entry</h3>
+            <p class="card-meta">Starts: <strong>Aug 20, 2025 • 8:00 PM</strong></p>
+            <div class="badges">
+              <span class="badge fee">Entry ₹20</span>
+              <span class="badge prize">Prize ₹1,200</span>
+            </div>
+            <div class="card-footer">
+              <span class="countdown">Starts in: 2d 4h</span>
+              <button class="btn btn-join join-btn">Join Contest</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- card 2 -->
+        <article class="contest-card glass">
+          <figure class="card-media">
+            <img src="https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=900&auto=format&fit=crop&ixlib=rb-4.0.3&s=4f0a4c9b2c3d2a6b5f1e6a1c3b7a2d1f" alt="Science & Tech">
+            <div class="category">Science & Tech</div>
+          </figure>
+
+          <div class="card-body">
+            <h3 class="card-title">Science Clash — ₹50 Entry</h3>
+            <p class="card-meta">Starts: <strong>Aug 22, 2025 • 9:30 PM</strong></p>
+            <div class="badges">
+              <span class="badge fee">Entry ₹50</span>
+              <span class="badge prize">Prize ₹5,000</span>
+            </div>
+            <div class="card-footer">
+              <span class="countdown">Starts in: 4d 9h</span>
+              <button class="btn btn-join join-btn">Join Contest</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- card 3 -->
+        <article class="contest-card glass">
+          <figure class="card-media">
+            <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=900&auto=format&fit=crop&ixlib=rb-4.0.3&s=0c6f4e1f2a2d5b6c3a6f2b1e9c7d3a8e" alt="History">
+            <div class="category">History</div>
+          </figure>
+
+          <div class="card-body">
+            <h3 class="card-title">History Buff — Free</h3>
+            <p class="card-meta">Starts: <strong>Aug 25, 2025 • 6:00 PM</strong></p>
+            <div class="badges">
+              <span class="badge fee free">Free</span>
+              <span class="badge prize">Prize ₹800</span>
+            </div>
+            <div class="card-footer">
+              <span class="countdown">Starts in: 7d 1h</span>
+              <button class="btn btn-join join-btn">Join Contest</button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how" class="section how-section">
+    <div class="wrap">
+      <h2>How it Works</h2>
+      <div class="steps">
+        <div class="step glass">
+          <div class="step-icon"><i class="fas fa-wallet"></i></div>
+          <h3>Pay entry</h3>
+          <p>Secure, instant payment. Small fees only for paid contests.</p>
+        </div>
+        <div class="step glass">
+          <div class="step-icon"><i class="fas fa-question-circle"></i></div>
+          <h3>Answer fast</h3>
+          <p>Quick rounds — speed matters along with accuracy.</p>
+        </div>
+        <div class="step glass">
+          <div class="step-icon"><i class="fas fa-award"></i></div>
+          <h3>Win cash</h3>
+          <p>Winners split the prize pool; withdraw instantly to your account.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="section features-section">
+    <div class="wrap">
+      <h2>Why QuizChamp</h2>
+      <div class="feature-grid">
+        <div class="feature glass">
+          <i class="fas fa-shield-alt"></i>
+          <h4>Fair Play</h4>
+          <p>Anti-cheat & verified scoring engine.</p>
+        </div>
+        <div class="feature glass">
+          <i class="fas fa-bolt"></i>
+          <h4>Instant Payouts</h4>
+          <p>Withdraw winnings immediately to your linked account.</p>
+        </div>
+        <div class="feature glass">
+          <i class="fas fa-users"></i>
+          <h4>Community</h4>
+          <p>Compete with thousands of players daily.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section id="testimonials" class="section testimonials-section">
+    <div class="wrap">
+      <h2>What Our Players Say</h2>
+
+      <div class="test-slider">
+        <div class="test-track">
+          <figure class="test-card glass">
+            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="player">
+            <blockquote>"I won my first prize in a week — payouts are instant and support is great!"</blockquote>
+            <figcaption>- Priya, 22</figcaption>
+          </figure>
+
+          <figure class="test-card glass">
+            <img src="https://randomuser.me/api/portraits/men/36.jpg" alt="player">
+            <blockquote>"Fast contests, real cash. Love the daily challenges."</blockquote>
+            <figcaption>- Rohit, 19</figcaption>
+          </figure>
+
+          <figure class="test-card glass">
+            <img src="https://randomuser.me/api/portraits/men/12.jpg" alt="player">
+            <blockquote>"Great platform for learning and earning."</blockquote>
+            <figcaption>- Ankit, 26</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="foot-left">
+        <p><strong>QuizChamp</strong> — Play live quizzes & win cash.</p>
+      </div>
+      <div class="foot-right">
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+      </div>
+    </div>
+    <p class="copyright">© 2025 QuizChamp. All rights reserved.</p>
+  </footer>
+
+  <!-- Keep your existing script.js — it listens for .join-btn etc. -->
+  <script src="script.js" type="module"></script>
 </body>
-</html> 
+</html>
