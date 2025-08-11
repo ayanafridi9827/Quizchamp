@@ -38,13 +38,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let userDataFetched = false; // Naya flag user data ko ek baar fetch karne ke liye
 
     // Function to show notifications
-    function showNotification(message, type) {
+    function showNotification(message, type, duration = 3000) { // Added duration parameter
         notification.textContent = message;
         notification.className = 'notification'; // Reset classes
         notification.classList.add(type, 'show');
         setTimeout(() => {
             notification.classList.remove('show');
-        }, 3000); // Hide after 3 seconds
+        }, duration); // Use duration parameter
     }
 
     // Yeh function contest ka data lekar uska HTML card banata hai
@@ -80,7 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const progressPercentage = totalSpots > 0 ? (spotsFilled / totalSpots) * 100 : 0;
         card.querySelector('.progress-fill').style.width = `${progressPercentage}%`;
         card.querySelector('.progress-percentage').textContent = `${Math.round(progressPercentage)}%`;
-        card.querySelector('.progress-text').textContent = `${totalSpots - spotsFilled} spots left`;
+        
+        if (spotsFilled >= totalSpots) {
+            card.querySelector('.progress-text').textContent = `Contest Full`;
+        } else {
+            card.querySelector('.progress-text').textContent = `${totalSpots - spotsFilled} spots left`;
+        }
 
         const statusBadge = card.querySelector('.status-badge');
         if (contestData.status === 'active') {
@@ -174,8 +179,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         const currentBalance = walletDoc.data().balance || 0;
                         if (currentBalance < entryFee) throw new Error("Insufficient funds!");
 
+                        const currentFilledSpots = contestDoc.data().filledSpots || 0;
+                        const maxSpots = contestDoc.data().maxSpots || 0;
+
+                        if (currentFilledSpots >= maxSpots) {
+                            throw new Error("Contest is already full!");
+                        }
+
                         const newBalance = currentBalance - entryFee;
-                        const newFilledSpots = (contestDoc.data().filledSpots || 0) + 1;
+                        const newFilledSpots = currentFilledSpots + 1;
 
                         transaction.update(walletRef, { balance: newBalance });
                         transaction.update(contestRef, { 
@@ -212,7 +224,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 joinTextSpan.textContent = 'Continue';
                 joinBtn.classList.add('joined');
                 joinBtn.addEventListener('click', () => window.location.href = `/Home/quiz/quiz.html?contestId=${contestId}`);
-            } else {
+            } else if (spotsFilled >= totalSpots) { // Check if contest is full
+                joinTextSpan.textContent = 'Contest Full';
+                joinBtn.classList.add('full'); // Add a class for styling if needed
+                // Do NOT disable the button, instead add a click listener for notification
+                joinBtn.addEventListener('click', () => showNotification("Contest is full!", 'error', 1500));
+            }
+            else {
                 joinTextSpan.textContent = `Join for ₹${contestData.entryFee || 0}`;
                 joinBtn.addEventListener('click', joinButtonClickHandler);
             }
