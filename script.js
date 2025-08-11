@@ -23,5 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 overlay.classList.remove('active');
             });
         });
+
+        // Close menu if click is on empty space within mainNav
+        mainNav.addEventListener('click', (event) => {
+            // Check if the clicked element is not a link or the button itself
+            if (!event.target.closest('a') && !event.target.closest('.btn-outline')) {
+                mainNav.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        });
     }
 });
