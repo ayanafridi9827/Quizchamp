@@ -236,10 +236,48 @@ body{
 /* Responsive */
 @media (max-width: 900px){
   .hero-inner{flex-direction:column}
-  .hero-content-wrapper{flex-direction:column} /* Stack hero-left and hero-right */
-  .hero-left{margin-top: 0;} /* Remove margin-top when stacked */
-  .hero-right{width:100%; max-width: 100%;} /* Ensure it takes full width and overrides previous max-width */
-  .main-nav{display:none}
+  .hero-content-wrapper{flex-direction:column}
+  .hero-left{margin-top: 0;}
+  .hero-right{width:100%; max-width: 100%;}
+  .main-nav{ /* Desktop main-nav */
+    display: none; /* Hide desktop main-nav */
+  }
+  .main-nav{
+    display:flex; /* Mobile nav styles */
+    position: fixed;
+    top: 0;
+    right: -60%; /* Start off-screen from right */
+    width: 60%; /* Take 60% of screen width */
+    height: 100vh; /* Take full viewport height */
+    background: #000; /* Solid black background */
+    flex-direction: column;
+    padding-top: 80px;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+    z-index: 1002;
+    transition: right 0.3s ease-in-out; /* Add transition for smooth animation */
+  }
+
+  .main-nav.active {
+    right: 0; /* Slide in from right */
+  }
+
+  .main-nav a {
+    padding: 15px 20px;
+    width: 100%;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    text-decoration: none; /* Ensure no text decoration */
+    border-style: none; /* Ensure no dashed border style */
+  }
+
+  .main-nav .btn-outline {
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 0;
+    padding: 15px 20px;
+    text-align: center;
+    margin-top: 10px;
+  }
   .mobile-toggle{display:block}
   .test-track{animation-duration:22s}
 }
@@ -270,4 +308,23 @@ body{
   .price-chip .value {
     font-size: 1.5rem; /* Adjust price value size */
   }
+}
+
+/* Overlay Styles */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0; /* Position from left */
+    width: 40%; /* Take 40% width */
+    height: 100%;
+    background: rgba(0,0,0,0.7); /* Semi-transparent black for dimming */
+    z-index: 1001; /* Below menu, above content */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
 }
