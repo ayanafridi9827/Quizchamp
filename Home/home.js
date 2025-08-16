@@ -157,7 +157,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const entryFee = contestData.entryFee || 0;
                 if (userWalletBalance < entryFee) {
-                    showNotification(`Insufficient funds! You need ₹${entryFee - userWalletBalance} more.`, 'error');
+                    showNotification(`Insufficient funds! Redirecting to wallet...`, 'error', 1000);
+                    setTimeout(() => {
+                        window.location.href = '/wallets/wallet.html';
+                    }, 1000);
                     return;
                 }
 
